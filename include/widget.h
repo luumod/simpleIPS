@@ -16,6 +16,7 @@ class QVBoxLayout;
 class Threshold;
 class Form;
 class QToolBar;
+class QFileDialog;
 
 class Widget :public QMainWindow {
 	Q_OBJECT
@@ -35,7 +36,7 @@ public:
 	QWidget* create_GUIGaussianBlur(); //高斯滤波
 	QWidget* create_GUIMedianBlur(); //中值滤波
 	QWidget* create_GUIBilateralBlur(); //双边滤波
-	QWidget* create_GUIThreshoild();		//阈值化
+	QWidget* create_GUIThreshoild();	//阈值化
 	QWidget* create_GUIMorphology();	//形态学
 public slots:
 	void onClicked_buttonGroup_blur(QAbstractButton* btn);
@@ -44,13 +45,23 @@ public slots:
 	void onClicked_action_openFile();
 	void onTriggered_action_saveFile();
 	void onTriggered_action_restore();
-	void onTriggered_action_begin();
+	void onTriggered_action_blur_restore();
+	void onTriggered_action_threshold_restore();
+	void onTriggered_action_morphology_restore();
+
+	void onTriggered_action_process();
+
+	void onTriggered_action_undo();
 signals:
 	void sg_beginCreation();
 private:
-	void clearCurrentPageSliderValue();
+	void setIndexPageSliderValue(int index = -1);
+	void clearAllSliderValue();
+
+	//int whereAmI();
 private:
-	cv::Mat mt;
+	cv::Mat ori_mt; //保存原始的加载的图片
+	cv::Mat temp_mt;//如果是创作者模式，则需要保存每次更新后的图片
 	QImage ori_img;
 	QLabel* lab_img = nullptr;
 
@@ -59,6 +70,7 @@ private:
 	QAction* action_save = nullptr;
 	QAction* action_restore = nullptr;
 	QAction* action_begin = nullptr;
+	QAction* action_return = nullptr;
 
 	QMenu* context_menu = nullptr;
 	QMenu* menu_file = nullptr;
@@ -67,17 +79,16 @@ private:
 	QToolBar* toolbar1 = nullptr;
 
 	QToolBox* toolbox_side = nullptr;
+	int preToolBoxIndex = 0, curToolBoxIndex = 0;
+
+	int now = -1; //全局定位点，定位在哪个功能位置
+	bool mode = false;
 
 	QButtonGroup* btngroup_blur = nullptr;
 	QButtonGroup* btngroup_threshold = nullptr;
 	QButtonGroup* btngroup_form = nullptr;
 
-	//blur调整框
-	//QWidget* adj_avgBlur = nullptr;
-	//QWidget* adj_gasBlur = nullptr;
-	//QWidget* adj_meanBlur = nullptr;
-	//QWidget* adj_bilateralBlur = nullptr;
-	//QWidget* adj_
+	QFileDialog* fileDialog = nullptr;
 
 	//窗口布局
 	QVBoxLayout* vlayout_right = nullptr;
@@ -88,7 +99,6 @@ private:
 	Threshold* threshold = nullptr;
 	Form* morphology = nullptr;
 
-	bool diy = false;
 };
 
 

@@ -12,6 +12,11 @@ public:
 	explicit Blur(const std::string& fileName, QWidget* parent = nullptr);
 	explicit Blur(const cv::Mat& mt, QWidget* parent = nullptr);
 	~Blur();
+public:
+	void savePoint();
+	void returnPoint();
+	void update(const cv::Mat& newMt);
+	void restore();
 	QImage avg_blur();//均值滤波
 	QImage Gaussian_blur();//高斯滤波
 	QImage median_blur();//中值滤波
@@ -31,14 +36,16 @@ public slots:
 	void onTriggered_slider2_valueChange_bilateralBlur(int);
 	void onTriggered_slider3_valueChange_bilateralBlur(int);
 public:
+	cv::Mat ori_mt;
 	cv::Mat	_mt;
+	cv::Mat savePoint_mt;
 	QImage _img;
-	bool type; //创作 or 测试
+	bool mode = false; //创作 or 测试
 
 	//均值滤波
-	int avg_Ksize = 5, anchorX = -1, anchorY = -1;
+	int avg_Ksize = 1, anchorX = -1, anchorY = -1;
 	//高斯滤波
-	int gas_Ksize = 7, sigmaX = -1, sigmaY = -1;
+	int gas_Ksize = 1, sigmaX = -1, sigmaY = -1;
 	//中值滤波
 	int median_Ksize = 5;
 	//双边滤波

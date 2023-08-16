@@ -6,7 +6,7 @@
 #include <QLabel>
 #include <QDebug>
 
-inline QImage Mat2QImage( cv::Mat& mat)
+inline QImage Mat2QImage(const cv::Mat& mat)
 {
     // Check if the input OpenCV matrix is empty
     if (mat.empty()) {

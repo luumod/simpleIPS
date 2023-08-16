@@ -10,8 +10,13 @@ class Form :public QWidget {
 public:
 	Form(QWidget* parent = nullptr);
 	Form(const std::string& fileName, QWidget* parent = nullptr);
-	Form(const cv::Mat& mt);
+	Form(const cv::Mat& mt, QWidget* parent = nullptr);
 	~Form();
+public:
+	void savePoint();
+	void returnPoint();
+	void update(const cv::Mat& newMt);
+	void restore();
 	
 	QImage morphology();
 public slots:
@@ -20,11 +25,13 @@ public slots:
 	void onTriggered_slider3_valueChanged_anchorY(int value); 
 	//void onTriggered_slider3_valueChanged_anthorY(int value);
 public:
+	cv::Mat ori_mt;
+	cv::Mat savePoint_mt;
 	cv::Mat _mt;
 	QImage _img;
-
+	bool mode = false;
 	//核
-	int Kernel = 3, anchorX = -1, anchorY = -1, iters = 1;
+	int Kernel = 1, anchorX = -1, anchorY = -1, iters = 1;
 
 	int current_choice = -1;
 

@@ -1,6 +1,8 @@
 ﻿cmake_minimum_required(VERSION 3.8)
 
 project(QtPro)
+project(QtTest)
+
 
 # 设置C++标准
 set(CMAKE_CXX_STANDARD 17)
@@ -24,11 +26,12 @@ find_package(OpenCV REQUIRED PATHS ${OpenCV_DIR} NO_DEFAULT_PATH)
 
 # 添加可执行文件或库
 add_executable(QtPro
-    src/main.cpp
+    
     src/widget.cpp
     src/Blur.cpp
     src/Threshold.cpp
     src/Form.cpp
+    src/main.cpp
 
     include/widget.h
     include/belongsToEnum.h 
@@ -36,11 +39,20 @@ add_executable(QtPro
     include/Mat2QImage.h
     include/Enums.h 
     include/Threshold.h 
-    include/Form.h
+    include/Form.h)
+
+add_executable(QtTest
+    QtTest/test.cpp    
 )
 
 # 将Qt6和OpenCV库链接到目标可执行文件或库
 target_link_libraries(QtPro
+    PRIVATE
+    Qt6::Core
+    Qt6::Widgets
+    ${OpenCV_LIBS}
+)
+target_link_libraries(QtTest
     PRIVATE
     Qt6::Core
     Qt6::Widgets

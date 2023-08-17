@@ -24,5 +24,9 @@ enum FORM {
 	Blackhat,
 	Hitmiss 
 };
+enum CONNECTED {
+	TYPE1 = 18,
+	TYPE2
+};
 
 #endif

@@ -1,5 +1,8 @@
 ﻿#include "../include/widget.h"
 #include <QApplication>
+#include <QCoreApplication>
+//#include <vld.h>
+
 //添加控制台windows/console
 #pragma comment(linker,"/subSystem:console /entry:mainCRTStartup")
 

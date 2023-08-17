@@ -23,7 +23,6 @@ public slots:
 	void onTriggered_slider1_valueChanged_kernel(int value);
 	void onTriggered_slider2_valueChanged_anchorX(int value);
 	void onTriggered_slider3_valueChanged_anchorY(int value); 
-	//void onTriggered_slider3_valueChanged_anthorY(int value);
 public:
 	cv::Mat ori_mt;
 	cv::Mat savePoint_mt;
@@ -31,7 +30,7 @@ public:
 	QImage _img;
 	bool mode = false;
 	//核
-	int Kernel = 1, anchorX = -1, anchorY = -1, iters = 1;
+	int Kernel = 5, anchorX = -1, anchorY = -1, iters = 1;
 
 	int current_choice = -1;
 

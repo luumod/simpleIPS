@@ -4,6 +4,7 @@
 #include "../include/Blur.h"
 #include "../include/Threshold.h"
 #include "../include/Form.h"
+#include "../include/Connected.h"
 #include <QDebug>
 #include <QBoxLayout>
 #include <QGridLayout>
@@ -28,6 +29,9 @@
 #include <QSizePolicy>
 #include <QToolBar>
 #include <QPushButton>
+#include <QComboBox>
+#include <QMessageBox>
+
 
 Widget::Widget(QWidget* parent)
 	:QMainWindow(parent),
@@ -73,6 +77,8 @@ Widget::Widget(QWidget* parent)
 	stack_tools->addWidget(create_GUIThreshoild());	//4
 
 	stack_tools->addWidget(create_GUIMorphology());	//5
+
+	stack_tools->addWidget(create_GUIConnected()); //6
 	stack_tools->setVisible(false);
 
 	vlayout_right->addWidget(stack_tools, 1);
@@ -96,6 +102,17 @@ Widget::Widget(QWidget* parent)
 Widget::~Widget()
 {
 	//内存释放
+	delete blur;
+	blur = nullptr;
+	
+	delete threshold;
+	threshold = nullptr;
+	
+	delete morphology;
+	morphology = nullptr;
+
+	delete connected;
+	connected = nullptr;
 }
 
 void Widget::initFunction()
@@ -104,6 +121,7 @@ void Widget::initFunction()
 	blur = new Blur(ori_mt); 
 	threshold = new Threshold(ori_mt);
 	morphology = new Form(ori_mt);
+	connected = new Connected(ori_mt);
 }
 
 void Widget::onClicked_buttonGroup_blur(QAbstractButton* btn) 
@@ -148,12 +166,8 @@ void Widget::onClicked_buttonGroup_threshold(QAbstractButton* btn)
 	//选择当前阈值模式
 	threshold->current_choice = type;
 
-	if (mode) {
-		
-	}
-	else {
-		onTriggered_action_threshold_restore();
-	}
+
+	onTriggered_action_threshold_restore();
 
 	stack_tools->setVisible(true);
 	stack_tools->setCurrentIndex(4);
@@ -208,9 +222,36 @@ void Widget::onClicked_buttonGroup_form(QAbstractButton* btn)
 	}
 }
 
+void Widget::onClicked_buttonGroup_connected(QAbstractButton* btn)
+{
+	int id = btngroup_connected->id(btn);
+	connected->current_choice = id - CONNECTED::TYPE1; // 0 1
+
+	if (mode) {
+
+	}
+	else {
+		onTriggered_action_connected_restore();
+	}
+
+	stack_tools->setVisible(true);
+	stack_tools->setCurrentIndex(6);
+	QList<QAbstractButton*> btns = btngroup_connected->buttons();
+	for (auto& m_btn : btns) {
+		if (m_btn == btn) {
+			m_btn->setChecked(true);
+			m_btn->setStyleSheet("background-color:yellow");
+		}
+		else {
+			m_btn->setChecked(false);
+			m_btn->setStyleSheet("background-color:blue");
+		}
+	}
+}
+
 void Widget::onClicked_action_openFile()
 {
-	QString fileName = QFileDialog::getOpenFileName(nullptr, "选择文件", ".",	"图像文件(*.png *.jpg) 所有(*.*)");
+	QString fileName = QFileDialog::getOpenFileName(nullptr, "选择文件", ".",	"图像文件(*.png *.jpg)");
 	if (!fileName.isEmpty()) {
 		qDebug() << "选择的文件名：" << fileName;
 		ori_mt = cv::imread(fileName.toLocal8Bit().data());
@@ -225,10 +266,11 @@ void Widget::onClicked_action_openFile()
 		blur->update(ori_mt);
 		threshold->update(ori_mt);
 		morphology->update(ori_mt);
+		connected->update(ori_mt);
 		clearAllSliderValue();
 	}
 	else {
-		qDebug() << "未选择任何文件!";
+		QMessageBox::warning(nullptr, tr("警告"), "图片文件打开失败!");
 	}
 }
 
@@ -241,12 +283,13 @@ void Widget::onTriggered_action_saveFile()
 	}
 }
 
-void Widget::onTriggered_action_restore()
+void Widget::onTriggered_action_allRestore()
 {
 	//清除所有的数据信息
 	blur->restore();
 	threshold->restore();
 	morphology->restore();
+	connected->restore();
 
 	clearAllSliderValue();
 
@@ -270,27 +313,24 @@ void Widget::onTriggered_action_threshold_restore() {
 	在阈值操作选择的时候，如果更换了新的选择，则需要清除所有的修改，重新载入一张原图
 	*/
 	threshold->restore();
-	QWidget* currentPage = stack_tools->widget(4); //阈值页
-	QList<QSlider*> ls = currentPage->findChildren<QSlider*>();
-
-	for (auto& x : ls) {
-		if (x->objectName() == tr("threshold_value")) {
-			x->setValue(128);
-		}
-		else if (x->objectName() == tr("maxValue")) {
-			x->setValue(255);
-		}
-	}
+	setIndexPageSliderValue(4);
 	lab_img->setPixmap(QPixmap::fromImage(ori_img));
 }
 
 void Widget::onTriggered_action_morphology_restore()
 {
-	/*
-	在形态学操作选择的时候，如果更换了新的选择，则需要清除所有的修改，重新载入一张原图
-	*/
 	morphology->restore();
 	setIndexPageSliderValue(5);
+	lab_img->setPixmap(QPixmap::fromImage(ori_img));
+}
+
+void Widget::onTriggered_action_connected_restore()
+{
+	/*
+	当切换不同的操作的时候，恢复原图重新操作
+	*/
+	connected->restore();
+	setIndexPageSliderValue(6);
 	lab_img->setPixmap(QPixmap::fromImage(ori_img));
 }
 
@@ -304,6 +344,16 @@ void Widget::onTriggered_action_process(){
 	threshold->mode = true;
 	morphology->mode = true;
 	lab_img->setPixmap(QPixmap::fromImage(ori_img));
+
+	if (mode) {
+		toolbox_side->setCurrentIndex(0);
+		stack_tools->setCurrentIndex(0);
+
+		//阈值化操作对图片的影响过大，在混合加工模式下禁止使用
+		toolbox_side->setItemEnabled(1, false);
+		//连通性分析也无法使用
+		toolbox_side->setItemEnabled(3, false);
+	}
 }
 
 void Widget::onTriggered_action_undo()
@@ -311,14 +361,9 @@ void Widget::onTriggered_action_undo()
 	//仅仅在创作者模式下生效：触发时会将图片置回到未操作前的位置
 
 	if (mode) {
-		qInfo() << "now:" << now;
 		if (belongsToEnum<BLUR>(now)) {
 			blur->returnPoint();
 			lab_img->setPixmap(QPixmap::fromImage(Mat2QImage(blur->_mt)));
-		}
-		else if (belongsToEnum<THRESHOLD>(now)) {
-			threshold->returnPoint();
-			lab_img->setPixmap(QPixmap::fromImage(Mat2QImage(threshold->_mt)));
 		}
 		else if (belongsToEnum<FORM>(now)) {
 			morphology->returnPoint();
@@ -328,7 +373,7 @@ void Widget::onTriggered_action_undo()
 		setIndexPageSliderValue();
 	}
 	else {
-		onTriggered_action_restore();
+		onTriggered_action_allRestore();
 	}
 	
 }
@@ -344,18 +389,24 @@ void Widget::setIndexPageSliderValue(int index)
 	}
 	//否则就是第index页
 	QWidget* currentPage = stack_tools->widget(index);
-	QList<QSlider*> ls = currentPage->findChildren<QSlider*>();
+	QList<QWidget*> ls = currentPage->findChildren<QWidget*>();
 
 	for (auto& x : ls) {
-		if (x->objectName() == tr("threshold_value")) {
-			x->setValue(128);
+		if (QSlider* slider = qobject_cast<QSlider*>(x)) {
+			if (slider->objectName() == tr("threshold_value")) {
+				slider->setValue(128);
+			}
+			else if (x->objectName() == tr("maxValue")) {
+				slider->setValue(255);
+			}
+			else {
+				slider->setValue(slider->minimum());
+			}
 		}
-		else if (x->objectName() == tr("maxValue")) {
-			x->setValue(255);
+		else if (QComboBox* comb = qobject_cast<QComboBox*>(x)) {
+				comb->setCurrentIndex(0);
 		}
-		else {
-			x->setValue(x->minimum());
-		}
+		
 	}
 }
 
@@ -367,21 +418,6 @@ void Widget::clearAllSliderValue()
 	}
 }
 
-//int Widget::whereAmI()
-//{
-//	/*
-//	根据 now 找到当前所处的QToolBox的索引下标
-//	*/
-//	if (now >= BLUR::Average && now <= BLUR::Bilateral) {
-//		return now - 1;
-//	}
-//	if (now >= THRESHOLD::Binary && now <= THRESHOLD::Tozero_inv) {
-//		return 4;
-//	}
-//	if (now >= FORM::Erode && now <= FORM::Hitmiss) {
-//		return 5;
-//	}
-//}
 
 void Widget::createAction()
 {
@@ -410,7 +446,7 @@ void Widget::createAction()
 	action_restore->setStatusTip(tr("重置此图片，取消所有加工"));
 	action_restore->setIcon(QIcon("../resource/restore.png"));
 	action_restore->setShortcut(tr("Ctrl+Z"));
-	connect(action_restore, &QAction::triggered, this, &Widget::onTriggered_action_restore);
+	connect(action_restore, &QAction::triggered, this, &Widget::onTriggered_action_allRestore);
 
 	//开始制作模式
 	action_begin = new QAction(tr("图片加工"),this);
@@ -519,6 +555,23 @@ void Widget::createToolBox()
 	widget_from->setLayout(grid_form);
 
 
+	//-----------------连通区域分析操作-----------------------------
+	btngroup_connected = new QButtonGroup(this);
+	btngroup_connected->setExclusive(true);//互斥
+
+	connect(btngroup_connected, &QButtonGroup::buttonClicked, this, &Widget::onClicked_buttonGroup_connected);
+	
+	QGridLayout* gird_connected = new QGridLayout;
+	gird_connected->addWidget(createToolBtnItemWidget(tr("连通区域分析①"), CONNECTED::TYPE1),0,0);
+	gird_connected->addWidget(createToolBtnItemWidget(tr("连通区域分析②"), CONNECTED::TYPE2),1,0);
+	gird_connected->setRowStretch(4, 10);
+	gird_connected->setColumnStretch(1, 10);
+
+	QWidget* widget_connected = new QWidget;
+	widget_connected->setLayout(gird_connected);
+
+
+
 	//创建ToolBox
 	toolbox_side = new QToolBox(this);
 	toolbox_side->setMinimumWidth(200);
@@ -527,6 +580,7 @@ void Widget::createToolBox()
 	toolbox_side->addItem(widget_blur, "图像模糊操作");
 	toolbox_side->addItem(widget_threshold, "图像阈值操作");
 	toolbox_side->addItem(widget_from, "图像形态化操作");
+	toolbox_side->addItem(widget_connected, "图像连通分析");
 	toolbox_side->setCurrentIndex(0); 
 
 
@@ -545,19 +599,24 @@ void Widget::createToolBox()
 		else if (preToolBoxIndex == 2) {
 			morphology->_mt.copyTo(temp_mt);
 		}
+		else if (preToolBoxIndex == 3) {
+			connected->_mt.copyTo(temp_mt);
+		}
 
 		if (mode) {
-			qInfo() << "当前窗口: " << value;
 			if (value == 0) {
 				//blur
 				temp_mt.copyTo(blur->_mt);
 			}
-			else if (value == 1) {
-				temp_mt.copyTo(threshold->_mt);
-			}
+			//else if (value == 1) {
+			//	temp_mt.copyTo(threshold->_mt);
+			//}
 			else if (value == 2) {
 				temp_mt.copyTo(morphology->_mt);
 			}
+			//else if (value == 3) {
+			//	temp_mt.copyTo(connected->_mt);
+			//}
 		}
 	});
 }
@@ -578,6 +637,9 @@ QWidget* Widget::createToolBtnItemWidget(const QString& text, int id)
 	}
 	else if (belongsToEnum<FORM>(id)) {
 		btngroup_form->addButton(btn, id); //绑定形态学与id
+	}
+	else if (belongsToEnum<CONNECTED>(id)) {
+		btngroup_connected->addButton(btn, id); //连通性分析
 	}
 	
 
@@ -600,7 +662,7 @@ QWidget* Widget::create_GUIAvgBlur() //1：均值 2：高斯
 	slider1->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 	QSlider* slider2 = new QSlider(Qt::Horizontal);
 	slider2->setRange(1, 50);
-	slider2->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+	slider2->setSizePolicy(QSizePolicy::Expanding,  QSizePolicy::Fixed);
 	QSlider* slider3 = new QSlider(Qt::Horizontal);
 	slider3->setRange(1, 50);
 	slider3->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
@@ -613,7 +675,7 @@ QWidget* Widget::create_GUIAvgBlur() //1：均值 2：高斯
 		if (slider2->value() == slider2->minimum() && slider3->value() == slider3->minimum()) {
 			blur->anchorX = blur->anchorY = blur->avg_Ksize / 2;
 		}
-	qInfo() << value;
+	//qInfo() << value;
 		blur->onTriggered_slider1_valueChange_avgBlur(value);
 		lab_img->setPixmap(QPixmap::fromImage(blur->_img));
 	});
@@ -902,7 +964,7 @@ QWidget* Widget::create_GUIMorphology()
 {
 	//Kernel
 	QSlider* slider1 = new QSlider(Qt::Horizontal);
-	slider1->setRange(3, 50);
+	slider1->setRange(1, 100);
 	slider1->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 	//anthorX
 	QSlider* slider2 = new QSlider(Qt::Horizontal);
@@ -934,6 +996,7 @@ QWidget* Widget::create_GUIMorphology()
 	//X偏移连接信号
 	connect(slider2, &QSlider::sliderMoved, morphology, [=](int value) {
 		morphology->onTriggered_slider2_valueChanged_anchorX(value);
+
 		lab_img->setPixmap(QPixmap::fromImage(morphology->_img));
 		});
 
@@ -965,4 +1028,61 @@ QWidget* Widget::create_GUIMorphology()
 	adj_morphology->setLayout(vLayout);
 
 	return adj_morphology;
+}
+
+
+//----------------连通区域分析GUI----------------------------
+QWidget* Widget::create_GUIConnected()
+{
+	QComboBox* comb1 = new QComboBox; //选择 connectivity = 8 or 4
+	comb1->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+	comb1->setObjectName(tr("connectivity"));
+	comb1->addItem(tr("8"));
+	comb1->addItem(tr("4"));
+	comb1->setEditable(false);
+	connect(comb1, &QComboBox::currentTextChanged, this, [=](const QString& text) {
+		connected->onTriggered_Comb1_currentTextChanged_connectivtiy(text);
+		lab_img->setPixmap(QPixmap::fromImage(connected->_img));
+		
+	});
+	QComboBox* comb2 = new QComboBox;  //选择算法
+	comb2->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+	comb2->setObjectName(tr("ccltype"));
+	comb2->addItem(tr("default"));
+	comb2->addItem(tr("CC_WU"));
+	comb2->addItem(tr("CCL_GRANA"));
+	comb2->addItem(tr("CCL_BOLELLI"));
+	comb2->addItem(tr("CCL_SAUF"));
+	comb2->addItem(tr("CCL_BBDT"));
+	comb2->addItem(tr("CCL_SPAGHETTI"));
+	comb2->setEditable(false);
+	connect(comb2, &QComboBox::currentTextChanged, this, [=](const QString& text) {
+		connected->onTriggered_Comb2_currentTextChanged_ccltype(text);
+		lab_img->setPixmap(QPixmap::fromImage(connected->_img));
+	});
+
+	QHBoxLayout* hlayout1 = new QHBoxLayout;
+	hlayout1->addWidget(new QLabel("邻域"));
+	hlayout1->addWidget(comb1);
+	hlayout1->setAlignment(Qt::AlignmentFlag::AlignCenter);
+
+	QHBoxLayout* hlayout2 = new QHBoxLayout;
+	hlayout2->addWidget(new QLabel("联通算法"));
+	hlayout2->addWidget(comb2);
+	hlayout2->setAlignment(Qt::AlignmentFlag::AlignCenter);
+
+	QWidget* w1 = new QWidget;
+	w1->setLayout(hlayout1);
+
+	QWidget* w2 = new QWidget;
+	w2->setLayout(hlayout2);
+
+	QVBoxLayout* vlayout = new QVBoxLayout;
+	vlayout->addWidget(w1);
+	vlayout->addWidget(w2);
+
+	QWidget* adj_connected = new QWidget;
+	adj_connected->setLayout(vlayout);
+
+	return adj_connected;
 }

@@ -17,6 +17,7 @@ class Threshold;
 class Form;
 class QToolBar;
 class QFileDialog;
+class Connected;
 
 class Widget :public QMainWindow {
 	Q_OBJECT
@@ -38,19 +39,23 @@ public:
 	QWidget* create_GUIBilateralBlur(); //双边滤波
 	QWidget* create_GUIThreshoild();	//阈值化
 	QWidget* create_GUIMorphology();	//形态学
+	QWidget* create_GUIConnected();	//连通块分析
 public slots:
 	void onClicked_buttonGroup_blur(QAbstractButton* btn);
 	void onClicked_buttonGroup_threshold(QAbstractButton* btn);
 	void onClicked_buttonGroup_form(QAbstractButton* btn);
+	void onClicked_buttonGroup_connected(QAbstractButton* btn);
+
 	void onClicked_action_openFile();
 	void onTriggered_action_saveFile();
-	void onTriggered_action_restore();
+
+	void onTriggered_action_allRestore();
 	void onTriggered_action_blur_restore();
 	void onTriggered_action_threshold_restore();
 	void onTriggered_action_morphology_restore();
+	void onTriggered_action_connected_restore();
 
 	void onTriggered_action_process();
-
 	void onTriggered_action_undo();
 signals:
 	void sg_beginCreation();
@@ -87,6 +92,7 @@ private:
 	QButtonGroup* btngroup_blur = nullptr;
 	QButtonGroup* btngroup_threshold = nullptr;
 	QButtonGroup* btngroup_form = nullptr;
+	QButtonGroup* btngroup_connected = nullptr;
 
 	QFileDialog* fileDialog = nullptr;
 
@@ -98,7 +104,7 @@ private:
 	Blur* blur = nullptr; //模糊
 	Threshold* threshold = nullptr;
 	Form* morphology = nullptr;
-
+	Connected* connected = nullptr;
 };
 
 

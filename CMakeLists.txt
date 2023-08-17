@@ -12,6 +12,8 @@ set(CMAKE_AUTOMOC ON)
 # 查找并引用Qt6库
 find_package(Qt6 COMPONENTS Core Widgets REQUIRED)
 
+
+
 # 设置调试
 set(CMAKE_BUILD_TYPE Debug)
 
@@ -32,6 +34,7 @@ add_executable(QtPro
     src/Threshold.cpp
     src/Form.cpp
     src/main.cpp
+    src/Connected.cpp
 
     include/widget.h
     include/belongsToEnum.h 
@@ -39,11 +42,14 @@ add_executable(QtPro
     include/Mat2QImage.h
     include/Enums.h 
     include/Threshold.h 
-    include/Form.h)
+    include/Form.h 
+    include/Connected.h )
 
 add_executable(QtTest
     QtTest/test.cpp    
-)
+ "include/Connected.h" "src/Connected.cpp")
+
+
 
 # 将Qt6和OpenCV库链接到目标可执行文件或库
 target_link_libraries(QtPro
@@ -62,3 +68,9 @@ target_link_libraries(QtTest
 
 add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 add_definitions(-DUNICODE -D_UNICODE)
+
+set(VLD_INCLUDE_DIRS "F:\\vld\\Visual Leak Detector\\include")
+set(VLD_LIBRARIES "F:\\vld\\Visual Leak Detector\\lib\\Win64\\vld.lib")
+include_directories(${VLD_INCLUDE_DIRS})
+target_link_libraries(QtPro PRIVATE  ${VLD_LIBRARIES})
+target_link_libraries(QtTest PRIVATE  ${VLD_LIBRARIES})

@@ -48,7 +48,7 @@ void Form::restore()
 	_img = Mat2QImage(_mt);
 
 	//核 锚点 
-	int Kernel = 1, anchorX = -1, anchorY = -1, iters = 1;
+	int Kernel = 5, anchorX = -1, anchorY = -1, iters = 1;
 }
 
 QImage Form::morphology()
@@ -71,7 +71,7 @@ QImage Form::morphology()
 void Form::onTriggered_slider1_valueChanged_kernel(int value) {
 	if (-1 <= anchorX && anchorX < value && -1 <= anchorY && anchorY < value ){
 		Kernel = value;
-		qInfo() << value;
+	//	qInfo() << value;
 		morphology();
 	}
 }

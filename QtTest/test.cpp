@@ -1,7 +1,8 @@
 ﻿#include <QApplication>
 #include <QWidget>
 #include <QSlider>
-
+#include <iostream>
+#include <vld.h>
 class Widget :public QWidget {
 public:
 	Widget(QWidget* parent = nullptr)
@@ -25,6 +26,8 @@ private:
 int main(int argc, char* argv[])
 {
 	QApplication a(argc, argv);
+
+	auto aa = new int[10];
 
 	Widget w;
 	w.show();

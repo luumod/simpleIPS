@@ -66,10 +66,9 @@ QImage Blur::avg_blur()
 	if (avg_Ksize <= 1) {
 		return _img;
 	}
-	qInfo() << "均值滤波";
+	//qInfo() << "均值滤波";
 
 	cv::Mat tMt;
-
 	cv::blur(_mt, tMt, cv::Size(avg_Ksize, avg_Ksize), cv::Point(anchorX, anchorY));
 	
 
@@ -86,7 +85,7 @@ QImage Blur::Gaussian_blur()
 	if (gas_Ksize <= 1) {
 		return _img;//return Mat2QImage(tMt);
 	}
-	qInfo() << "高斯滤波";
+	//qInfo() << "高斯滤波";
 	cv::Mat tMt;
 
 	cv::GaussianBlur(_mt, tMt, cv::Size(gas_Ksize, gas_Ksize), sigmaX, sigmaY);
@@ -100,7 +99,7 @@ QImage Blur::Gaussian_blur()
 
 QImage Blur::median_blur()
 {
-	qInfo() << "中值滤波";
+	//qInfo() << "中值滤波";
 
 	cv::Mat tMt{};
 	cv::medianBlur(_mt, tMt, median_Ksize);
@@ -116,7 +115,7 @@ QImage Blur::bilateral_blur()
 	if (_mt.type() != CV_8UC1 && _mt.type() != CV_8UC3) {
 		return QImage(_img = Mat2QImage(_mt));
 	}
-	qInfo() << "双边滤波";
+	//qInfo() << "双边滤波";
 
 	cv::Mat tMt;
 

@@ -10,14 +10,17 @@ class QToolButton;
 class QToolBox;
 class QLabel;
 class QAction;
-class Blur;
 class QStackedWidget;
 class QVBoxLayout;
+
+class Object;
+class Blur;
 class Threshold;
-class Form;
+class Morphology;
+class Connected;
+
 class QToolBar;
 class QFileDialog;
-class Connected;
 
 class Widget :public QMainWindow {
 	Q_OBJECT
@@ -33,37 +36,39 @@ public:
 
 	QWidget* createToolBtnItemWidget(const QString& text, int id);
 
-	QWidget* create_GUIAvgBlur();      //均值滤波
-	QWidget* create_GUIGaussianBlur(); //高斯滤波
-	QWidget* create_GUIMedianBlur(); //中值滤波
+	//GUI创建
+	QWidget* create_GUIAvgBlur();		//均值滤波
+	QWidget* create_GUIGaussianBlur();	//高斯滤波
+	QWidget* create_GUIMedianBlur();	//中值滤波
 	QWidget* create_GUIBilateralBlur(); //双边滤波
 	QWidget* create_GUIThreshoild();	//阈值化
 	QWidget* create_GUIMorphology();	//形态学
-	QWidget* create_GUIConnected();	//连通块分析
+	QWidget* create_GUIConnected();		//连通块分析
 public slots:
 	void onClicked_buttonGroup_blur(QAbstractButton* btn);
 	void onClicked_buttonGroup_threshold(QAbstractButton* btn);
-	void onClicked_buttonGroup_form(QAbstractButton* btn);
+	void onClicked_buttonGroup_morphology(QAbstractButton* btn);
 	void onClicked_buttonGroup_connected(QAbstractButton* btn);
 
-	void onClicked_action_openFile();
+	void onTriggered_action_openFile();
 	void onTriggered_action_saveFile();
 
 	void onTriggered_action_allRestore();
-	void onTriggered_action_blur_restore();
-	void onTriggered_action_threshold_restore();
-	void onTriggered_action_morphology_restore();
-	void onTriggered_action_connected_restore();
 
+	//非加工模式下：切换不同的操作时，清除原来的操作
+	void restore_cutOperation(Object* operation);
+
+	//开启图片加工模式
 	void onTriggered_action_process();
-	void onTriggered_action_undo();
-signals:
-	void sg_beginCreation();
-private:
-	void setIndexPageSliderValue(int index = -1);
-	void clearAllSliderValue();
 
-	//int whereAmI();
+	//撤销此次操作
+	void onTriggered_action_undo();
+
+private: //辅助函数
+	//清除某一页参数的数值
+	void setIndexPageWidgetValue(int index = -1);
+	void clearAllWidgetValue();
+
 private:
 	cv::Mat ori_mt; //保存原始的加载的图片
 	cv::Mat temp_mt;//如果是创作者模式，则需要保存每次更新后的图片
@@ -103,8 +108,9 @@ private:
 	//---------------功能实现-----------------
 	Blur* blur = nullptr; //模糊
 	Threshold* threshold = nullptr;
-	Form* morphology = nullptr;
+	Morphology* morphology = nullptr;
 	Connected* connected = nullptr;
+	QList<Object*> ls;
 };
 
 

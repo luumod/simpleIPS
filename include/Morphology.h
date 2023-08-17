@@ -1,22 +1,21 @@
 ﻿#ifndef FORM_H_
 #define FORM_H_
 
+#include "Object.h"
 #include <QWidget>
 #include <opencv2/opencv.hpp>
 class QImage;
 
-class Form :public QWidget {
-	Q_OBJECT
+class Morphology :public Object {
 public:
-	Form(QWidget* parent = nullptr);
-	Form(const std::string& fileName, QWidget* parent = nullptr);
-	Form(const cv::Mat& mt, QWidget* parent = nullptr);
-	~Form();
+	Morphology();
+	Morphology(const std::string& fileName);
+	Morphology(const cv::Mat& mt);
+	~Morphology();
+
 public:
-	void savePoint();
-	void returnPoint();
-	void update(const cv::Mat& newMt);
-	void restore();
+	void initialize()override;
+	void restore()override;
 	
 	QImage morphology();
 public slots:
@@ -24,14 +23,8 @@ public slots:
 	void onTriggered_slider2_valueChanged_anchorX(int value);
 	void onTriggered_slider3_valueChanged_anchorY(int value); 
 public:
-	cv::Mat ori_mt;
-	cv::Mat savePoint_mt;
-	cv::Mat _mt;
-	QImage _img;
-	bool mode = false;
 	//核
 	int Kernel = 5, anchorX = -1, anchorY = -1, iters = 1;
-
 	int current_choice = -1;
 
 };

@@ -1,22 +1,21 @@
 ﻿#ifndef BLUR_H_
 #define BLUR_H_
 
+#include "Object.h"
 #include <QWidget>
 #include <opencv2/opencv.hpp>
 class QImage;
 
-class Blur :public QWidget {
-	Q_OBJECT
+class Blur :public Object {
 public:
-	explicit Blur(QWidget* parent = nullptr);
-	explicit Blur(const std::string& fileName, QWidget* parent = nullptr);
-	explicit Blur(const cv::Mat& mt, QWidget* parent = nullptr);
+	Blur();
+	explicit Blur(const std::string& fileName);
+	explicit Blur(const cv::Mat& mt);
 	~Blur();
+
+	void restore()override;
+	void initialize();
 public:
-	void savePoint();
-	void returnPoint();
-	void update(const cv::Mat& newMt);
-	void restore();
 	QImage avg_blur();//均值滤波
 	QImage Gaussian_blur();//高斯滤波
 	QImage median_blur();//中值滤波
@@ -36,12 +35,6 @@ public slots:
 	void onTriggered_slider2_valueChange_bilateralBlur(int);
 	void onTriggered_slider3_valueChange_bilateralBlur(int);
 public:
-	cv::Mat ori_mt;
-	cv::Mat	_mt;
-	cv::Mat savePoint_mt;
-	QImage _img;
-	bool mode = false; //创作 or 测试
-
 	//均值滤波
 	int avg_Ksize = 1, anchorX = -1, anchorY = -1;
 	//高斯滤波

@@ -2,35 +2,26 @@
 #include "../include/Mat2QImage.h"
 #include <QString>
 
-Connected::Connected(QWidget* parent)
-{
-}
+Connected::Connected() :Object() {}
 
-Connected::Connected(const cv::Mat& mt, QWidget* parent)
-{
-	mt.copyTo(ori_mt);
-	ori_mt.copyTo(_mt);
-	_img = Mat2QImage(_mt);
-}
+Connected::Connected(const std::string& fileName)
+	:Object(fileName) {}
 
-Connected::~Connected()
-{
-}
+Connected::Connected(const cv::Mat& mt)
+	:Object(mt) {}
 
-void Connected::update(const cv::Mat& mt)
+Connected::~Connected() {}
+
+void Connected::initialize()
 {
-	mt.copyTo(ori_mt);
-	ori_mt.copyTo(_mt);
-	_img = Mat2QImage(_mt);
+	int current_choice = -1;
+	int connectivity = 8, ccltype = cv::CCL_DEFAULT;
 }
 
 void Connected::restore()
 {
-	//重做 / 初始化
-	ori_mt.copyTo(_mt);  //恢复原始图片
-	_img = Mat2QImage(_mt);
-
-	int connectivity = 8, ccltype = cv::CCL_DEFAULT;
+	Object::restore();
+	initialize();
 }
 
 
@@ -129,25 +120,25 @@ void Connected::onTriggered_Comb1_currentTextChanged_connectivtiy(const QString&
 void Connected::onTriggered_Comb2_currentTextChanged_ccltype(const QString& value)
 {
 	QString s = value;
-	if (s == tr("default")) {
+	if (s == "default") {
 		ccltype = cv::ConnectedComponentsAlgorithmsTypes::CCL_DEFAULT;
 	}
-	else if (s == tr("CC_WU")) {
+	else if (s == "CC_WU") {
 		ccltype = cv::ConnectedComponentsAlgorithmsTypes::CCL_WU;
 	}
-	else if (s == tr("CCL_GRANA")) {
+	else if (s == "CCL_GRANA") {
 		ccltype = cv::ConnectedComponentsAlgorithmsTypes::CCL_GRANA;
 	}
-	else if (s == tr("CCL_BOLELLI")) {
+	else if (s == "CCL_BOLELLI") {
 		ccltype = cv::ConnectedComponentsAlgorithmsTypes::CCL_BOLELLI;
 	}
-	else if (s == tr("CCL_SAUF")) {
+	else if (s == "CCL_SAUF") {
 		ccltype = cv::ConnectedComponentsAlgorithmsTypes::CCL_SAUF;
 	}
-	else if (s == tr("CCL_BBDT")) {
+	else if (s == "CCL_BBDT") {
 		ccltype = cv::ConnectedComponentsAlgorithmsTypes::CCL_BBDT;
 	}
-	else if (s == tr("CCL_SPAGHETTI")) {
+	else if (s == "CCL_SPAGHETTI") {
 		ccltype = cv::ConnectedComponentsAlgorithmsTypes::CCL_SPAGHETTI;
 	}
 

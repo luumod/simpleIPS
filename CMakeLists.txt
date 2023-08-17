@@ -32,9 +32,10 @@ add_executable(QtPro
     src/widget.cpp
     src/Blur.cpp
     src/Threshold.cpp
-    src/Form.cpp
+    src/Morphology.cpp
     src/main.cpp
     src/Connected.cpp
+    src/Object.cpp
 
     include/widget.h
     include/belongsToEnum.h 
@@ -42,12 +43,13 @@ add_executable(QtPro
     include/Mat2QImage.h
     include/Enums.h 
     include/Threshold.h 
-    include/Form.h 
-    include/Connected.h )
+    include/Morphology.h
+    include/Connected.h  
+    include/Object.h )
 
 add_executable(QtTest
     QtTest/test.cpp    
- "include/Connected.h" "src/Connected.cpp")
+)
 
 
 

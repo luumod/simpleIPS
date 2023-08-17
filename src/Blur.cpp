@@ -3,53 +3,18 @@
 #include <QDebug>
 #include <QLabel>
 
-Blur::Blur(QWidget* parent)
-	:ori_mt(),_mt(), _img(), QWidget(parent)
-{
-}
+Blur::Blur() {}
 
-Blur::Blur(const std::string& fileName, QWidget* parent)
-	:ori_mt(cv::imread(fileName)), _img(Mat2QImage(ori_mt)),QWidget(parent)
-{
-	ori_mt.copyTo(_mt);
-}
+Blur::Blur(const std::string& fileName)
+	:Object(fileName) {}
 
-Blur::Blur(const cv::Mat& mt, QWidget* parent)
-	:QWidget(parent)
-{
-	mt.copyTo(ori_mt);
-	ori_mt.copyTo(_mt);
-	_img = Mat2QImage(_mt);
-}
+Blur::Blur(const cv::Mat& mt)
+	:Object(mt) {}
 
-Blur::~Blur()
-{
-}
+Blur::~Blur() {}
 
-void Blur::savePoint()
+void Blur::initialize()
 {
-	//QUndoStack
-	_mt.copyTo(savePoint_mt);
-	
-}
-
-void Blur::returnPoint()
-{
-	savePoint_mt.copyTo(_mt);
-}
-
-void Blur::update(const cv::Mat& newMt)
-{
-	newMt.copyTo(ori_mt);
-	restore(); 
-}
-
-void Blur::restore()
-{
-	//重做 / 初始化
-	ori_mt.copyTo(_mt);  //恢复原始图片
-	_img = Mat2QImage(_mt);
-
 	//均值滤波
 	avg_Ksize = 1, anchorX = -1, anchorY = -1;
 	//高斯滤波
@@ -60,20 +25,22 @@ void Blur::restore()
 	bin_d = 5, sigmaColor = 10, sigmaSpace = 10;
 }
 
+void Blur::restore() {
+	Object::restore();
+	initialize();
+}
 
 QImage Blur::avg_blur()
 {
 	if (avg_Ksize <= 1) {
 		return _img;
 	}
-	//qInfo() << "均值滤波";
 
 	cv::Mat tMt;
 	cv::blur(_mt, tMt, cv::Size(avg_Ksize, avg_Ksize), cv::Point(anchorX, anchorY));
 	
 
 	if (mode) {
-		//创造模式
 		_mt = tMt;
 	}
 	_img = Mat2QImage(tMt);
@@ -83,9 +50,8 @@ QImage Blur::avg_blur()
 QImage Blur::Gaussian_blur()
 {
 	if (gas_Ksize <= 1) {
-		return _img;//return Mat2QImage(tMt);
+		return _img;
 	}
-	//qInfo() << "高斯滤波";
 	cv::Mat tMt;
 
 	cv::GaussianBlur(_mt, tMt, cv::Size(gas_Ksize, gas_Ksize), sigmaX, sigmaY);
@@ -99,8 +65,6 @@ QImage Blur::Gaussian_blur()
 
 QImage Blur::median_blur()
 {
-	//qInfo() << "中值滤波";
-
 	cv::Mat tMt{};
 	cv::medianBlur(_mt, tMt, median_Ksize);
 	if (mode) {
@@ -115,7 +79,6 @@ QImage Blur::bilateral_blur()
 	if (_mt.type() != CV_8UC1 && _mt.type() != CV_8UC3) {
 		return QImage(_img = Mat2QImage(_mt));
 	}
-	//qInfo() << "双边滤波";
 
 	cv::Mat tMt;
 

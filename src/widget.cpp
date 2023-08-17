@@ -3,7 +3,7 @@
 #include "../include/Mat2QImage.h"
 #include "../include/Blur.h"
 #include "../include/Threshold.h"
-#include "../include/Form.h"
+#include "../include/Morphology.h"
 #include "../include/Connected.h"
 #include <QDebug>
 #include <QBoxLayout>
@@ -102,26 +102,20 @@ Widget::Widget(QWidget* parent)
 Widget::~Widget()
 {
 	//内存释放
-	delete blur;
-	blur = nullptr;
-	
-	delete threshold;
-	threshold = nullptr;
-	
-	delete morphology;
-	morphology = nullptr;
-
-	delete connected;
-	connected = nullptr;
+	for (auto& x : ls) {
+		delete x;
+		x = nullptr;
+	}
 }
 
 void Widget::initFunction()
 {
 	//初始化
-	blur = new Blur(ori_mt); 
-	threshold = new Threshold(ori_mt);
-	morphology = new Form(ori_mt);
-	connected = new Connected(ori_mt);
+	ls.push_back(blur = new Blur(ori_mt));
+	ls.push_back(threshold = new Threshold(ori_mt));
+	ls.push_back(morphology = new Morphology(ori_mt));
+	ls.push_back(connected = new Connected(ori_mt));
+
 }
 
 void Widget::onClicked_buttonGroup_blur(QAbstractButton* btn) 
@@ -132,7 +126,7 @@ void Widget::onClicked_buttonGroup_blur(QAbstractButton* btn)
 
 	}
 	else {
-		onTriggered_action_blur_restore();
+		restore_cutOperation(blur);
 	}
 
 	stack_tools->setVisible(true);
@@ -166,8 +160,7 @@ void Widget::onClicked_buttonGroup_threshold(QAbstractButton* btn)
 	//选择当前阈值模式
 	threshold->current_choice = type;
 
-
-	onTriggered_action_threshold_restore();
+	restore_cutOperation(threshold);
 
 	stack_tools->setVisible(true);
 	stack_tools->setCurrentIndex(4);
@@ -184,7 +177,7 @@ void Widget::onClicked_buttonGroup_threshold(QAbstractButton* btn)
 	}
 }
 
-void Widget::onClicked_buttonGroup_form(QAbstractButton* btn)
+void Widget::onClicked_buttonGroup_morphology(QAbstractButton* btn)
 {
 	morphology->savePoint();
 
@@ -195,7 +188,7 @@ void Widget::onClicked_buttonGroup_form(QAbstractButton* btn)
 
 	}
 	else {
-		onTriggered_action_morphology_restore();
+		restore_cutOperation(morphology);
 	}
 	int type = cv::MorphTypes(id - FORM::Erode);
 	if (type == cv::MorphTypes::MORPH_HITMISS) {
@@ -216,7 +209,7 @@ void Widget::onClicked_buttonGroup_form(QAbstractButton* btn)
 		}
 		else {
 			m_btn->setChecked(false);
-			setIndexPageSliderValue();
+			setIndexPageWidgetValue();
 			m_btn->setStyleSheet("background-color:blue");
 		}
 	}
@@ -227,12 +220,7 @@ void Widget::onClicked_buttonGroup_connected(QAbstractButton* btn)
 	int id = btngroup_connected->id(btn);
 	connected->current_choice = id - CONNECTED::TYPE1; // 0 1
 
-	if (mode) {
-
-	}
-	else {
-		onTriggered_action_connected_restore();
-	}
+	restore_cutOperation(connected);
 
 	stack_tools->setVisible(true);
 	stack_tools->setCurrentIndex(6);
@@ -249,11 +237,11 @@ void Widget::onClicked_buttonGroup_connected(QAbstractButton* btn)
 	}
 }
 
-void Widget::onClicked_action_openFile()
+void Widget::onTriggered_action_openFile()
 {
 	QString fileName = QFileDialog::getOpenFileName(nullptr, "选择文件", ".",	"图像文件(*.png *.jpg)");
 	if (!fileName.isEmpty()) {
-		qDebug() << "选择的文件名：" << fileName;
+		//qDebug() << "选择的文件名：" << fileName;
 		ori_mt = cv::imread(fileName.toLocal8Bit().data());
 		ori_mt.copyTo(temp_mt);
 		//存图片
@@ -263,11 +251,10 @@ void Widget::onClicked_action_openFile()
 
 
 		//更新
-		blur->update(ori_mt);
-		threshold->update(ori_mt);
-		morphology->update(ori_mt);
-		connected->update(ori_mt);
-		clearAllSliderValue();
+		for (auto& x : ls) {
+			x->update(ori_mt);
+		}
+		clearAllWidgetValue();
 	}
 	else {
 		QMessageBox::warning(nullptr, tr("警告"), "图片文件打开失败!");
@@ -286,63 +273,33 @@ void Widget::onTriggered_action_saveFile()
 void Widget::onTriggered_action_allRestore()
 {
 	//清除所有的数据信息
-	blur->restore();
-	threshold->restore();
-	morphology->restore();
-	connected->restore();
-
-	clearAllSliderValue();
-
-	lab_img->setPixmap(QPixmap::fromImage(ori_img));
-}
-
-void Widget::onTriggered_action_blur_restore()
-{
-	/*
-	在模糊操作选择的时候，如果更换了新的选择，则需要清除所有的修改，重新载入一张原图
-	*/
-	blur->restore();	
-	for (int i = 0; i < 4; i++) {
-		setIndexPageSliderValue(i); //滑块置零
+	for (auto& x : ls) {
+		x->restore();
 	}
+
+	clearAllWidgetValue();
+
 	lab_img->setPixmap(QPixmap::fromImage(ori_img));
 }
 
-void Widget::onTriggered_action_threshold_restore() {
-	/*
-	在阈值操作选择的时候，如果更换了新的选择，则需要清除所有的修改，重新载入一张原图
-	*/
-	threshold->restore();
-	setIndexPageSliderValue(4);
-	lab_img->setPixmap(QPixmap::fromImage(ori_img));
-}
-
-void Widget::onTriggered_action_morphology_restore()
+void Widget::restore_cutOperation(Object* operation)
 {
-	morphology->restore();
-	setIndexPageSliderValue(5);
-	lab_img->setPixmap(QPixmap::fromImage(ori_img));
-}
-
-void Widget::onTriggered_action_connected_restore()
-{
-	/*
-	当切换不同的操作的时候，恢复原图重新操作
-	*/
-	connected->restore();
-	setIndexPageSliderValue(6);
+	operation->restore();
+	clearAllWidgetValue();
 	lab_img->setPixmap(QPixmap::fromImage(ori_img));
 }
 
 void Widget::onTriggered_action_process(){
 	//点击此开始创作模式
 	//图片清除，重新开始，所有滑块归零
-	clearAllSliderValue();
+	clearAllWidgetValue();
 
+
+	for (auto& x : ls) {
+		x->mode = true;
+	}
 	mode = true;
-	blur->mode = true;
-	threshold->mode = true;
-	morphology->mode = true;
+
 	lab_img->setPixmap(QPixmap::fromImage(ori_img));
 
 	if (mode) {
@@ -370,7 +327,7 @@ void Widget::onTriggered_action_undo()
 			lab_img->setPixmap(QPixmap::fromImage(Mat2QImage(morphology->_mt)));
 		}
 		//清除滑块的值
-		setIndexPageSliderValue();
+		setIndexPageWidgetValue();
 	}
 	else {
 		onTriggered_action_allRestore();
@@ -378,7 +335,7 @@ void Widget::onTriggered_action_undo()
 	
 }
 
-void Widget::setIndexPageSliderValue(int index)
+void Widget::setIndexPageWidgetValue(int index)
 {
 	/*
 	获取所有的指定的QSlider 控件并且清除值
@@ -410,11 +367,11 @@ void Widget::setIndexPageSliderValue(int index)
 	}
 }
 
-void Widget::clearAllSliderValue()
+void Widget::clearAllWidgetValue()
 {
 	//清除所有的滑块的值
 	for (int i = 0; i < stack_tools->count(); i++) {
-		setIndexPageSliderValue(i);
+		setIndexPageWidgetValue(i);
 	}
 }
 
@@ -433,7 +390,7 @@ void Widget::createAction()
 	action_open = new QAction(tr("打开文件"), this);
 	action_open->setStatusTip(tr("选择并且打开一个图片"));
 	action_open->setShortcut(tr("Ctrl+O"));
-	connect(action_open, &QAction::triggered, this,&Widget::onClicked_action_openFile);
+	connect(action_open, &QAction::triggered, this,&Widget::onTriggered_action_openFile);
 
 	//保存图片
 	action_save = new QAction(tr("保存图片"), this);
@@ -536,7 +493,7 @@ void Widget::createToolBox()
 	btngroup_form = new QButtonGroup(this);
 	btngroup_form->setExclusive(true);
 	//连接信号
-	connect(btngroup_form, &QButtonGroup::buttonClicked, this, &Widget::onClicked_buttonGroup_form);
+	connect(btngroup_form, &QButtonGroup::buttonClicked, this, &Widget::onClicked_buttonGroup_morphology);
 
 	QGridLayout* grid_form = new QGridLayout;
 	grid_form->addWidget(createToolBtnItemWidget("膨胀", FORM::Erode), 0, 0);
@@ -608,15 +565,9 @@ void Widget::createToolBox()
 				//blur
 				temp_mt.copyTo(blur->_mt);
 			}
-			//else if (value == 1) {
-			//	temp_mt.copyTo(threshold->_mt);
-			//}
 			else if (value == 2) {
 				temp_mt.copyTo(morphology->_mt);
 			}
-			//else if (value == 3) {
-			//	temp_mt.copyTo(connected->_mt);
-			//}
 		}
 	});
 }
@@ -671,7 +622,7 @@ QWidget* Widget::create_GUIAvgBlur() //1：均值 2：高斯
 	QHBoxLayout* hlayout1 = new QHBoxLayout;
 	hlayout1->addWidget(new QLabel("kernel"));
 	hlayout1->addWidget(slider1);
-	connect(slider1, &QSlider::sliderMoved, blur, [=](int value) {
+	connect(slider1, &QSlider::sliderMoved, this, [=](int value) {
 		if (slider2->value() == slider2->minimum() && slider3->value() == slider3->minimum()) {
 			blur->anchorX = blur->anchorY = blur->avg_Ksize / 2;
 		}
@@ -690,7 +641,7 @@ QWidget* Widget::create_GUIAvgBlur() //1：均值 2：高斯
 	hlayout2->addWidget(new QLabel("sigmaX"));
 	hlayout2->addWidget(slider2);
 	//X偏移连接信号
-	connect(slider2, &QSlider::sliderMoved, blur, [=](int value) {
+	connect(slider2, &QSlider::sliderMoved, this, [=](int value) {
 		blur->onTriggered_slider2_valueChange_avgBlur(value);
 		lab_img->setPixmap(QPixmap::fromImage(blur->_img));
 		});
@@ -704,7 +655,7 @@ QWidget* Widget::create_GUIAvgBlur() //1：均值 2：高斯
 	hlayout3->addWidget(new QLabel("sigmaY"));
 	hlayout3->addWidget(slider3);
 	//Y偏移连接信号
-	connect(slider3, &QSlider::sliderMoved, blur, [=](int value) {
+	connect(slider3, &QSlider::sliderMoved, this, [=](int value) {
 		blur->onTriggered_slider3_valueChange_avgBlur(value);
 		lab_img->setPixmap(QPixmap::fromImage(blur->_img));
 		});
@@ -749,7 +700,7 @@ QWidget* Widget::create_GUIGaussianBlur()
 	QHBoxLayout* hlayout1 = new QHBoxLayout;
 	hlayout1->addWidget(new QLabel("ksize"));
 	hlayout1->addWidget(slider1);
-	connect(slider1, &QSlider::sliderMoved, blur, [=](int value) {
+	connect(slider1, &QSlider::sliderMoved, this, [=](int value) {
 
 		if (value % 2 == 0) {
 			value += 1;
@@ -771,7 +722,7 @@ QWidget* Widget::create_GUIGaussianBlur()
 	hlayout2->addWidget(new QLabel("sigmaX"));
 	hlayout2->addWidget(slider2);
 	//X偏移连接信号
-	connect(slider2, &QSlider::sliderMoved, blur, [=](int value) {
+	connect(slider2, &QSlider::sliderMoved, this, [=](int value) {
 		blur->onTriggered_slider2_valueChange_gaussianBlur(value);
 		lab_img->setPixmap(QPixmap::fromImage(blur->_img));
 		});
@@ -785,7 +736,7 @@ QWidget* Widget::create_GUIGaussianBlur()
 	hlayout3->addWidget(new QLabel("sigmaY"));
 	hlayout3->addWidget(slider3);
 	//Y偏移连接信号
-	connect(slider3, &QSlider::sliderMoved, blur, [=](int value) {
+	connect(slider3, &QSlider::sliderMoved, this, [=](int value) {
 		blur->onTriggered_slider3_valueChange_gaussianBlur(value);
 	lab_img->setPixmap(QPixmap::fromImage(blur->_img));
 		});
@@ -814,7 +765,7 @@ QWidget* Widget::create_GUIMedianBlur()
 	slider->setRange(1, 41);
 	slider->setSingleStep(2);
 
-	connect(slider, &QSlider::sliderMoved, blur, [=](int value) {
+	connect(slider, &QSlider::sliderMoved, this, [=](int value) {
 		if (value % 2 == 0) {
 			value += 1;
 		}
@@ -852,7 +803,7 @@ QWidget* Widget::create_GUIBilateralBlur()
 	QHBoxLayout* hlayout1 = new QHBoxLayout;
 	hlayout1->addWidget(new QLabel("ksize"));
 	hlayout1->addWidget(slider1);
-	connect(slider1, &QSlider::sliderMoved, blur, [=](int value) {
+	connect(slider1, &QSlider::sliderMoved, this, [=](int value) {
 		blur->onTriggered_slider1_valueChange_bilateralBlur(value);
 		lab_img->setPixmap(QPixmap::fromImage(blur->_img));
 	});
@@ -867,7 +818,7 @@ QWidget* Widget::create_GUIBilateralBlur()
 	hlayout2->addWidget(new QLabel("sigmaX"));
 	hlayout2->addWidget(slider2);
 	//X偏移连接信号
-	connect(slider2, &QSlider::sliderMoved, blur, [=](int value) {
+	connect(slider2, &QSlider::sliderMoved, this, [=](int value) {
 		blur->onTriggered_slider2_valueChange_bilateralBlur(value);
 		lab_img->setPixmap(QPixmap::fromImage(blur->_img));
 		});
@@ -881,7 +832,7 @@ QWidget* Widget::create_GUIBilateralBlur()
 	hlayout3->addWidget(new QLabel("sigmaY"));
 	hlayout3->addWidget(slider3);
 	//Y偏移连接信号
-	connect(slider3, &QSlider::sliderMoved, blur, [=](int value) {
+	connect(slider3, &QSlider::sliderMoved, this, [=](int value) {
 		blur->onTriggered_slider3_valueChange_bilateralBlur(value);
 		lab_img->setPixmap(QPixmap::fromImage(blur->_img));
 		});
@@ -921,7 +872,7 @@ QWidget* Widget::create_GUIThreshoild()
 	QHBoxLayout* hlayout1 = new QHBoxLayout;
 	hlayout1->addWidget(new QLabel("threshold"));
 	hlayout1->addWidget(slider1);
-	connect(slider1, &QSlider::sliderMoved, threshold, [=](int value) {
+	connect(slider1, &QSlider::sliderMoved, this, [=](int value) {
 		threshold->onTriggered_slider1_valueChanged_thresholdValue(value);
 		lab_img->setPixmap(QPixmap::fromImage(threshold->_img));
 		});
@@ -936,7 +887,7 @@ QWidget* Widget::create_GUIThreshoild()
 	hlayout2->addWidget(new QLabel("maxval"));
 	hlayout2->addWidget(slider2);
 	//X偏移连接信号
-	connect(slider2, &QSlider::sliderMoved, threshold, [=](int value) {
+	connect(slider2, &QSlider::sliderMoved, this, [=](int value) {
 		threshold->onTriggered_slider2_valueChanged_maxValue(value);
 		lab_img->setPixmap(QPixmap::fromImage(threshold->_img));		
 		});
@@ -964,22 +915,22 @@ QWidget* Widget::create_GUIMorphology()
 {
 	//Kernel
 	QSlider* slider1 = new QSlider(Qt::Horizontal);
-	slider1->setRange(1, 100);
+	slider1->setRange(1, 50);
 	slider1->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 	//anthorX
 	QSlider* slider2 = new QSlider(Qt::Horizontal);
-	slider2->setRange(1,  50);
+	slider2->setRange(1,  20);
 	slider2->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 	//anthorY
 	QSlider* slider3 = new QSlider(Qt::Horizontal);
-	slider3->setRange(1,  50);
+	slider3->setRange(1,  20);
 	slider3->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
 	//水平布局管理两个控件：label和滑块
 	QHBoxLayout* hlayout1 = new QHBoxLayout;
 	hlayout1->addWidget(new QLabel("Kernel"));
 	hlayout1->addWidget(slider1);
-	connect(slider1, &QSlider::sliderMoved, morphology, [=](int value) {
+	connect(slider1, &QSlider::sliderMoved, this, [=](int value) {
 		morphology->onTriggered_slider1_valueChanged_kernel(value);
 		lab_img->setPixmap(QPixmap::fromImage(morphology->_img));
 		});
@@ -994,7 +945,7 @@ QWidget* Widget::create_GUIMorphology()
 	hlayout2->addWidget(new QLabel("anchorX"));
 	hlayout2->addWidget(slider2);
 	//X偏移连接信号
-	connect(slider2, &QSlider::sliderMoved, morphology, [=](int value) {
+	connect(slider2, &QSlider::sliderMoved, this, [=](int value) {
 		morphology->onTriggered_slider2_valueChanged_anchorX(value);
 
 		lab_img->setPixmap(QPixmap::fromImage(morphology->_img));
@@ -1009,7 +960,7 @@ QWidget* Widget::create_GUIMorphology()
 	hlayout3->addWidget(new QLabel("anchorY"));
 	hlayout3->addWidget(slider3);
 	//Y偏移连接信号
-	connect(slider3, &QSlider::sliderMoved, morphology, [=](int value) {
+	connect(slider3, &QSlider::sliderMoved, this, [=](int value) {
 		morphology->onTriggered_slider3_valueChanged_anchorY(value);
 		lab_img->setPixmap(QPixmap::fromImage(morphology->_img));
 		});

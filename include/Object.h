@@ -19,10 +19,12 @@ public:
 	virtual void initialize() = 0;
 	virtual void restore() = 0;
 
-	cv::Mat ori_mt;
-	cv::Mat	_mt;
+	cv::Mat ori_mt; //原始图片
 	cv::Mat savePoint_mt;
+
+	cv::Mat	_mt;	//
 	QImage _img;
+
 	bool mode = false; //创作 or 测试
 };
 

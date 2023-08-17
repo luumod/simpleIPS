@@ -37,13 +37,14 @@ QImage Blur::avg_blur()
 	}
 
 	cv::Mat tMt;
+	//对预览图操作
 	cv::blur(_mt, tMt, cv::Size(avg_Ksize, avg_Ksize), cv::Point(anchorX, anchorY));
 	
 
 	if (mode) {
 		_mt = tMt;
 	}
-	_img = Mat2QImage(tMt);
+	_img = Mat2QImage(tMt); //200*200
 	return _img;
 }
 

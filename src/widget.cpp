@@ -63,6 +63,12 @@ Widget::Widget(QWidget* parent)
 	lab_img->setScaledContents(true);
 	lab_img->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
+	sub_lab_img = new QLabel(lab_img); //子图片依附
+	sub_lab_img->setPixmap(QPixmap("../resource/dog.png").scaled(200, 200));
+	sub_lab_img->move(0,0);
+	sub_lab_img->raise();
+	sub_lab_img->setHidden(true); //隐藏
+
 	//右侧布局添加图片与调整栏
 	vlayout_right = new QVBoxLayout;
 	vlayout_right->addWidget(lab_img,4);
@@ -123,7 +129,9 @@ void Widget::onClicked_buttonGroup_blur(QAbstractButton* btn)
 	blur->savePoint();
 
 	if (mode) {
-
+		if (sub_lab_img->isHidden()) {
+			sub_lab_img->setHidden(false);
+		}
 	}
 	else {
 		restore_cutOperation(blur);
@@ -160,7 +168,15 @@ void Widget::onClicked_buttonGroup_threshold(QAbstractButton* btn)
 	//选择当前阈值模式
 	threshold->current_choice = type;
 
-	restore_cutOperation(threshold);
+	if (mode) {
+		if (sub_lab_img->isHidden()) {
+			sub_lab_img->setHidden(false);
+		}
+	}
+	else {
+		restore_cutOperation(threshold);
+	}
+
 
 	stack_tools->setVisible(true);
 	stack_tools->setCurrentIndex(4);
@@ -185,7 +201,9 @@ void Widget::onClicked_buttonGroup_morphology(QAbstractButton* btn)
 	now = id;  //获取当前位置
 
 	if (mode) {
-
+		if (sub_lab_img->isHidden()) {
+			sub_lab_img->setHidden(false);
+		}
 	}
 	else {
 		restore_cutOperation(morphology);
@@ -217,10 +235,23 @@ void Widget::onClicked_buttonGroup_morphology(QAbstractButton* btn)
 
 void Widget::onClicked_buttonGroup_connected(QAbstractButton* btn)
 {
+	connected->savePoint();
+
 	int id = btngroup_connected->id(btn);
+
+	now = id;  //获取当前位置
+
 	connected->current_choice = id - CONNECTED::TYPE1; // 0 1
 
-	restore_cutOperation(connected);
+
+	if (mode) {
+		if (sub_lab_img->isHidden()) {
+			sub_lab_img->setHidden(false);
+		}
+	}
+	else {
+		restore_cutOperation(connected);
+	}
 
 	stack_tools->setVisible(true);
 	stack_tools->setCurrentIndex(6);
@@ -282,6 +313,30 @@ void Widget::onTriggered_action_allRestore()
 	lab_img->setPixmap(QPixmap::fromImage(ori_img));
 }
 
+void Widget::onTriggered_action_previewToNormal()
+{
+	//预览图点击确定转换为正常图 lan_img
+	if (mode) {
+		//点击确定，预览图片消失
+		sub_lab_img->setHidden(true);
+
+		if (belongsToEnum<BLUR>(now)) {
+			lab_img->setPixmap(QPixmap::fromImage(blur->_img));
+		}
+		else if (belongsToEnum<THRESHOLD>(now)) {
+			lab_img->setPixmap(QPixmap::fromImage(threshold->_img));
+		}
+		else if (belongsToEnum<FORM>(now)) {
+			lab_img->setPixmap(QPixmap::fromImage(morphology->_img));
+		}
+		else if (belongsToEnum<CONNECTED>(now)) {
+			lab_img->setPixmap(QPixmap::fromImage(connected->_img));
+		}
+	}
+	
+	
+}
+
 void Widget::restore_cutOperation(Object* operation)
 {
 	operation->restore();
@@ -289,11 +344,24 @@ void Widget::restore_cutOperation(Object* operation)
 	lab_img->setPixmap(QPixmap::fromImage(ori_img));
 }
 
+void Widget::setPixmap_differentOpera(Object* operation)
+{
+	if (mode) {
+		//预览图更新，自己点击按钮来确定切换
+		sub_lab_img->setPixmap(QPixmap::fromImage(operation->_img.scaled(200, 200)));
+	}
+	else {
+		lab_img->setPixmap(QPixmap::fromImage(operation->_img));
+	}
+}
+
 void Widget::onTriggered_action_process(){
 	//点击此开始创作模式
 	//图片清除，重新开始，所有滑块归零
 	clearAllWidgetValue();
 
+	//开启预览
+	sub_lab_img->setHidden(false);
 
 	for (auto& x : ls) {
 		x->mode = true;
@@ -301,16 +369,6 @@ void Widget::onTriggered_action_process(){
 	mode = true;
 
 	lab_img->setPixmap(QPixmap::fromImage(ori_img));
-
-	if (mode) {
-		toolbox_side->setCurrentIndex(0);
-		stack_tools->setCurrentIndex(0);
-
-		//阈值化操作对图片的影响过大，在混合加工模式下禁止使用
-		toolbox_side->setItemEnabled(1, false);
-		//连通性分析也无法使用
-		toolbox_side->setItemEnabled(3, false);
-	}
 }
 
 void Widget::onTriggered_action_undo()
@@ -318,13 +376,26 @@ void Widget::onTriggered_action_undo()
 	//仅仅在创作者模式下生效：触发时会将图片置回到未操作前的位置
 
 	if (mode) {
+
 		if (belongsToEnum<BLUR>(now)) {
 			blur->returnPoint();
-			lab_img->setPixmap(QPixmap::fromImage(Mat2QImage(blur->_mt)));
+			sub_lab_img->setPixmap(QPixmap::fromImage(blur->_img.scaled(200,200)));
+			lab_img->setPixmap(QPixmap::fromImage(blur->_img));
+		}
+		if (belongsToEnum<THRESHOLD>(now)) {
+			threshold->returnPoint();
+			sub_lab_img->setPixmap(QPixmap::fromImage(threshold->_img.scaled(200, 200)));
+			lab_img->setPixmap(QPixmap::fromImage(threshold->_img));
 		}
 		else if (belongsToEnum<FORM>(now)) {
 			morphology->returnPoint();
+			sub_lab_img->setPixmap(QPixmap::fromImage(morphology->_img.scaled(200, 200)));
 			lab_img->setPixmap(QPixmap::fromImage(Mat2QImage(morphology->_mt)));
+		}
+		else if (belongsToEnum<CONNECTED>(now)) {
+			connected->returnPoint();
+			sub_lab_img->setPixmap(QPixmap::fromImage(connected->_img.scaled(200, 200)));
+			lab_img->setPixmap(QPixmap::fromImage(Mat2QImage(connected->_mt)));
 		}
 		//清除滑块的值
 		setIndexPageWidgetValue();
@@ -416,6 +487,11 @@ void Widget::createAction()
 	action_return->setStatusTip(tr("撤销此操作"));
 	action_return->setIcon(QIcon("../resource/return.png"));
 	connect(action_return, &QAction::triggered, this, &Widget::onTriggered_action_undo);
+
+	action_preview = new QAction(tr("确定"),this);
+	action_preview->setIcon(QIcon("../resource/previewOk.png"));
+	action_preview->setStatusTip(tr("确定操作"));
+	connect(action_preview, &QAction::triggered, this, &Widget::onTriggered_action_previewToNormal);
 }
 
 void Widget::createMenu()
@@ -444,6 +520,7 @@ void Widget::createToolBar()
 	toolbar1->addAction(action_begin);
 	toolbar1->addAction(action_restore);
 	toolbar1->addAction(action_return);
+	toolbar1->addAction(action_preview);
 }
 
 
@@ -527,8 +604,6 @@ void Widget::createToolBox()
 	QWidget* widget_connected = new QWidget;
 	widget_connected->setLayout(gird_connected);
 
-
-
 	//创建ToolBox
 	toolbox_side = new QToolBox(this);
 	toolbox_side->setMinimumWidth(200);
@@ -562,11 +637,16 @@ void Widget::createToolBox()
 
 		if (mode) {
 			if (value == 0) {
-				//blur
 				temp_mt.copyTo(blur->_mt);
+			}
+			else if (value == 1) {
+				temp_mt.copyTo(threshold->_mt);
 			}
 			else if (value == 2) {
 				temp_mt.copyTo(morphology->_mt);
+			}
+			else if (value == 3) {
+				temp_mt.copyTo(connected->_mt);
 			}
 		}
 	});
@@ -626,9 +706,8 @@ QWidget* Widget::create_GUIAvgBlur() //1：均值 2：高斯
 		if (slider2->value() == slider2->minimum() && slider3->value() == slider3->minimum()) {
 			blur->anchorX = blur->anchorY = blur->avg_Ksize / 2;
 		}
-	//qInfo() << value;
 		blur->onTriggered_slider1_valueChange_avgBlur(value);
-		lab_img->setPixmap(QPixmap::fromImage(blur->_img));
+		setPixmap_differentOpera(blur);
 	});
 
 	//将每一个水平布局放到一个窗口中，便于进行隐藏
@@ -643,7 +722,7 @@ QWidget* Widget::create_GUIAvgBlur() //1：均值 2：高斯
 	//X偏移连接信号
 	connect(slider2, &QSlider::sliderMoved, this, [=](int value) {
 		blur->onTriggered_slider2_valueChange_avgBlur(value);
-		lab_img->setPixmap(QPixmap::fromImage(blur->_img));
+		setPixmap_differentOpera(blur);
 		});
 
 	QWidget* adj_avgBlur_s2 = new QWidget;
@@ -657,16 +736,11 @@ QWidget* Widget::create_GUIAvgBlur() //1：均值 2：高斯
 	//Y偏移连接信号
 	connect(slider3, &QSlider::sliderMoved, this, [=](int value) {
 		blur->onTriggered_slider3_valueChange_avgBlur(value);
-		lab_img->setPixmap(QPixmap::fromImage(blur->_img));
+		setPixmap_differentOpera(blur);
 		});
 
 	QWidget* adj_avgBlur_s3 = new QWidget;
 	adj_avgBlur_s3->setLayout(hlayout3);
-
-	//QPushButton* btn1 = new QPushButton("撤销");
-	//btn1->addAction(action_return);
-	//connect(btn1, &QPushButton::clicked, action_return, &QAction::triggered);
-	
 
 	//将三个QWidget添加到一个垂直布局
 	QVBoxLayout* vLayout = new QVBoxLayout;
@@ -709,7 +783,7 @@ QWidget* Widget::create_GUIGaussianBlur()
 			blur->sigmaX = blur->sigmaY = blur->gas_Ksize / 2;
 		}
 	blur->onTriggered_slider1_valueChange_gaussianBlur(value);
-	lab_img->setPixmap(QPixmap::fromImage(blur->_img));
+	setPixmap_differentOpera(blur);
 		});
 
 	//将每一个水平布局放到一个窗口中，便于进行隐藏
@@ -724,7 +798,7 @@ QWidget* Widget::create_GUIGaussianBlur()
 	//X偏移连接信号
 	connect(slider2, &QSlider::sliderMoved, this, [=](int value) {
 		blur->onTriggered_slider2_valueChange_gaussianBlur(value);
-		lab_img->setPixmap(QPixmap::fromImage(blur->_img));
+	setPixmap_differentOpera(blur);
 		});
 
 	QWidget* adj_gasBlur_s2 = new QWidget;
@@ -738,7 +812,7 @@ QWidget* Widget::create_GUIGaussianBlur()
 	//Y偏移连接信号
 	connect(slider3, &QSlider::sliderMoved, this, [=](int value) {
 		blur->onTriggered_slider3_valueChange_gaussianBlur(value);
-	lab_img->setPixmap(QPixmap::fromImage(blur->_img));
+	setPixmap_differentOpera(blur);
 		});
 
 	QWidget* adj_gasBlur_s3 = new QWidget;
@@ -770,7 +844,7 @@ QWidget* Widget::create_GUIMedianBlur()
 			value += 1;
 		}
 		blur->onTriggered_slider_valueChange_medianBlur(value);
-		lab_img->setPixmap(QPixmap::fromImage(blur->_img));
+		setPixmap_differentOpera(blur);
 	});
 
 
@@ -805,7 +879,7 @@ QWidget* Widget::create_GUIBilateralBlur()
 	hlayout1->addWidget(slider1);
 	connect(slider1, &QSlider::sliderMoved, this, [=](int value) {
 		blur->onTriggered_slider1_valueChange_bilateralBlur(value);
-		lab_img->setPixmap(QPixmap::fromImage(blur->_img));
+	setPixmap_differentOpera(blur);
 	});
 
 	//将每一个水平布局放到一个窗口中，便于进行隐藏
@@ -820,7 +894,7 @@ QWidget* Widget::create_GUIBilateralBlur()
 	//X偏移连接信号
 	connect(slider2, &QSlider::sliderMoved, this, [=](int value) {
 		blur->onTriggered_slider2_valueChange_bilateralBlur(value);
-		lab_img->setPixmap(QPixmap::fromImage(blur->_img));
+	setPixmap_differentOpera(blur);
 		});
 
 	QWidget* adj_binBlur_s2 = new QWidget;
@@ -834,7 +908,7 @@ QWidget* Widget::create_GUIBilateralBlur()
 	//Y偏移连接信号
 	connect(slider3, &QSlider::sliderMoved, this, [=](int value) {
 		blur->onTriggered_slider3_valueChange_bilateralBlur(value);
-		lab_img->setPixmap(QPixmap::fromImage(blur->_img));
+	setPixmap_differentOpera(blur);
 		});
 
 	QWidget* adj_binBlur_s3 = new QWidget;
@@ -874,7 +948,7 @@ QWidget* Widget::create_GUIThreshoild()
 	hlayout1->addWidget(slider1);
 	connect(slider1, &QSlider::sliderMoved, this, [=](int value) {
 		threshold->onTriggered_slider1_valueChanged_thresholdValue(value);
-		lab_img->setPixmap(QPixmap::fromImage(threshold->_img));
+		setPixmap_differentOpera(threshold);
 		});
 
 	//将每一个水平布局放到一个窗口中，便于进行隐藏
@@ -889,7 +963,7 @@ QWidget* Widget::create_GUIThreshoild()
 	//X偏移连接信号
 	connect(slider2, &QSlider::sliderMoved, this, [=](int value) {
 		threshold->onTriggered_slider2_valueChanged_maxValue(value);
-		lab_img->setPixmap(QPixmap::fromImage(threshold->_img));		
+		setPixmap_differentOpera(threshold);
 		});
 
 	QWidget* adj_binBlur_s2 = new QWidget;
@@ -932,7 +1006,7 @@ QWidget* Widget::create_GUIMorphology()
 	hlayout1->addWidget(slider1);
 	connect(slider1, &QSlider::sliderMoved, this, [=](int value) {
 		morphology->onTriggered_slider1_valueChanged_kernel(value);
-		lab_img->setPixmap(QPixmap::fromImage(morphology->_img));
+	setPixmap_differentOpera(morphology);
 		});
 
 	//将每一个水平布局放到一个窗口中，便于进行隐藏
@@ -948,7 +1022,7 @@ QWidget* Widget::create_GUIMorphology()
 	connect(slider2, &QSlider::sliderMoved, this, [=](int value) {
 		morphology->onTriggered_slider2_valueChanged_anchorX(value);
 
-		lab_img->setPixmap(QPixmap::fromImage(morphology->_img));
+	setPixmap_differentOpera(morphology);
 		});
 
 	QWidget* adj_binBlur_s2 = new QWidget;
@@ -962,7 +1036,7 @@ QWidget* Widget::create_GUIMorphology()
 	//Y偏移连接信号
 	connect(slider3, &QSlider::sliderMoved, this, [=](int value) {
 		morphology->onTriggered_slider3_valueChanged_anchorY(value);
-		lab_img->setPixmap(QPixmap::fromImage(morphology->_img));
+	setPixmap_differentOpera(morphology);
 		});
 
 	QWidget* adj_binBlur_s3 = new QWidget;
@@ -991,10 +1065,10 @@ QWidget* Widget::create_GUIConnected()
 	comb1->addItem(tr("8"));
 	comb1->addItem(tr("4"));
 	comb1->setEditable(false);
+	//撤销的时候会触发一次currentTextChanged
 	connect(comb1, &QComboBox::currentTextChanged, this, [=](const QString& text) {
 		connected->onTriggered_Comb1_currentTextChanged_connectivtiy(text);
-		lab_img->setPixmap(QPixmap::fromImage(connected->_img));
-		
+	setPixmap_differentOpera(connected);
 	});
 	QComboBox* comb2 = new QComboBox;  //选择算法
 	comb2->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
@@ -1009,7 +1083,7 @@ QWidget* Widget::create_GUIConnected()
 	comb2->setEditable(false);
 	connect(comb2, &QComboBox::currentTextChanged, this, [=](const QString& text) {
 		connected->onTriggered_Comb2_currentTextChanged_ccltype(text);
-		lab_img->setPixmap(QPixmap::fromImage(connected->_img));
+	setPixmap_differentOpera(connected);
 	});
 
 	QHBoxLayout* hlayout1 = new QHBoxLayout;

@@ -3,8 +3,6 @@
 
 #include <QImage>
 #include <opencv2/opencv.hpp>
-#include <QLabel>
-#include <QDebug>
 
 inline QImage Mat2QImage(const cv::Mat& mat)
 {
@@ -20,7 +18,6 @@ inline QImage Mat2QImage(const cv::Mat& mat)
     //返回结果
     QImage image(rgbMat.cols, rgbMat.rows, QImage::Format_RGB888);
 
-    // Copy the data from the OpenCV matrix to the QImage
     uchar* imagePtr = image.bits();
     int imageBytesPerLine = image.bytesPerLine();
     const uchar* matPtr = rgbMat.data;
@@ -34,6 +31,8 @@ inline QImage Mat2QImage(const cv::Mat& mat)
 
     return image;
 }
+
+
 
 #endif // MAT2QIMAGE_H
 

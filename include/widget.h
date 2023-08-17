@@ -52,11 +52,13 @@ public slots:
 
 	void onTriggered_action_openFile();
 	void onTriggered_action_saveFile();
-
 	void onTriggered_action_allRestore();
+	void onTriggered_action_previewToNormal();
 
 	//非加工模式下：切换不同的操作时，清除原来的操作
 	void restore_cutOperation(Object* operation);
+	
+	void setPixmap_differentOpera(Object* operation);
 
 	//开启图片加工模式
 	void onTriggered_action_process();
@@ -74,6 +76,7 @@ private:
 	cv::Mat temp_mt;//如果是创作者模式，则需要保存每次更新后的图片
 	QImage ori_img;
 	QLabel* lab_img = nullptr;
+	QLabel* sub_lab_img = nullptr; //预览图片
 
 	QAction* action_exit = nullptr;
 	QAction* action_open = nullptr;
@@ -81,6 +84,7 @@ private:
 	QAction* action_restore = nullptr;
 	QAction* action_begin = nullptr;
 	QAction* action_return = nullptr;
+	QAction* action_preview = nullptr;
 
 	QMenu* context_menu = nullptr;
 	QMenu* menu_file = nullptr;

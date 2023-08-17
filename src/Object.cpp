@@ -1,5 +1,6 @@
 ﻿#include "../include/Object.h"
 #include "../include/Mat2QImage.h"
+#include "../include/QImage2Mat.h"
 #include <QDebug>
 #include <QLabel>
 
@@ -18,6 +19,7 @@ Object::Object(const cv::Mat& mt)
 {
 	mt.copyTo(ori_mt);
 	ori_mt.copyTo(_mt);
+
 	_img = Mat2QImage(_mt);
 }
 
@@ -33,6 +35,7 @@ void Object::savePoint()
 void Object::returnPoint()
 {
 	savePoint_mt.copyTo(_mt);
+	_img = Mat2QImage(_mt);
 }
 
 void Object::update(const cv::Mat& newMt)

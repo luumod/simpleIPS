@@ -43,7 +43,7 @@ inline bool belongsToEnum(int data) {
 			return false;
 		}
 	}
-	else if constexpr (std::is_same_v<T,CONNECTED>) {
+	else if constexpr (std::is_same_v<T, CONNECTED>) {
 		switch (static_cast<T>(data)) {
 		case T::TYPE1:
 		case T::TYPE2:

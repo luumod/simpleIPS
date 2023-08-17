@@ -45,11 +45,11 @@ add_executable(QtPro
     include/Threshold.h 
     include/Morphology.h
     include/Connected.h  
-    include/Object.h )
+    include/Object.h  
+    include/QImage2Mat.h)
 
 add_executable(QtTest
-    QtTest/test.cpp    
-)
+    QtTest/test.cpp  )
 
 
 

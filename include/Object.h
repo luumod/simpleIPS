@@ -1,31 +1,23 @@
 ﻿#ifndef OBJECT_H_
 #define OBJECT_H_
 
-#include <QWidget>
+
 #include <opencv2/opencv.hpp>
 class QImage;
+class Widget;
 
 class Object{
 public:
 	explicit Object();
-	explicit Object(const std::string& fileName);
-	explicit Object(const cv::Mat& mt);
 	virtual ~Object();
 
+	Widget* get();
+	
 public:
-	void savePoint();
-	void returnPoint();
-	void update(const cv::Mat& newMt);
+	//virtual void restore() = 0;
 	virtual void initialize() = 0;
-	virtual void restore() = 0;
+	void update(const cv::Mat& tMt);
 
-	cv::Mat ori_mt; //原始图片
-	cv::Mat savePoint_mt;
-
-	cv::Mat	_mt;	//
-	QImage _img;
-
-	bool mode = false; //创作 or 测试
 };
 
 

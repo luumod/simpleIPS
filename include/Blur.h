@@ -9,21 +9,17 @@ class QImage;
 class Blur :public Object {
 public:
 	Blur();
-	explicit Blur(const std::string& fileName);
-	explicit Blur(const cv::Mat& mt);
 	~Blur();
 
-	void restore()override;
-	void initialize();
-public:
-	QImage avg_blur();//均值滤波
-	QImage Gaussian_blur();//高斯滤波
-	QImage median_blur();//中值滤波
-	QImage bilateral_blur();//双边滤波
+	void initialize()override;
+	void avg_blur();//均值滤波
+	void Gaussian_blur();//高斯滤波
+	void median_blur();//中值滤波
+	void bilateral_blur();//双边滤波
 public slots:
 	void onTriggered_slider1_valueChange_avgBlur(int);
-	void onTriggered_slider2_valueChange_avgBlur(int );
-	void onTriggered_slider3_valueChange_avgBlur(int );
+	void onTriggered_slider2_valueChange_avgBlur(int);
+	void onTriggered_slider3_valueChange_avgBlur(int);
 
 	void onTriggered_slider1_valueChange_gaussianBlur(int);
 	void onTriggered_slider2_valueChange_gaussianBlur(int);

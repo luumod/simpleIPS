@@ -13,9 +13,8 @@ public:
 	Threshold(const cv::Mat& mt);
 	~Threshold();
 
+	void threshold();
 	void initialize()override;
-	void restore()override;
-	QImage threshold();
 public slots:
 	void onTriggered_slider1_valueChanged_thresholdValue(int value);
 	void onTriggered_slider2_valueChanged_maxValue(int value);

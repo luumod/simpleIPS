@@ -1,15 +1,9 @@
 ﻿#include "../include/Blur.h"
-#include "../include/Mat2QImage.h"
+#include "../include/widget.h"
 #include <QDebug>
 #include <QLabel>
 
-Blur::Blur() {}
-
-Blur::Blur(const std::string& fileName)
-	:Object(fileName) {}
-
-Blur::Blur(const cv::Mat& mt)
-	:Object(mt) {}
+Blur::Blur() :Object() {}
 
 Blur::~Blur() {}
 
@@ -25,70 +19,80 @@ void Blur::initialize()
 	bin_d = 5, sigmaColor = 10, sigmaSpace = 10;
 }
 
-void Blur::restore() {
-	Object::restore();
-	initialize();
-}
-
-QImage Blur::avg_blur()
+void Blur::avg_blur()
 {
 	if (avg_Ksize <= 1) {
-		return _img;
+		return; //当前图片不变
 	}
 
+	cv::Mat _mt;
+	if (get()->mode) {
+		_mt = get()->savePoint_mt;
+	}
+	else {
+		_mt = get()->ori_mt; //当前图片
+	}
 	cv::Mat tMt;
-	//对预览图操作
+
 	cv::blur(_mt, tMt, cv::Size(avg_Ksize, avg_Ksize), cv::Point(anchorX, anchorY));
 	
-
-	if (mode) {
-		_mt = tMt;
-	}
-	_img = Mat2QImage(tMt); //200*200
-	return _img;
+	Object::update(tMt);
 }
 
-QImage Blur::Gaussian_blur()
+void Blur::Gaussian_blur()
 {
 	if (gas_Ksize <= 1) {
-		return _img;
+		return ;
+	}
+
+	cv::Mat _mt;
+	if (get()->mode) {
+		_mt = get()->savePoint_mt;
+	}
+	else {
+		_mt = get()->ori_mt; //当前图片
 	}
 	cv::Mat tMt;
 
 	cv::GaussianBlur(_mt, tMt, cv::Size(gas_Ksize, gas_Ksize), sigmaX, sigmaY);
 	
-	if (mode) {
-		_mt = tMt;
-	}
-	_img = Mat2QImage(tMt);
-	return _img;
+	Object::update(tMt);
 }
 
-QImage Blur::median_blur()
+void Blur::median_blur()
 {
+	cv::Mat _mt;
+	if (get()->mode) {
+		_mt = get()->savePoint_mt;
+	}
+	else {
+		_mt = get()->ori_mt; //当前图片
+	}
 	cv::Mat tMt{};
+
 	cv::medianBlur(_mt, tMt, median_Ksize);
-	if (mode) {
-		_mt = tMt;
-	}
-	_img = Mat2QImage(tMt);
-	return _img;
+
+	Object::update(tMt);
 }
 
-QImage Blur::bilateral_blur()
+void Blur::bilateral_blur()
 {
-	if (_mt.type() != CV_8UC1 && _mt.type() != CV_8UC3) {
-		return QImage(_img = Mat2QImage(_mt));
+	cv::Mat _mt;
+	if (get()->mode) {
+		_mt = get()->savePoint_mt;
+	}
+	else {
+		_mt = get()->ori_mt; //当前图片
 	}
 
+	if (_mt.type() != CV_8UC1 && _mt.type() != CV_8UC3) {
+		return;
+	}
 	cv::Mat tMt;
 
 	cv::bilateralFilter(_mt, tMt, bin_d, sigmaColor, sigmaSpace);
-	if (mode) {
-		_mt = tMt; //保存操作后的图像
-	}
-	_img = Mat2QImage(tMt);
-	return _img;
+
+	Object::update(tMt);
 }
 
 //-----------均值滤波--------------

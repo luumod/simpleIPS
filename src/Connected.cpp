@@ -1,14 +1,9 @@
 ﻿#include "../include/Connected.h"
 #include "../include/Mat2QImage.h"
+#include "../include/widget.h"
 #include <QString>
 
 Connected::Connected() :Object() {}
-
-Connected::Connected(const std::string& fileName)
-	:Object(fileName) {}
-
-Connected::Connected(const cv::Mat& mt)
-	:Object(mt) {}
 
 Connected::~Connected() {}
 
@@ -17,13 +12,6 @@ void Connected::initialize()
 	int current_choice = -1;
 	int connectivity = 8, ccltype = cv::CCL_DEFAULT;
 }
-
-void Connected::restore()
-{
-	Object::restore();
-	initialize();
-}
-
 
 void Connected::convert(const cv::Mat& src, cv::Mat& out, int nConAreas)
 {
@@ -54,13 +42,20 @@ void Connected::handle(cv::Mat& tMt,cv::Mat& tMt2) {
 	/*
 	tMt2为转换后的阈值图
 	*/
+	cv::Mat _mt;
+	if (get()->mode) {
+		_mt = get()->savePoint_mt;
+	}
+	else {
+		_mt = get()->ori_mt; //当前图片
+	}
 	//转换为灰度图
 	cv::cvtColor(_mt, tMt, cv::COLOR_BGR2GRAY);
 	//阈值化
 	cv::threshold(tMt, tMt2, 128, 255, cv::ThresholdTypes::THRESH_BINARY_INV);
 }
 
-QImage Connected::connectedComponents()
+void Connected::connectedComponents()
 {
 	cv::Mat tMt,tMt2;
 	
@@ -71,11 +66,11 @@ QImage Connected::connectedComponents()
 	
 	convert(tMt, tMt2, areas);
 
-	_img = Mat2QImage(tMt2);
-	return _img;
+	Object::update(tMt2);
+
 }
 
-QImage Connected::connectedComponentsWithStats()
+void Connected::connectedComponentsWithStats()
 {
 	cv::Mat tMt, tMt2;
 
@@ -97,50 +92,34 @@ QImage Connected::connectedComponentsWithStats()
 		cv::rectangle(tMt2,
 			cv::Rect(x, y, w, h), cv::Scalar(255, 0, 0));
 	}
-	_img = Mat2QImage(tMt2);
-	return _img;
+
+	Object::update(tMt2);
+
 }
 
 
-void Connected::onTriggered_Comb1_currentTextChanged_connectivtiy(const QString& value)
+void Connected::onTriggered_Comb1_currentTextChanged_connectivtiy(int index)
 {
-	int v = value.toInt();
-	if (v == 4 || v == 8) {
-		connectivity = v;
-		if (current_choice == 0) {
-			connectedComponents();
-		}
-		else if (current_choice ==1){
-			connectedComponentsWithStats();
-		}
+	if (index == 0) {
+		connectivity = 8;
+	}
+	else if (index == 1) {
+		connectivity = 4;
+	}
+
+	if (current_choice == 0) {
+		connectedComponents();
+	}
+	else if (current_choice == 1) {
+		connectedComponentsWithStats();
 	}
 }
 
 
-void Connected::onTriggered_Comb2_currentTextChanged_ccltype(const QString& value)
+void Connected::onTriggered_Comb2_currentTextChanged_ccltype(int index)
 {
-	QString s = value;
-	if (s == "default") {
-		ccltype = cv::ConnectedComponentsAlgorithmsTypes::CCL_DEFAULT;
-	}
-	else if (s == "CC_WU") {
-		ccltype = cv::ConnectedComponentsAlgorithmsTypes::CCL_WU;
-	}
-	else if (s == "CCL_GRANA") {
-		ccltype = cv::ConnectedComponentsAlgorithmsTypes::CCL_GRANA;
-	}
-	else if (s == "CCL_BOLELLI") {
-		ccltype = cv::ConnectedComponentsAlgorithmsTypes::CCL_BOLELLI;
-	}
-	else if (s == "CCL_SAUF") {
-		ccltype = cv::ConnectedComponentsAlgorithmsTypes::CCL_SAUF;
-	}
-	else if (s == "CCL_BBDT") {
-		ccltype = cv::ConnectedComponentsAlgorithmsTypes::CCL_BBDT;
-	}
-	else if (s == "CCL_SPAGHETTI") {
-		ccltype = cv::ConnectedComponentsAlgorithmsTypes::CCL_SPAGHETTI;
-	}
+	// 连通算法改变
+	ccltype = cv::ConnectedComponentsAlgorithmsTypes(index - 1);
 
 	if(current_choice == 0) {
 		connectedComponents();

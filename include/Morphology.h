@@ -9,15 +9,11 @@ class QImage;
 class Morphology :public Object {
 public:
 	Morphology();
-	Morphology(const std::string& fileName);
-	Morphology(const cv::Mat& mt);
 	~Morphology();
 
-public:
+	void morphology();
+protected:
 	void initialize()override;
-	void restore()override;
-	
-	QImage morphology();
 public slots:
 	void onTriggered_slider1_valueChanged_kernel(int value);
 	void onTriggered_slider2_valueChanged_anchorX(int value);

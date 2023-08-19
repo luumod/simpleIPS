@@ -1,7 +1,7 @@
 ﻿cmake_minimum_required(VERSION 3.8)
 
 project(QtPro)
-project(QtTest)
+#project(QtTest)
 
 
 # 设置C++标准
@@ -48,8 +48,8 @@ add_executable(QtPro
     include/Object.h  
     include/QImage2Mat.h)
 
-add_executable(QtTest
-    QtTest/test.cpp  )
+# add_executable(QtTest
+#    QtTest/test.cpp   "QtTest/testWidget.h" "QtTest/testObject.h" "QtTest/testObject.cpp" "QtTest/testWidget.cpp" "QtTest/blur.h" "QtTest/blur.cpp")
 
 
 
@@ -60,12 +60,12 @@ target_link_libraries(QtPro
     Qt6::Widgets
     ${OpenCV_LIBS}
 )
-target_link_libraries(QtTest
-    PRIVATE
-    Qt6::Core
-    Qt6::Widgets
-    ${OpenCV_LIBS}
-)
+#target_link_libraries(QtTest
+#    PRIVATE
+#    Qt6::Core
+#    Qt6::Widgets
+#    ${OpenCV_LIBS}
+#)
 
 
 add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
@@ -75,4 +75,4 @@ set(VLD_INCLUDE_DIRS "F:\\vld\\Visual Leak Detector\\include")
 set(VLD_LIBRARIES "F:\\vld\\Visual Leak Detector\\lib\\Win64\\vld.lib")
 include_directories(${VLD_INCLUDE_DIRS})
 target_link_libraries(QtPro PRIVATE  ${VLD_LIBRARIES})
-target_link_libraries(QtTest PRIVATE  ${VLD_LIBRARIES})
+#target_link_libraries(QtTest PRIVATE  ${VLD_LIBRARIES})

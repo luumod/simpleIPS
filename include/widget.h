@@ -12,23 +12,27 @@ class QLabel;
 class QAction;
 class QStackedWidget;
 class QVBoxLayout;
-
 class Object;
 class Blur;
 class Threshold;
 class Morphology;
 class Connected;
-
 class QToolBar;
 class QFileDialog;
 
 class Widget :public QMainWindow {
 	Q_OBJECT
-public:
-	Widget(QWidget* parent = nullptr);
+private:
+	//单例设计模式
+	Widget(QMainWindow* parent = nullptr);
+public:	
+	//返回实例
+	static Widget* getInstance();
 	~Widget();
 public:
+	//操作对象
 	void initFunction();
+
 	void createAction();
 	void createMenu();
 	void createToolBar();
@@ -50,15 +54,20 @@ public slots:
 	void onClicked_buttonGroup_morphology(QAbstractButton* btn);
 	void onClicked_buttonGroup_connected(QAbstractButton* btn);
 
+	//打开新图片
 	void onTriggered_action_openFile();
+
+	//保存当前图片: lab_img
 	void onTriggered_action_saveFile();
+
+	//重置所有操作至原始状态
 	void onTriggered_action_allRestore();
+
+	//确定加载预览图片到主图片
 	void onTriggered_action_previewToNormal();
 
 	//非加工模式下：切换不同的操作时，清除原来的操作
-	void restore_cutOperation(Object* operation);
-	
-	void setPixmap_differentOpera(Object* operation);
+	void restore_cutOperation();
 
 	//开启图片加工模式
 	void onTriggered_action_process();
@@ -66,17 +75,36 @@ public slots:
 	//撤销此次操作
 	void onTriggered_action_undo();
 
+	//图片数据还原原始状态: ori_mt
+	void dataClear();
+
+	//保存图片，设置保存点
+	void savePoint();
+
+	//读取保存点
+	void returnPoint();
+
 private: //辅助函数
 	//清除某一页参数的数值
 	void setIndexPageWidgetValue(int index = -1);
 	void clearAllWidgetValue();
 
-private:
+public:
 	cv::Mat ori_mt; //保存原始的加载的图片
-	cv::Mat temp_mt;//如果是创作者模式，则需要保存每次更新后的图片
 	QImage ori_img;
+	//cv::Mat temp_mt;//如果是创作者模式，则需要保存每次更新后的图片
+
+
+	cv::Mat savePoint_mt;
+	cv::Mat mt;
+
+	QImage img;
+
 	QLabel* lab_img = nullptr;
 	QLabel* sub_lab_img = nullptr; //预览图片
+	static Widget* widget;
+	bool mode = false;
+private:
 
 	QAction* action_exit = nullptr;
 	QAction* action_open = nullptr;
@@ -96,7 +124,8 @@ private:
 	int preToolBoxIndex = 0, curToolBoxIndex = 0;
 
 	int now = -1; //全局定位点，定位在哪个功能位置
-	bool mode = false;
+
+	
 
 	QButtonGroup* btngroup_blur = nullptr;
 	QButtonGroup* btngroup_threshold = nullptr;

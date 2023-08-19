@@ -1,13 +1,7 @@
 ﻿#include "../include/Threshold.h"
-#include "../include/Mat2QImage.h"
+#include "../include/widget.h"
 
-Threshold::Threshold() {}
-
-Threshold::Threshold(const std::string& fileName)
-	:Object(fileName) {}
-
-Threshold::Threshold(const cv::Mat& mt)
-	:Object(mt) {}
+Threshold::Threshold() :Object() {}
 
 Threshold::~Threshold() {}
 
@@ -17,26 +11,23 @@ void Threshold::initialize()
 	int threshold_value = 128, maxVal = 255;
 }
 
-void Threshold::restore()
-{
-	Object::restore();
-	initialize();
-}
-
-QImage Threshold::threshold() {
+void Threshold::threshold() {
 	if (current_choice == -1) {
-		return Mat2QImage(_mt);
+		return;
 	}
 
+	cv::Mat _mt;
+	if (get()->mode) {
+		_mt = get()->savePoint_mt;
+	}
+	else {
+		_mt = get()->ori_mt; //当前图片
+	}
 	cv::Mat tMt;
 
 	cv::threshold(_mt, tMt, threshold_value, maxVal, current_choice);
 
-	if (mode) {
-		_mt = tMt;
-	}
-	_img = Mat2QImage(tMt);
-	return _img;
+	Object::update(tMt);
 }
 
 void Threshold::onTriggered_slider1_valueChanged_thresholdValue(int value) {

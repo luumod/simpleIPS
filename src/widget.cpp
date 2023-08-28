@@ -5,6 +5,7 @@
 #include "../include/Threshold.h"
 #include "../include/Morphology.h"
 #include "../include/Connected.h"
+#include "../include/LabelImg.h"
 #include <QDebug>
 #include <QBoxLayout>
 #include <QGridLayout>
@@ -67,10 +68,10 @@ Widget::Widget(QMainWindow* parent)
 	lab_img->setScaledContents(true);
 	lab_img->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-	sub_lab_img = new QLabel(lab_img); //子图片依附
+	sub_lab_img = new Label(lab_img); //子图片设置依附在父图片上
 	sub_lab_img->setPixmap(QPixmap("../resource/dog.png").scaled(200, 200));
 	sub_lab_img->move(0,0);
-	sub_lab_img->raise();
+	sub_lab_img->raise();  //提升：实现依附的关键
 	sub_lab_img->setVisible(false); //隐藏
 
 	//右侧布局添加图片与调整栏
@@ -150,7 +151,6 @@ void Widget::onClicked_buttonGroup_blur(QAbstractButton* btn)
 		restore_cutOperation();
 	}
 
-
 	savePoint();
 
 	stack_tools->setVisible(true);
@@ -173,7 +173,6 @@ void Widget::onClicked_buttonGroup_threshold(QAbstractButton* btn)
 {
 	int id = btngroup_threshold->id(btn); //获取按下的按钮的id
 	now = id;  //获取当前位置
-
 
 	int type = cv::ThresholdTypes(id - THRESHOLD::Binary);
 

@@ -8,6 +8,7 @@ class QButtonGroup;
 class QGridLayout;
 class QToolButton;
 class QToolBox;
+class Label;
 class QLabel;
 class QAction;
 class QStackedWidget;
@@ -101,7 +102,7 @@ public:
 	QImage img;
 
 	QLabel* lab_img = nullptr;
-	QLabel* sub_lab_img = nullptr; //预览图片
+	Label* sub_lab_img = nullptr; //预览图片
 	static Widget* widget;
 	bool mode = false;
 private:

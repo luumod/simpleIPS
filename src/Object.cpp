@@ -1,8 +1,9 @@
 ﻿#include "../include/Object.h"
 #include "../include/widget.h"
 #include "../include/Mat2QImage.h"
+#include "../include/LabelImg.h"
 #include <QDebug>
-#include <QLabel>
+//#include <QLabel>
 
 Object::Object()
 {

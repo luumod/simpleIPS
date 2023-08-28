@@ -18,8 +18,10 @@ class Blur;
 class Threshold;
 class Morphology;
 class Connected;
+class Contours;
 class QToolBar;
 class QFileDialog;
+class QColorDialog;
 
 class Widget :public QMainWindow {
 	Q_OBJECT
@@ -39,7 +41,7 @@ public:
 	void createToolBar();
 	void createToolBox();
 
-	QWidget* createToolBtnItemWidget(const QString& text, int id);
+	QWidget* createToolBtnItemWidget(const QString& text, int id, const QString& fileName = "");
 
 	//GUI创建
 	QWidget* create_GUIAvgBlur();		//均值滤波
@@ -49,11 +51,13 @@ public:
 	QWidget* create_GUIThreshoild();	//阈值化
 	QWidget* create_GUIMorphology();	//形态学
 	QWidget* create_GUIConnected();		//连通块分析
+	QWidget* create_GUIContours();		//轮廓检测
 public slots:
 	void onClicked_buttonGroup_blur(QAbstractButton* btn);
 	void onClicked_buttonGroup_threshold(QAbstractButton* btn);
 	void onClicked_buttonGroup_morphology(QAbstractButton* btn);
 	void onClicked_buttonGroup_connected(QAbstractButton* btn);
+	void onClicked_buttonGroup_contours(QAbstractButton* btn);
 
 	//打开新图片
 	void onTriggered_action_openFile();
@@ -66,6 +70,9 @@ public slots:
 
 	//确定加载预览图片到主图片
 	void onTriggered_action_previewToNormal();
+
+	//选择颜色
+	void onTriggered_ColorDialog_choice(const QColor& color);
 
 	//非加工模式下：切换不同的操作时，清除原来的操作
 	void restore_cutOperation();
@@ -132,8 +139,10 @@ private:
 	QButtonGroup* btngroup_threshold = nullptr;
 	QButtonGroup* btngroup_form = nullptr;
 	QButtonGroup* btngroup_connected = nullptr;
+	QButtonGroup* btngroup_contours = nullptr;
 
 	QFileDialog* fileDialog = nullptr;
+	QColorDialog* colorDialog = nullptr;
 
 	//窗口布局
 	QVBoxLayout* vlayout_right = nullptr;
@@ -144,6 +153,7 @@ private:
 	Threshold* threshold = nullptr;
 	Morphology* morphology = nullptr;
 	Connected* connected = nullptr;
+	Contours* contours = nullptr;
 	QList<Object*> ls;
 };
 

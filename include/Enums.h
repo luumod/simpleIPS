@@ -25,8 +25,12 @@ enum FORM {
 	Hitmiss 
 };
 enum CONNECTED {
-	TYPE1 = 18,
-	TYPE2
+	CONNECTED_TYPE1 = 18,
+	CONNECTED_TYPE2
+};
+
+enum CONTOURS {
+	CONTOURS_TYPE1 = 20
 };
 
 #endif

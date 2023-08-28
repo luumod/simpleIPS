@@ -45,8 +45,16 @@ inline bool belongsToEnum(int data) {
 	}
 	else if constexpr (std::is_same_v<T, CONNECTED>) {
 		switch (static_cast<T>(data)) {
-		case T::TYPE1:
-		case T::TYPE2:
+		case T::CONNECTED_TYPE1:
+		case T::CONNECTED_TYPE2:
+			return true;
+		default:
+			return false;
+		}
+	}
+	else if constexpr (std::is_same_v<T, CONTOURS>) {
+		switch (static_cast<T>(data)) {
+		case T::CONTOURS_TYPE1:
 			return true;
 		default:
 			return false;

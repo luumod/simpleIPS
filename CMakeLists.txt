@@ -37,6 +37,7 @@ add_executable(QtPro
     src/Connected.cpp
     src/Object.cpp
     src/LabelImg.cpp
+    src/Contours.cpp
 
     include/widget.h
     include/belongsToEnum.h 
@@ -49,7 +50,7 @@ add_executable(QtPro
     include/Object.h  
     include/QImage2Mat.h 
     include/LabelImg.h 
-    )
+    include/Contours.h )
 
 # add_executable(QtTest
 #    QtTest/test.cpp   "QtTest/testWidget.h" "QtTest/testObject.h" "QtTest/testObject.cpp" "QtTest/testWidget.cpp" "QtTest/blur.h" "QtTest/blur.cpp")

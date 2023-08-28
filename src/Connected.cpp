@@ -47,7 +47,7 @@ void Connected::handle(cv::Mat& tMt,cv::Mat& tMt2) {
 		_mt = get()->savePoint_mt;
 	}
 	else {
-		_mt = get()->ori_mt; //当前图片
+		_mt = get()->ori_mt; 
 	}
 	//转换为灰度图
 	cv::cvtColor(_mt, tMt, cv::COLOR_BGR2GRAY);

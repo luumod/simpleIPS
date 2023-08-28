@@ -9,8 +9,6 @@ class QImage;
 class Threshold :public Object {
 public:
 	Threshold();
-	Threshold(const std::string& fileName);
-	Threshold(const cv::Mat& mt);
 	~Threshold();
 
 	void threshold();

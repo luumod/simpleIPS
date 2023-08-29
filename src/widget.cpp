@@ -35,6 +35,8 @@
 #include <QMessageBox>
 #include <QPalette>
 #include <QColorDialog>
+#include <QFile>
+#include <QStatusBar>
 
 Widget* Widget::widget = nullptr;
 
@@ -60,6 +62,7 @@ Widget::Widget(QMainWindow* parent)
 	createMenu();
 	createToolBar();
 	createToolBox();
+	createStatusBar();
 
 	//处理如何设置上下文菜单CustomContextMenu：发出customContextMenuRequested信号
 	lab_img->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -110,6 +113,13 @@ Widget::Widget(QMainWindow* parent)
 	mainWindow->setLayout(layout);
 
 	this->setCentralWidget(mainWindow);
+
+	//读取QSS美化
+	//外部加载
+	QFile qssFile("../resource/qss/meihua.css");
+	if (qssFile.open(QFile::OpenModeFlag::ReadOnly)) {
+		this->setStyleSheet(qssFile.readAll());
+	}
 }
 
 Widget::~Widget()
@@ -166,9 +176,6 @@ void Widget::onClicked_buttonGroup_blur(QAbstractButton* btn)
 		if (m_btn == btn) {
 			m_btn->setChecked(true);
 		}
-		else {
-			m_btn->setChecked(false);
-		}
 	}
 }
 
@@ -200,9 +207,6 @@ void Widget::onClicked_buttonGroup_threshold(QAbstractButton* btn)
 	for (auto& m_btn : btns) {
 		if (m_btn == btn) {
 			m_btn->setChecked(true);
-		}
-		else {
-			m_btn->setChecked(false);
 		}
 	}
 }
@@ -242,10 +246,6 @@ void Widget::onClicked_buttonGroup_morphology(QAbstractButton* btn)
 		if (m_btn == btn) {
 			m_btn->setChecked(true);
 		}
-		else {
-			m_btn->setChecked(false);
-			setIndexPageWidgetValue();
-		}
 	}
 }
 
@@ -276,9 +276,6 @@ void Widget::onClicked_buttonGroup_connected(QAbstractButton* btn)
 		if (m_btn == btn) {
 			m_btn->setChecked(true);
 		}
-		else {
-			m_btn->setChecked(false);
-		}
 	}
 }
 
@@ -308,9 +305,6 @@ void Widget::onClicked_buttonGroup_contours(QAbstractButton* btn)
 	for (auto& m_btn : btns) {
 		if (m_btn == btn) {
 			m_btn->setChecked(true);
-		}
-		else {
-			m_btn->setChecked(false);
 		}
 	}
 }
@@ -398,9 +392,12 @@ void Widget::onTriggered_action_process(){
 
 		mode = true;
 
+		statusLab->setText(tr("混合加工模式"));
+
 	}
 	else {
 		mode = false;
+		statusLab->setText(tr("默认模式"));
 	}
 	clearAllWidgetValue();
 	//数据清空
@@ -421,7 +418,6 @@ void Widget::onTriggered_action_undo()
 	else {
 		onTriggered_action_allRestore();
 	}
-	
 }
 
 
@@ -443,6 +439,10 @@ void Widget::returnPoint()
 	img = Mat2QImage(mt);
 }
 
+void Widget::choiceToolBtnFalse()
+{
+	
+}
 
 void Widget::setIndexPageWidgetValue(int index)
 {
@@ -566,25 +566,32 @@ void Widget::createToolBar()
 	toolbar1->addAction(action_restore);
 	toolbar1->addAction(action_return);
 	toolbar1->addAction(action_preview);
-
-	
 }
 
 
 void Widget::createToolBox()
 {
 	//-----------------模糊操作-----------------------------
-	btngroup_blur = new QButtonGroup(this);
+	btngroups.push_back(btngroup_blur = new QButtonGroup(this));
 	btngroup_blur->setExclusive(true);
 	//连接信号
 	connect(btngroup_blur, &QButtonGroup::buttonClicked, this, &Widget::onClicked_buttonGroup_blur);
 
 	
 	QGridLayout* grid_blur = new QGridLayout;
-	grid_blur->addWidget(createToolBtnItemWidget("均值模糊", BLUR::Average, "../resource/avg.png") , 0, 0);
-	grid_blur->addWidget(createToolBtnItemWidget("高斯模糊", BLUR::Gaussian, "../resource/gaussian.png"),0,1);
-	grid_blur->addWidget(createToolBtnItemWidget("中值模糊", BLUR::Median, "../resource/zhong.png"),1,0);
-	grid_blur->addWidget(createToolBtnItemWidget("双边滤波", BLUR::Bilateral, "../resource/shuangbian.png"),1,1);
+	QWidget* a1 = createToolBtnItemWidget("均值模糊", BLUR::Average, "../resource/avg.png");
+	a1->setStatusTip(tr("均值滤波：取周围像素平均值进行滤波，可以帮助消除图像尖锐噪声，实现图像平滑，模糊等功能"));
+	grid_blur->addWidget(a1, 0, 0);
+
+	QWidget* a2 = createToolBtnItemWidget("高斯模糊", BLUR::Gaussian, "../resource/gaussian.png");
+	a2->setStatusTip(tr("高斯滤波：线性平滑滤波，适用于消除高斯噪声，广泛应用于图像处理的减噪过程。"));
+	grid_blur->addWidget(a2,0,1);
+	QWidget* a3 = createToolBtnItemWidget("中值模糊", BLUR::Median, "../resource/zhong.png");
+	a3->setStatusTip(tr("中值滤波：非线性平滑滤波，它将每一像素点的灰度值设置为该点某邻域窗口内的所有像素点灰度值的中值。"));
+	grid_blur->addWidget(a3,1,0);
+	QWidget* a4 = createToolBtnItemWidget("双边滤波", BLUR::Bilateral, "../resource/shuangbian.png");
+	a4->setStatusTip(tr("双边滤波：有很好的边缘保护效果，即可以在去噪的同时，保护图像的边缘特性。"));
+	grid_blur->addWidget(a4,1,1);
 
 	grid_blur->setRowStretch(3, 10);
 	grid_blur->setColumnStretch(0, 5);
@@ -594,17 +601,31 @@ void Widget::createToolBox()
 	widget_blur->setLayout(grid_blur);
 
 	//-----------------阈值化操作-----------------------------
-	btngroup_threshold = new QButtonGroup(this);
+	btngroups.push_back(btngroup_threshold = new QButtonGroup(this));
 	btngroup_threshold->setExclusive(true);
 	//连接信号
 	connect(btngroup_threshold, &QButtonGroup::buttonClicked, this, &Widget::onClicked_buttonGroup_threshold);
 
 	QGridLayout* grid_threshold = new QGridLayout;
-	grid_threshold->addWidget(createToolBtnItemWidget("二进制化", THRESHOLD::Binary, "../resource/2.png"), 0, 0);
-	grid_threshold->addWidget(createToolBtnItemWidget("反二进制为零", THRESHOLD::Binary_inv,"../resource/f2.png"), 0, 1);
-	grid_threshold->addWidget(createToolBtnItemWidget("截断", THRESHOLD::Trunc, "../resource/jieduan.png"), 1, 0);
-	grid_threshold->addWidget(createToolBtnItemWidget("阈值化为零", THRESHOLD::Tozero, "../resource/0.png"), 1, 1);
-	grid_threshold->addWidget(createToolBtnItemWidget("反阈值化为零", THRESHOLD::Tozero_inv, "../resource/f0.png"), 2, 0);
+	QWidget* b1 = createToolBtnItemWidget("二进制化", THRESHOLD::Binary, "../resource/2.png");
+	b1->setStatusTip(tr("二进制阈值化：大变最大，小变0"));
+	grid_threshold->addWidget(b1, 0, 0);
+
+	QWidget* b2 = createToolBtnItemWidget("反二进制为零", THRESHOLD::Binary_inv, "../resource/f2.png");
+	b2->setStatusTip(tr("反二进制阈值化：大变0，小变最大"));
+	grid_threshold->addWidget(b2, 0, 1);
+
+	QWidget* b3 = createToolBtnItemWidget("截断", THRESHOLD::Trunc, "../resource/jieduan.png");
+	b3->setStatusTip(tr("截断阈值化：大变阈值，小不变"));
+	grid_threshold->addWidget(b3, 1, 0);
+
+	QWidget* b4 = createToolBtnItemWidget("阈值化为零", THRESHOLD::Tozero, "../resource/0.png");
+	b4->setStatusTip(tr("阈值化为0：大不变，小变0"));
+	grid_threshold->addWidget(b4, 1, 1);
+
+	QWidget* b5 = createToolBtnItemWidget("反阈值化为零", THRESHOLD::Tozero_inv, "../resource/f0.png");
+	b5->setStatusTip(tr("反阈值化为0：大变0，小不变"));
+	grid_threshold->addWidget(b5, 2, 0);
 
 	grid_threshold->setRowStretch(4, 10);
 	grid_threshold->setColumnStretch(2, 10);
@@ -614,19 +635,40 @@ void Widget::createToolBox()
 
 
 	//-----------------形态化操作-----------------------------
-	btngroup_form = new QButtonGroup(this);
+	btngroups.push_back(btngroup_form = new QButtonGroup(this));
 	btngroup_form->setExclusive(true);
 	//连接信号
 	connect(btngroup_form, &QButtonGroup::buttonClicked, this, &Widget::onClicked_buttonGroup_morphology);
 
 	QGridLayout* grid_form = new QGridLayout;
-	grid_form->addWidget(createToolBtnItemWidget("膨胀", FORM::Erode, "../resource/pengzhang.png"), 0, 0);
-	grid_form->addWidget(createToolBtnItemWidget("腐蚀", FORM::Dilate, "../resource/fushi.png"), 0, 1);
-	grid_form->addWidget(createToolBtnItemWidget("开运算", FORM::Open, "../resource/kai.png"), 1, 0);
-	grid_form->addWidget(createToolBtnItemWidget("闭运算", FORM::Close, "../resource/bi.png"), 1, 1);
-	grid_form->addWidget(createToolBtnItemWidget("梯度", FORM::Gradient, "../resource/tidu.png"), 2, 0);
-	grid_form->addWidget(createToolBtnItemWidget("顶帽", FORM::Tophat, "../resource/dingmao.png"), 2, 1);
-	grid_form->addWidget(createToolBtnItemWidget("黑帽", FORM::Blackhat, "../resource/heimao.png"), 3, 0);
+	QWidget* c1 = createToolBtnItemWidget("膨胀", FORM::Erode, "../resource/pengzhang.png");
+	c1->setStatusTip(tr("膨胀：取每个位置领域内最大值，膨胀后输出图像的总体亮度的平均值比起原图会有所升高"));
+	grid_form->addWidget(c1, 0, 0);
+
+	QWidget* c2 = createToolBtnItemWidget("腐蚀", FORM::Dilate, "../resource/fushi.png");
+	c2->setStatusTip(tr("腐蚀：取每个位置领域内最小值，腐蚀后输出图像的总体亮度的平均值比起原图会有所降低"));
+	grid_form->addWidget(c2, 0, 1);
+
+	QWidget* c3 = createToolBtnItemWidget("开运算", FORM::Open, "../resource/kai.png");
+	c3->setStatusTip(tr("开运算：先腐蚀再膨胀，可在纤细点出分离物体。有助于消除噪音"));
+	grid_form->addWidget(c3, 1, 0);
+
+	QWidget* c4 = createToolBtnItemWidget("闭运算", FORM::Close, "../resource/bi.png");
+	c4->setStatusTip(tr("闭运算：先膨胀后腐蚀，可以排除前景对象中的小孔或对象上的小黑点"));
+	grid_form->addWidget(c4, 1, 1);
+
+	QWidget* c5 = createToolBtnItemWidget("梯度", FORM::Gradient, "../resource/tidu.png");
+	c5->setStatusTip(tr("梯度运算：膨胀图与腐蚀图之差，可以用于保留目标物体的边缘轮廓"));
+	grid_form->addWidget(c5, 2, 0);
+
+	QWidget* c6 = createToolBtnItemWidget("顶帽", FORM::Tophat, "../resource/dingmao.png");
+	c6->setStatusTip(tr("顶帽运算：	原图与开运算图之差，分离比邻近点亮的斑块，用于突出原图像中比周围亮的区域"));
+	grid_form->addWidget(c6, 2, 1);
+
+	QWidget* c7 = createToolBtnItemWidget("黑帽", FORM::Tophat, "../resource/dingmao.png");
+	c7->setStatusTip(tr("黑帽运算：闭运算图与原图差，分离比邻近点暗的斑块，突出原图像中比周围暗的区域"));
+	grid_form->addWidget(c7, 3, 0);
+
 	grid_form->addWidget(createToolBtnItemWidget("随机", FORM::Hitmiss, "../resource/suiji.png"), 3, 1);
 
 	grid_form->setRowStretch(4, 10);
@@ -637,14 +679,20 @@ void Widget::createToolBox()
 
 
 	//-----------------连通区域分析操作-----------------------------
-	btngroup_connected = new QButtonGroup(this);
+	btngroups.push_back(btngroup_connected = new QButtonGroup(this));
 	btngroup_connected->setExclusive(true);//互斥
 
 	connect(btngroup_connected, &QButtonGroup::buttonClicked, this, &Widget::onClicked_buttonGroup_connected);
 	
 	QGridLayout* gird_connected = new QGridLayout;
-	gird_connected->addWidget(createToolBtnItemWidget(tr("连通区域分析①"), CONNECTED::CONNECTED_TYPE1, "../resource/liantongkuai.png"),0,0);
-	gird_connected->addWidget(createToolBtnItemWidget(tr("连通区域分析②"), CONNECTED::CONNECTED_TYPE2, "../resource/liantongkuais.png"),1,0);
+
+	QWidget* d1 = createToolBtnItemWidget(tr("连通区域分析①"), CONNECTED::CONNECTED_TYPE1, "../resource/liantongkuai.png");
+	d1->setStatusTip(tr("连通区域：找到图片之间的连通块，并且用不同颜色标记。"));
+	gird_connected->addWidget(d1,0,0);
+
+	QWidget* d2 = createToolBtnItemWidget(tr("连通区域分析②"), CONNECTED::CONNECTED_TYPE2, "../resource/liantongkuais.png");
+	d2->setStatusTip(tr("连通区域：找到图片之间的连通块，并且使用方框进行标记。"));
+	gird_connected->addWidget(d2,1,0);
 	gird_connected->setRowStretch(4, 10);
 	gird_connected->setColumnStretch(1, 10);
 
@@ -652,12 +700,17 @@ void Widget::createToolBox()
 	widget_connected->setLayout(gird_connected);
 
 	//-----------------轮廓绘制操作-----------------------------
-	btngroup_contours = new QButtonGroup(this);
+	btngroups.push_back(btngroup_contours = new QButtonGroup(this));
 	btngroup_contours->setExclusive(true);
 
 	connect(btngroup_contours, &QButtonGroup::buttonClicked, this, &Widget::onClicked_buttonGroup_contours);
+
 	QGridLayout* gird_contours = new QGridLayout;
-	gird_contours->addWidget(createToolBtnItemWidget(tr("轮廓绘制操作"), CONTOURS::CONTOURS_TYPE1, "../resource/lunkuo.png"), 0, 0);
+
+	QWidget* e1 = createToolBtnItemWidget(tr("轮廓绘制操作"), CONTOURS::CONTOURS_TYPE1, "../resource/lunkuo.png");
+	e1->setStatusTip(tr("轮廓绘制：绘制图像的轮廓信息"));
+	gird_contours->addWidget(e1, 0, 0);
+
 	gird_contours->setRowStretch(4, 10);
 	gird_contours->setColumnStretch(1, 10);
 
@@ -671,6 +724,7 @@ void Widget::createToolBox()
 	toolbox_side->setMaximumWidth(200);
 	toolbox_side->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
 	toolbox_side->addItem(widget_blur, "图像模糊操作");
+	toolbox_side->setFrameShape(QFrame::StyledPanel);
 	toolbox_side->addItem(widget_threshold, "图像阈值操作");
 	toolbox_side->addItem(widget_from, "图像形态化操作");
 	toolbox_side->addItem(widget_connected, "图像连通分析");
@@ -683,6 +737,11 @@ void Widget::createToolBox()
 		preToolBoxIndex = curToolBoxIndex;
 		curToolBoxIndex = value;
 
+		//	清除之前页面上的选项
+		for (auto& x : btngroups[preToolBoxIndex]->buttons()) {
+			x->setChecked(false);
+		}
+	
 		if (mode) {
 			//图片数据继承下来
 		}
@@ -692,11 +751,19 @@ void Widget::createToolBox()
 	});
 }
 
+void Widget::createStatusBar()
+{
+	auto bar = statusBar();
+	statusBar()->addWidget(statusLab = new QLabel("默认模式"));
+}
+
 QWidget* Widget::createToolBtnItemWidget(const QString& text, int id, const QString& fileName)
 {
 	QToolButton* btn = new QToolButton;
+	btn->setObjectName("function_tbtn");
 	btn->resize(48, 48);
 	btn->setCheckable(true);
+	btn->setChecked(false);
 	if (!fileName.isEmpty()) {
 		btn->setIcon(QIcon(fileName));
 		btn->setIconSize(btn->size());
@@ -721,7 +788,9 @@ QWidget* Widget::createToolBtnItemWidget(const QString& text, int id, const QStr
 
 	QGridLayout* grid = new QGridLayout;
 	grid->addWidget(btn, 0, 0, Qt::AlignHCenter);
-	grid->addWidget(new QLabel(text), 1, 0, Qt::AlignHCenter);
+	QLabel* textlab = new QLabel(text);
+	textlab->setObjectName("textLab");
+	grid->addWidget(textlab, 1, 0, Qt::AlignHCenter);
 
 	QWidget* wid = new QWidget;
 	wid->setLayout(grid);
@@ -1238,11 +1307,13 @@ QWidget* Widget::create_GUIContours()
 	color->setMaximumSize(48, 48);
 	color->setIconSize(color->size());
 	connect(color, &QToolButton::clicked, this, [=]() {
+		colorDialog->setMinimumSize(375, 375);
+		colorDialog->setMaximumSize(653, 498);
+		colorDialog->setGeometry(810, 306, 375, 375);
 		colorDialog->show(); //弹出颜色框
 		if (mode) {
 			sub_lab_img->setVisible(true);
 			}
-		//contours->onTriggered_Color_currentTextChanged_contoursColor();
 		});
 
 	QGridLayout* grid = new QGridLayout;

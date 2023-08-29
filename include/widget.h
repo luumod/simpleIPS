@@ -40,6 +40,7 @@ public:
 	void createMenu();
 	void createToolBar();
 	void createToolBox();
+	void createStatusBar();
 
 	QWidget* createToolBtnItemWidget(const QString& text, int id, const QString& fileName = "");
 
@@ -92,6 +93,8 @@ public slots:
 	//读取保存点
 	void returnPoint();
 
+	void choiceToolBtnFalse();
+
 private: //辅助函数
 	//清除某一页参数的数值
 	void setIndexPageWidgetValue(int index = -1);
@@ -133,6 +136,7 @@ private:
 
 	int now = -1; //全局定位点，定位在哪个功能位置
 
+	QLabel* statusLab = nullptr;
 	
 
 	QButtonGroup* btngroup_blur = nullptr;
@@ -140,6 +144,8 @@ private:
 	QButtonGroup* btngroup_form = nullptr;
 	QButtonGroup* btngroup_connected = nullptr;
 	QButtonGroup* btngroup_contours = nullptr;
+
+	QList<QButtonGroup*> btngroups;
 
 	QFileDialog* fileDialog = nullptr;
 	QColorDialog* colorDialog = nullptr;

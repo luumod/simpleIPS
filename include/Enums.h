@@ -1,6 +1,17 @@
 ﻿#ifndef ENUM_H_
 #define ENUM_H_
 
+enum TYPE {
+	BGR = 999,
+	BGR555,
+	BGR565,
+	RGB,
+	GRAY,
+	HSV,
+	HLS,
+	LAB,
+};
+
 enum BLUR {
 	Average = 1,
 	Gaussian,
@@ -30,7 +41,11 @@ enum CONNECTED {
 };
 
 enum CONTOURS {
-	CONTOURS_TYPE1 = 20
+	CONTOURS_TYPE1 = 20,
+};
+
+enum CVTCOLOR {
+	CVTCOLOR_TYPE1 = 21,
 };
 
 #endif

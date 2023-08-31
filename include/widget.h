@@ -22,6 +22,8 @@ class Contours;
 class QToolBar;
 class QFileDialog;
 class QColorDialog;
+class CvtColor;
+class QActionGroup;
 
 class Widget :public QMainWindow {
 	Q_OBJECT
@@ -53,12 +55,15 @@ public:
 	QWidget* create_GUIMorphology();	//形态学
 	QWidget* create_GUIConnected();		//连通块分析
 	QWidget* create_GUIContours();		//轮廓检测
+	QWidget* create_GUIChangeImg();		//颜色模型转换
 public slots:
 	void onClicked_buttonGroup_blur(QAbstractButton* btn);
 	void onClicked_buttonGroup_threshold(QAbstractButton* btn);
 	void onClicked_buttonGroup_morphology(QAbstractButton* btn);
 	void onClicked_buttonGroup_connected(QAbstractButton* btn);
 	void onClicked_buttonGroup_contours(QAbstractButton* btn);
+
+	void onTriggered_actionGroup(QAction* action);
 
 	//打开新图片
 	void onTriggered_action_openFile();
@@ -99,6 +104,7 @@ private: //辅助函数
 	//清除某一页参数的数值
 	void setIndexPageWidgetValue(int index = -1);
 	void clearAllWidgetValue();
+	void loadANewPicture(const cv::Mat& new_mt);
 
 public:
 	cv::Mat ori_mt; //保存原始的加载的图片
@@ -108,6 +114,8 @@ public:
 
 	cv::Mat savePoint_mt;
 	cv::Mat mt;
+
+	cv::Mat origin_convert; //转换前的原图
 
 	QImage img;
 
@@ -125,9 +133,18 @@ private:
 	QAction* action_return = nullptr;
 	QAction* action_preview = nullptr;
 
+	QAction* action_hls = nullptr;
+	QAction* action_rgb = nullptr;
+	QAction* action_hsv = nullptr;
+	QAction* action_lab = nullptr;
+	QActionGroup* action_group = nullptr;
+
+	//上下文菜单
 	QMenu* context_menu = nullptr;
+	//主菜单
 	QMenu* menu_file = nullptr;
 	QMenu* menu_edit = nullptr;
+	QMenu* menu_convert = nullptr;
 
 	QToolBar* toolbar1 = nullptr;
 
@@ -144,6 +161,7 @@ private:
 	QButtonGroup* btngroup_form = nullptr;
 	QButtonGroup* btngroup_connected = nullptr;
 	QButtonGroup* btngroup_contours = nullptr;
+	QButtonGroup* btngroup_cvtColor = nullptr;
 
 	QList<QButtonGroup*> btngroups;
 

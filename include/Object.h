@@ -3,6 +3,7 @@
 
 
 #include <opencv2/opencv.hpp>
+#include "Enums.h"
 class QImage;
 class Widget;
 

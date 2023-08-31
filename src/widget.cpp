@@ -7,6 +7,7 @@
 #include "../include/Connected.h"
 #include "../include/LabelImg.h"
 #include "../include/Contours.h"
+#include "../include/Cvtcolor.h"
 #include <QDebug>
 #include <QBoxLayout>
 #include <QGridLayout>
@@ -37,6 +38,7 @@
 #include <QColorDialog>
 #include <QFile>
 #include <QStatusBar>
+#include <QActionGroup>
 
 Widget* Widget::widget = nullptr;
 
@@ -52,6 +54,7 @@ Widget::Widget(QMainWindow* parent)
 	ori_mt(cv::imread("../resource/dog.png")),
 	ori_img(Mat2QImage(ori_mt))
 {
+	ori_mt.copyTo(origin_convert);
 	cv::utils::logging::setLogLevel(cv::utils::logging::LOG_LEVEL_ERROR);
 	resize(880,780);
 	this->move(200,20);
@@ -161,6 +164,7 @@ void Widget::onClicked_buttonGroup_blur(QAbstractButton* btn)
 			returnPoint();
 			sub_lab_img->setVisible(false);
 		}
+		clearAllWidgetValue();
 	}
 	else {
 		restore_cutOperation();
@@ -194,6 +198,7 @@ void Widget::onClicked_buttonGroup_threshold(QAbstractButton* btn)
 			returnPoint();
 			sub_lab_img->setVisible(false);
 		}
+		clearAllWidgetValue();
 	}
 	else {
 		restore_cutOperation();
@@ -222,6 +227,7 @@ void Widget::onClicked_buttonGroup_morphology(QAbstractButton* btn)
 			returnPoint();
 			sub_lab_img->setVisible(false);
 		}
+		clearAllWidgetValue();
 	}
 	else {
 		restore_cutOperation();
@@ -262,6 +268,7 @@ void Widget::onClicked_buttonGroup_connected(QAbstractButton* btn)
 			returnPoint();
 			sub_lab_img->setVisible(false);
 		}
+		clearAllWidgetValue();
 	}
 	else {
 		restore_cutOperation();
@@ -292,6 +299,7 @@ void Widget::onClicked_buttonGroup_contours(QAbstractButton* btn)
 			returnPoint();
 			sub_lab_img->setVisible(false);
 		}
+		clearAllWidgetValue();
 	}
 	else {
 		restore_cutOperation();
@@ -309,12 +317,31 @@ void Widget::onClicked_buttonGroup_contours(QAbstractButton* btn)
 	}
 }
 
+void Widget::onTriggered_actionGroup(QAction* action)
+{
+	cv::Mat ori_mt_res;
+	if (action == action_hsv) {
+		cv::cvtColor(origin_convert, ori_mt_res, cv::COLOR_BGR2HSV);
+	}
+	else if (action == action_hls) {
+		cv::cvtColor(origin_convert, ori_mt_res, cv::COLOR_BGR2HLS);
+	}
+	else if (action == action_lab) {
+		cv::cvtColor(origin_convert, ori_mt_res, cv::COLOR_BGR2Lab);
+	}
+	else if (action == action_rgb) {
+		cv::cvtColor(origin_convert, ori_mt_res, cv::COLOR_BGR2RGB);
+	}
+	loadANewPicture(ori_mt_res);
+}
+
 void Widget::onTriggered_action_openFile()
 {
 	QString fileName = QFileDialog::getOpenFileName(nullptr, "选择文件", ".",	"图像文件(*.png *.jpg)");
 	if (!fileName.isEmpty()) {
 		ori_mt = cv::imread(fileName.toLocal8Bit().data());
 		ori_mt.copyTo(savePoint_mt);
+		ori_mt.copyTo(origin_convert);
 		ori_mt.copyTo(mt);
 
 		//存图片
@@ -484,6 +511,17 @@ void Widget::clearAllWidgetValue()
 	}
 }
 
+void Widget::loadANewPicture(const cv::Mat& new_mt)
+{
+	new_mt.copyTo(ori_mt);
+	ori_mt.copyTo(savePoint_mt);
+	ori_mt.copyTo(mt);
+
+	//存图片
+	ori_img = Mat2QImage(ori_mt);
+	img = Mat2QImage(ori_mt);
+	lab_img->setPixmap(QPixmap::fromImage(ori_img));
+}
 
 void Widget::createAction()
 {
@@ -536,6 +574,13 @@ void Widget::createAction()
 	colorDialog = new QColorDialog(this);
 	connect(colorDialog, &QColorDialog::currentColorChanged,
 		this, &Widget::onTriggered_ColorDialog_choice);
+
+	action_group = new QActionGroup(this);
+	action_group->addAction(action_hls = new QAction("转换为HLS格式",this));
+	action_group->addAction(action_hsv = new QAction("转换为HSV格式", this));
+	action_group->addAction(action_rgb = new QAction("转换为RGB格式", this));
+	action_group->addAction(action_lab = new QAction("转换为LAB格式", this));
+	connect(action_group, &QActionGroup::triggered, this, &Widget::onTriggered_actionGroup);
 }
 
 void Widget::createMenu()
@@ -556,7 +601,12 @@ void Widget::createMenu()
 	menu_edit = menuBar()->addMenu(tr("&编辑"));
 	menu_edit->addAction(action_restore);
 
-	
+	//图片格式转换
+	menu_convert = menuBar()->addMenu(tr("&转换"));
+	menu_convert->addAction(action_hls);
+	menu_convert->addAction(action_hsv);
+	menu_convert->addAction(action_lab);
+	menu_convert->addAction(action_rgb);
 }
 
 void Widget::createToolBar()
@@ -718,7 +768,7 @@ void Widget::createToolBox()
 	widget_contours->setLayout(gird_contours);
 
 
-	//创建ToolBox
+	//-----------------创建ToolBox-----------------
 	toolbox_side = new QToolBox(this);
 	toolbox_side->setMinimumWidth(200);
 	toolbox_side->setMaximumWidth(200);
@@ -738,9 +788,13 @@ void Widget::createToolBox()
 		curToolBoxIndex = value;
 
 		//	清除之前页面上的选项
-		for (auto& x : btngroups[preToolBoxIndex]->buttons()) {
+		auto btns = btngroups[preToolBoxIndex]->buttons();
+		btngroups[preToolBoxIndex]->setExclusive(false);
+		for (auto& x : btns) {
 			x->setChecked(false);
+			qInfo() << x->isChecked();
 		}
+		btngroups[preToolBoxIndex]->setExclusive(true);
 	
 		if (mode) {
 			//图片数据继承下来
@@ -783,6 +837,9 @@ QWidget* Widget::createToolBtnItemWidget(const QString& text, int id, const QStr
 	}
 	else if (belongsToEnum<CONTOURS>(id)) {
 		btngroup_contours->addButton(btn, id); //轮廓绘制
+	}
+	else if (belongsToEnum<CVTCOLOR>(id)) {
+		btngroup_cvtColor->addButton(btn, id); //图像转换
 	}
 	
 
@@ -934,7 +991,9 @@ QWidget* Widget::create_GUIGaussianBlur()
 	hlayout3->addWidget(slider3);
 	//Y偏移连接信号
 	connect(slider3, &QSlider::sliderMoved, this, [=](int value) {
-		sub_lab_img->setVisible(true);
+		if (mode) {
+			sub_lab_img->setVisible(true);
+		}
 		blur->onTriggered_slider3_valueChange_gaussianBlur(value);
 		});
 

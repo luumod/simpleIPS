@@ -3,6 +3,7 @@
 
 #include <QImage>
 #include <opencv2/opencv.hpp>
+#include "Enums.h"
 
 inline QImage Mat2QImage(const cv::Mat& mat)
 {
@@ -31,7 +32,6 @@ inline QImage Mat2QImage(const cv::Mat& mat)
 
     return image;
 }
-
 
 
 #endif // MAT2QIMAGE_H

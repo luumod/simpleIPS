@@ -132,6 +132,9 @@ Widget::~Widget()
 		delete x;
 		x = nullptr;
 	}
+	while (!sta.empty()) {
+		sta.pop();
+	}
 }
 
 void Widget::initFunction()
@@ -146,10 +149,13 @@ void Widget::initFunction()
 
 void Widget::dataClear()
 {
-	lab_img->setPixmap(QPixmap::fromImage(ori_img));
+	/*ori_mt = origin_convert;
+	lab_img->setPixmap(QPixmap::fromImage(Mat2QImage(ori_mt)));
 	ori_mt.copyTo(mt);
 	ori_mt.copyTo(savePoint_mt);
-	img = Mat2QImage(mt);
+	img = Mat2QImage(mt);*/
+
+	loadANewPicture(origin_convert);
 }
 
 void Widget::onClicked_buttonGroup_blur(QAbstractButton* btn) 
@@ -291,9 +297,6 @@ void Widget::onClicked_buttonGroup_contours(QAbstractButton* btn)
 	int id = btngroup_contours->id(btn);
 	now = id;  //获取当前位置
 
-	//选择当前轮廓绘制模式
-	//connected->current_choice = id - CONNECTED::TYPE1; // 0 1
-
 	if (mode) {
 		if (sub_lab_img->isVisible()) {
 			returnPoint();
@@ -331,6 +334,10 @@ void Widget::onTriggered_actionGroup(QAction* action)
 	}
 	else if (action == action_rgb) {
 		cv::cvtColor(origin_convert, ori_mt_res, cv::COLOR_BGR2RGB);
+	}
+	else {
+		//原图
+		ori_mt_res = origin_convert;
 	}
 	loadANewPicture(ori_mt_res);
 }
@@ -404,6 +411,7 @@ void Widget::onTriggered_ColorDialog_choice(const QColor& color)
 
 void Widget::restore_cutOperation()
 {
+	sub_lab_img->setVisible(false);
 	clearAllWidgetValue();
 	//重置图片数据 ori_mt 不变
 	dataClear();
@@ -450,25 +458,22 @@ void Widget::onTriggered_action_undo()
 
 void Widget::savePoint()
 {
-	/*if (mode) {
-		lab_img->setPixmap(QPixmap::fromImage(img));
-		cv::imshow("test", mt);
-		sub_lab_img->setVisible(false);
-	}*/
 	//每次切换操作时自动保存当前图片作为保存点
 	mt.copyTo(savePoint_mt); //保存一份副本
+	sta.push(mt);
 }
 
 void Widget::returnPoint()
 {
 	//读取存档保存点
-	mt = savePoint_mt;  //保存点无须继续操作，直接 = 赋值
-	img = Mat2QImage(mt);
-}
-
-void Widget::choiceToolBtnFalse()
-{
-	
+	//获取当前栈顶的mat
+	if (!sta.empty()) {
+		mt = sta.top();
+		sta.pop();
+		img = Mat2QImage(mt);
+	}
+	//mt = savePoint_mt;  //保存点无须继续操作，直接 = 赋值
+	//img = Mat2QImage(mt);
 }
 
 void Widget::setIndexPageWidgetValue(int index)
@@ -549,7 +554,7 @@ void Widget::createAction()
 	action_restore = new QAction(tr("重置图片"), this);
 	action_restore->setStatusTip(tr("重置此图片，取消所有加工"));
 	action_restore->setIcon(QIcon("../resource/restore.png"));
-	action_restore->setShortcut(tr("Ctrl+Z"));
+	action_restore->setShortcut(tr("Ctrl+Shift+Z"));
 	connect(action_restore, &QAction::triggered, this, &Widget::onTriggered_action_allRestore);
 
 	//开始制作模式
@@ -561,6 +566,7 @@ void Widget::createAction()
 
 	//撤销
 	action_return = new QAction(tr("撤销"), this);
+	action_return->setShortcut(tr("Ctrl+Z"));
 	action_return->setStatusTip(tr("撤销此操作"));
 	action_return->setIcon(QIcon("../resource/return.png"));
 	connect(action_return, &QAction::triggered, this, &Widget::onTriggered_action_undo);
@@ -576,6 +582,7 @@ void Widget::createAction()
 		this, &Widget::onTriggered_ColorDialog_choice);
 
 	action_group = new QActionGroup(this);
+	action_group->addAction(action_ori = new QAction("转换为原图", this));
 	action_group->addAction(action_hls = new QAction("转换为HLS格式",this));
 	action_group->addAction(action_hsv = new QAction("转换为HSV格式", this));
 	action_group->addAction(action_rgb = new QAction("转换为RGB格式", this));
@@ -598,11 +605,12 @@ void Widget::createMenu()
 	menu_file->addSeparator();
 	menu_file->addAction(action_exit);
 
-	menu_edit = menuBar()->addMenu(tr("&编辑"));
-	menu_edit->addAction(action_restore);
+	//menu_edit = menuBar()->addMenu(tr("&编辑"));
+	//menu_edit->addAction(action_restore);
 
 	//图片格式转换
 	menu_convert = menuBar()->addMenu(tr("&转换"));
+	menu_convert->addAction(action_ori);
 	menu_convert->addAction(action_hls);
 	menu_convert->addAction(action_hsv);
 	menu_convert->addAction(action_lab);
@@ -792,7 +800,6 @@ void Widget::createToolBox()
 		btngroups[preToolBoxIndex]->setExclusive(false);
 		for (auto& x : btns) {
 			x->setChecked(false);
-			qInfo() << x->isChecked();
 		}
 		btngroups[preToolBoxIndex]->setExclusive(true);
 	
@@ -1353,7 +1360,7 @@ QWidget* Widget::create_GUIContours()
 		comb3->addItem(QString("%1").arg(i));
 	}
 
-	connect(comb3, &QComboBox::currentIndexChanged, this, [=](int index) {
+	connect(comb3, &QComboBox::activated, this, [=](int index) {
 		if (mode) {
 			sub_lab_img->setVisible(true);
 		}

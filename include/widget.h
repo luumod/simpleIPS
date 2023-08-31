@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <opencv2/opencv.hpp>
+#include <stack>
 class QAbstractButton;
 class QButtonGroup;
 class QGridLayout;
@@ -98,8 +99,6 @@ public slots:
 	//读取保存点
 	void returnPoint();
 
-	void choiceToolBtnFalse();
-
 private: //辅助函数
 	//清除某一页参数的数值
 	void setIndexPageWidgetValue(int index = -1);
@@ -119,6 +118,9 @@ public:
 
 	QImage img;
 
+	//撤销功能
+	std::stack<cv::Mat> sta;
+
 	QLabel* lab_img = nullptr;
 	Label* sub_lab_img = nullptr; //预览图片
 	static Widget* widget;
@@ -133,6 +135,7 @@ private:
 	QAction* action_return = nullptr;
 	QAction* action_preview = nullptr;
 
+	QAction* action_ori = nullptr;
 	QAction* action_hls = nullptr;
 	QAction* action_rgb = nullptr;
 	QAction* action_hsv = nullptr;

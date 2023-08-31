@@ -2,7 +2,7 @@
 #include "../include/Mat2QImage.h"
 #include "../include/widget.h"
 #include <QColor>
-
+#include <QDebug>
 Contours::Contours() :Object() {}
 
 Contours::~Contours() {}

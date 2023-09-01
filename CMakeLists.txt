@@ -51,10 +51,10 @@ add_executable(QtPro
     include/QImage2Mat.h 
     include/LabelImg.h 
     include/Contours.h
-    include/Cvtcolor.h)
+    include/Cvtcolor.h "include/Common.h")
 
  add_executable(QtTest
-    QtTest/test.cpp )
+    QtTest/test.cpp  "include/Common.h")
 
 
 

@@ -54,3 +54,12 @@ void Morphology::onTriggered_slider3_valueChanged_anchorY(int value) {
 		morphology();
 	}
 }
+
+void Morphology::onReturnPressed_Edit(QList<QString> strs)
+{
+	this->Kernel = strs[0].toInt();
+	this->anchorX = strs[1].toInt();
+	this->anchorY = strs[2].toInt();
+	this->iters = strs[3].toInt();
+	morphology();
+}

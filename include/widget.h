@@ -25,6 +25,7 @@ class QFileDialog;
 class QColorDialog;
 class CvtColor;
 class QActionGroup;
+class QHBoxLayout;
 
 class Widget :public QMainWindow {
 	Q_OBJECT
@@ -47,12 +48,15 @@ public:
 
 	QWidget* createToolBtnItemWidget(const QString& text, int id, const QString& fileName = "");
 
+	template <typename Type>
+	QHBoxLayout* create_Edit_hLayout(const QString& filter, const QString& text, Type* t);
+
 	//GUI创建
 	QWidget* create_GUIAvgBlur();		//均值滤波
 	QWidget* create_GUIGaussianBlur();	//高斯滤波
 	QWidget* create_GUIMedianBlur();	//中值滤波
 	QWidget* create_GUIBilateralBlur(); //双边滤波
-	QWidget* create_GUIThreshoild();	//阈值化
+	QWidget* create_GUIThreshold();	//阈值化
 	QWidget* create_GUIMorphology();	//形态学
 	QWidget* create_GUIConnected();		//连通块分析
 	QWidget* create_GUIContours();		//轮廓检测
@@ -125,6 +129,8 @@ public:
 	Label* sub_lab_img = nullptr; //预览图片
 	static Widget* widget;
 	bool mode = false;
+
+	int now = -1; //全局定位点，定位在哪个功能位置
 private:
 
 	QAction* action_exit = nullptr;
@@ -154,7 +160,7 @@ private:
 	QToolBox* toolbox_side = nullptr;
 	int preToolBoxIndex = 0, curToolBoxIndex = 0;
 
-	int now = -1; //全局定位点，定位在哪个功能位置
+	
 
 	QLabel* statusLab = nullptr;
 	

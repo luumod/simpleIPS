@@ -30,6 +30,13 @@ public slots:
 	void onTriggered_slider1_valueChange_bilateralBlur(int);
 	void onTriggered_slider2_valueChange_bilateralBlur(int);
 	void onTriggered_slider3_valueChange_bilateralBlur(int);
+
+	void onReturnPressed_AvgBlur_Edit(QList<QString> strs);
+	void onReturnPressed_Gaussian_Edit(QList<QString> strs);
+	void onReturnPressed_Median_Edit(QList<QString> strs);
+	void onReturnPressed_Bilateral_Edit(QList<QString> strs);
+
+	void onReturnPressed_Edit(QList<QString> strs);
 public:
 	//均值滤波
 	int avg_Ksize = 1, anchorX = -1, anchorY = -1;

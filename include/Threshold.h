@@ -16,6 +16,8 @@ public:
 public slots:
 	void onTriggered_slider1_valueChanged_thresholdValue(int value);
 	void onTriggered_slider2_valueChanged_maxValue(int value);
+
+	void onReturnPressed_Edit(QList<QString> strs);
 public:
 	//阈值 最大值
 	int threshold_value = 128, maxVal = 255;

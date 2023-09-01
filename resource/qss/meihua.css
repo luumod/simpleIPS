@@ -36,3 +36,8 @@ QLabel#textLab{
     font-family: '宋体';
     font-size: 12px;
 }
+
+
+QLineEdit{
+    border: 2px solid rgb(66, 81, 59);
+}

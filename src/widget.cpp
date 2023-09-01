@@ -8,6 +8,7 @@
 #include "../include/LabelImg.h"
 #include "../include/Contours.h"
 #include "../include/Cvtcolor.h"
+#include "../include/Common.h"
 #include <QDebug>
 #include <QBoxLayout>
 #include <QGridLayout>
@@ -39,6 +40,8 @@
 #include <QFile>
 #include <QStatusBar>
 #include <QActionGroup>
+#include <QLineEdit>
+#include <QRegularExpressionValidator >
 
 Widget* Widget::widget = nullptr;
 
@@ -61,6 +64,7 @@ Widget::Widget(QMainWindow* parent)
 
 	lab_img = new QLabel;
 
+	initFunction();
 	createAction();
 	createMenu();
 	createToolBar();
@@ -73,7 +77,9 @@ Widget::Widget(QMainWindow* parent)
 		context_menu->exec(QCursor::pos());
 		});
 	
-	lab_img->setPixmap(QPixmap::fromImage(ori_img));	
+	auto main_tpic = QPixmap::fromImage(ori_img);
+	auto main_pic = main_tpic.scaled(400, 400, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+	lab_img->setPixmap(main_pic);	
 	lab_img->setScaledContents(true);
 	lab_img->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
@@ -93,19 +99,19 @@ Widget::Widget(QMainWindow* parent)
 	stack_tools->addWidget(create_GUIGaussianBlur());//1
 	stack_tools->addWidget(create_GUIMedianBlur());  //2
 	stack_tools->addWidget(create_GUIBilateralBlur());//3
-	stack_tools->addWidget(create_GUIThreshoild());	//4
+	stack_tools->addWidget(create_GUIThreshold());	//4
 	stack_tools->addWidget(create_GUIMorphology());	//5
 	stack_tools->addWidget(create_GUIConnected()); //6
 	stack_tools->addWidget(create_GUIContours());  //7
 	stack_tools->setVisible(false);
 
 	vlayout_right->addWidget(stack_tools, 1);
-
+	vlayout_right->setSpacing(0);
 
 	//右侧主窗口
 	QWidget* picture_show = new QWidget;
 	picture_show->setLayout(vlayout_right);
-	picture_show->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+	picture_show->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 
 	//主程序布局
 	QHBoxLayout* layout = new QHBoxLayout;
@@ -346,7 +352,10 @@ void Widget::onTriggered_action_openFile()
 {
 	QString fileName = QFileDialog::getOpenFileName(nullptr, "选择文件", ".",	"图像文件(*.png *.jpg)");
 	if (!fileName.isEmpty()) {
-		ori_mt = cv::imread(fileName.toLocal8Bit().data());
+		cv::Size scaledSize(400, 400);
+
+		auto t_ori_mt = cv::imread(fileName.toLocal8Bit().data());
+		cv::resize(t_ori_mt, ori_mt, scaledSize);
 		ori_mt.copyTo(savePoint_mt);
 		ori_mt.copyTo(origin_convert);
 		ori_mt.copyTo(mt);
@@ -862,18 +871,66 @@ QWidget* Widget::createToolBtnItemWidget(const QString& text, int id, const QStr
 	return wid;
 }
 
+template <typename Type>
+QHBoxLayout* Widget::create_Edit_hLayout(const QString& filter, const QString& text, Type* t)
+{
+	/*
+	在C++模板函数中，当使用类型模板参数时，传递给模板函数的参数会根据其类型进行实例化。在您的例子中，模板参数 Type 是一个类型参数，而不是一个变量参数。
+	当您传递 blur 变量给模板函数时，实际上是根据 blur 的类型进行模板实例化，并生成相应的函数代码。在模板函数内部，t 参数是根据实例化的类型来创建的，而不是直接引用传递。
+	这意味着 t 的内存地址与 blur 的内存地址可能不同，因为它们是不同的对象。尽管在语义上它们可能表示相同的值，但它们是不同的实例。
+	如果您希望 t 和 blur 具有相同的内存地址，可以将 blur 作为指针参数传递给模板函数，并在函数内部使用指针进行操作
+	*/
+	QLineEdit* edit = new QLineEdit;
+	edit->setPlaceholderText(text);
+	edit->setFixedWidth(edit->fontMetrics().boundingRect(edit->placeholderText()).width()+20);
+	//设置验证器
+	QRegularExpressionValidator* validator = new QRegularExpressionValidator(QRegularExpression(filter), edit);
+	edit->setValidator(validator);
+	connect(edit, &QLineEdit::returnPressed, this, [=]() {
+		if (mode) {
+			sub_lab_img->setVisible(true);
+		}
+		QList<QString> lStr = edit->text().split(" ");
+		(*t)->onReturnPressed_Edit(lStr);
+		});
+	QPushButton* ok_btn = new QPushButton("确定");
+	connect(ok_btn, &QPushButton::clicked, this, [=]() {
+		if (mode) {
+			sub_lab_img->setVisible(true);
+		}
+		QString str = edit->text();
+		int pos = 0;
+		auto state = validator->validate(str, pos);
+		//必须首先合法
+		if (state == QValidator::Acceptable) {
+			QList<QString> lStr = edit->text().split(" ");
+			(*t)->onReturnPressed_Edit(lStr);
+		}
+		});
+
+	QHBoxLayout* hLayout = new QHBoxLayout;
+	hLayout->addStretch(1);
+	hLayout->addWidget(edit);
+	hLayout->addSpacing(5);
+	hLayout->addWidget(ok_btn);
+	hLayout->addStretch(1);
+	hLayout->setSpacing(0);
+
+	return hLayout;
+}
+
 
 //-----------------均值GUI----------------------------
 QWidget* Widget::create_GUIAvgBlur() //1：均值 2：高斯
 {
 	QSlider* slider1 = new QSlider(Qt::Horizontal);
-	slider1->setRange(1, 50);
+	slider1->setRange(AVG_BLUR_MIN_SIZE, AVG_BLUR_MAX_SIZE);
 	slider1->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 	QSlider* slider2 = new QSlider(Qt::Horizontal);
-	slider2->setRange(1, 50);
+	slider2->setRange(AVG_BLUR_MIN_SIZE, AVG_BLUR_MAX_SIZE);
 	slider2->setSizePolicy(QSizePolicy::Expanding,  QSizePolicy::Fixed);
 	QSlider* slider3 = new QSlider(Qt::Horizontal);
-	slider3->setRange(1, 50);
+	slider3->setRange(AVG_BLUR_MIN_SIZE, AVG_BLUR_MAX_SIZE);
 	slider3->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
 	//水平布局管理两个控件：label和滑块
@@ -931,10 +988,16 @@ QWidget* Widget::create_GUIAvgBlur() //1：均值 2：高斯
 	vLayout->addWidget(adj_avgBlur_s1);
 	vLayout->addWidget(adj_avgBlur_s2);
 	vLayout->addWidget(adj_avgBlur_s3);
+	vLayout->setSpacing(0);
+
+	QVBoxLayout* vLayout_2 = new QVBoxLayout;
+	vLayout_2->addLayout(vLayout);
+	vLayout_2->addLayout(create_Edit_hLayout("\\d+\\s\\d+\\s\\d+", "KSize X Y",&blur));
+	vLayout_2->setSpacing(0);
 
 	//整体最后再组成一个QWidget
 	QWidget* adj_avgBlur = new QWidget;
-	adj_avgBlur->setLayout(vLayout);
+	adj_avgBlur->setLayout(vLayout_2);
 
 	return adj_avgBlur;
 }
@@ -943,14 +1006,14 @@ QWidget* Widget::create_GUIAvgBlur() //1：均值 2：高斯
 QWidget* Widget::create_GUIGaussianBlur()
 {
 	QSlider* slider1 = new QSlider(Qt::Horizontal);
-	slider1->setRange(1, 41);
+	slider1->setRange(GAUSSIAN_BLUR_MIN_SIZE, GAUSSIAN_BLUR_MAX_SIZE);
 	slider1->setSingleStep(2);
 	slider1->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 	QSlider* slider2 = new QSlider(Qt::Horizontal);
-	slider2->setRange(1, 40);
+	slider2->setRange(1, GAUSSIAN_BLUR_SIGMAX);
 	slider2->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 	QSlider* slider3 = new QSlider(Qt::Horizontal);
-	slider3->setRange(1, 40);
+	slider3->setRange(1, GAUSSIAN_BLUR_SIGMAY);
 	slider3->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
 	//水平布局管理两个控件：label和滑块
@@ -1013,9 +1076,15 @@ QWidget* Widget::create_GUIGaussianBlur()
 	vLayout->addWidget(adj_gasBlur_s2);
 	vLayout->addWidget(adj_gasBlur_s3);
 
+	QVBoxLayout* vLayout_2 = new QVBoxLayout;
+	vLayout_2->addLayout(vLayout);
+	vLayout_2->addLayout(create_Edit_hLayout("\\d+\\s\\d+\\s\\d+", "KSize X Y",&blur));
+	vLayout_2->setSpacing(0);
+
+
 	//整体最后再组成一个QWidget
 	QWidget* adj_gasBlur = new QWidget;
-	adj_gasBlur->setLayout(vLayout);
+	adj_gasBlur->setLayout(vLayout_2);
 
 	return adj_gasBlur;
 }
@@ -1025,7 +1094,7 @@ QWidget* Widget::create_GUIGaussianBlur()
 QWidget* Widget::create_GUIMedianBlur()
 {
 	QSlider* slider = new QSlider(Qt::Horizontal);
-	slider->setRange(1, 81);
+	slider->setRange(1, MEDIAN_BLUR_MAX);
 	slider->setSingleStep(2);
 
 	connect(slider, &QSlider::sliderMoved, this, [=](int value) {
@@ -1039,12 +1108,17 @@ QWidget* Widget::create_GUIMedianBlur()
 	});
 
 
-	QHBoxLayout* hLayout = new QHBoxLayout;
-	hLayout->addWidget(new QLabel("ksize"));
-	hLayout->addWidget(slider);
+	QHBoxLayout* hLayout2 = new QHBoxLayout;
+	hLayout2->addWidget(new QLabel("ksize"));
+	hLayout2->addWidget(slider);
+
+	QVBoxLayout* vLayout_2 = new QVBoxLayout;
+	vLayout_2->addLayout(hLayout2);
+	vLayout_2->addLayout(create_Edit_hLayout("\\d+", "KSize",&blur));
+	vLayout_2->setSpacing(0);
 
 	QWidget* adj_meanBlur = new QWidget;
-	adj_meanBlur->setLayout(hLayout);
+	adj_meanBlur->setLayout(vLayout_2);
 
 	return adj_meanBlur;
 }
@@ -1055,13 +1129,13 @@ QWidget* Widget::create_GUIMedianBlur()
 QWidget* Widget::create_GUIBilateralBlur()
 {
 	QSlider* slider1 = new QSlider(Qt::Horizontal);
-	slider1->setRange(1,100);
+	slider1->setRange(1, BILATERAL_BLUR_MAX_SIZE);
 	slider1->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 	QSlider* slider2 = new QSlider(Qt::Horizontal);
-	slider2->setRange(0,255);
+	slider2->setRange(0, BILATERAL_BLUR_MAX_COLOR);
 	slider2->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 	QSlider* slider3 = new QSlider(Qt::Horizontal);
-	slider3->setRange(0,300);
+	slider3->setRange(0, BILATERAL_BLUR_MAX_SPACE);
 	slider3->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
 	//水平布局管理两个控件：label和滑块
@@ -1117,16 +1191,20 @@ QWidget* Widget::create_GUIBilateralBlur()
 	vLayout->addWidget(adj_binBlur_s2);
 	vLayout->addWidget(adj_binBlur_s3);
 
+	QVBoxLayout* vLayout_2 = new QVBoxLayout;
+	vLayout_2->addLayout(vLayout);
+	vLayout_2->addLayout(create_Edit_hLayout("\\d+\\s\\d+\\s\\d+", "bin_d sigmaColor sigmaSpace", &blur));
+	vLayout_2->setSpacing(0);
+
 	//整体最后再组成一个QWidget
 	QWidget* adj_bilateralBlur = new QWidget;
-	adj_bilateralBlur->setLayout(vLayout);
-
+	adj_bilateralBlur->setLayout(vLayout_2);
 
 	return adj_bilateralBlur;
 }
 
 //----------------阈值GUI----------------------------
-QWidget* Widget::create_GUIThreshoild()
+QWidget* Widget::create_GUIThreshold()
 {
 	QSlider* slider1 = new QSlider(Qt::Horizontal);
 	slider1->setRange(0, 255);
@@ -1178,9 +1256,14 @@ QWidget* Widget::create_GUIThreshoild()
 	vLayout->addWidget(adj_binBlur_s1);
 	vLayout->addWidget(adj_binBlur_s2);
 
+	QVBoxLayout* vLayout_2 = new QVBoxLayout;
+	vLayout_2->addLayout(vLayout);
+	vLayout_2->addLayout(create_Edit_hLayout("\\d+\\s\\d+", "threshold_value maxVal",&threshold));
+	vLayout_2->setSpacing(0);
+
 	//整体最后再组成一个QWidget
 	QWidget* adj_threshold = new QWidget;
-	adj_threshold->setLayout(vLayout);
+	adj_threshold->setLayout(vLayout_2);
 
 	return adj_threshold;
 }
@@ -1254,9 +1337,14 @@ QWidget* Widget::create_GUIMorphology()
 	vLayout->addWidget(adj_binBlur_s2);
 	vLayout->addWidget(adj_binBlur_s3);
 
+	QVBoxLayout* vLayout_2 = new QVBoxLayout;
+	vLayout_2->addLayout(vLayout);
+	vLayout_2->addLayout(create_Edit_hLayout("\\d+\\s\\d+\\s\\d+\\s\\d+", "Kernel X Y iters",&morphology));
+	vLayout_2->setSpacing(0);
+
 	//整体最后再组成一个QWidget
 	QWidget* adj_morphology = new QWidget;
-	adj_morphology->setLayout(vLayout);
+	adj_morphology->setLayout(vLayout_2);
 
 	return adj_morphology;
 }
@@ -1305,15 +1393,9 @@ QWidget* Widget::create_GUIConnected()
 	hlayout2->addWidget(comb2);
 	hlayout2->setAlignment(Qt::AlignmentFlag::AlignCenter);
 
-	QWidget* w1 = new QWidget;
-	w1->setLayout(hlayout1);
-
-	QWidget* w2 = new QWidget;
-	w2->setLayout(hlayout2);
-
 	QVBoxLayout* vlayout = new QVBoxLayout;
-	vlayout->addWidget(w1);
-	vlayout->addWidget(w2);
+	vlayout->addLayout(hlayout1);
+	vlayout->addLayout(hlayout2);
 
 	QWidget* adj_connected = new QWidget;
 	adj_connected->setLayout(vlayout);

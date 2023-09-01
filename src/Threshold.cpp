@@ -41,3 +41,10 @@ void Threshold::onTriggered_slider2_valueChanged_maxValue(int value) {
 	maxVal = value;
 	threshold();
 }
+
+void Threshold::onReturnPressed_Edit(QList<QString> strs)
+{
+	threshold_value = strs[0].toInt();
+	maxVal = strs[1].toInt();
+	threshold();
+}

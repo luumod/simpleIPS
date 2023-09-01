@@ -163,3 +163,54 @@ void Blur::onTriggered_slider3_valueChange_bilateralBlur(int value)
 	sigmaSpace = value;
 	bilateral_blur();
 }
+
+
+void Blur::onReturnPressed_Edit(QList<QString> strs) {
+	if (get()->now == BLUR::Average) {
+		onReturnPressed_AvgBlur_Edit(strs);
+	}
+	else if (get()->now == BLUR::Gaussian) {
+		onReturnPressed_Gaussian_Edit(strs);
+	}
+	else if (get()->now == BLUR::Median) {
+		onReturnPressed_Median_Edit(strs);
+	}
+	else if (get()->now == BLUR::Bilateral) {
+		onReturnPressed_Bilateral_Edit(strs);
+	}
+}
+
+//自己输入
+void Blur::onReturnPressed_AvgBlur_Edit(QList<QString> strs)
+{
+	this->avg_Ksize = strs[0].toInt();
+	this->anchorX = strs[1].toInt();
+	this->anchorY = strs[2].toInt();
+	avg_blur();
+}
+
+
+void Blur::onReturnPressed_Gaussian_Edit(QList<QString> strs) {
+	int n1 = strs[0].toInt();
+	n1 = (n1 % 2 == 0) ? n1 - 1 : n1;
+	this->gas_Ksize = n1;
+	this->sigmaX = strs[1].toInt();
+	this->sigmaY = strs[2].toInt();
+	Gaussian_blur();
+}
+
+void Blur::onReturnPressed_Median_Edit(QList<QString> strs)
+{
+	int n1 = strs[0].toInt();
+	n1 = (n1 % 2 == 0) ? n1 - 1 : n1;
+	this->median_Ksize = n1;
+	median_blur();
+}
+
+void Blur::onReturnPressed_Bilateral_Edit(QList<QString> strs)
+{
+	this->bin_d = strs[0].toInt();
+	this->sigmaColor = strs[1].toInt();
+	this->sigmaSpace = strs[2].toInt();
+	bilateral_blur();
+}

@@ -1,7 +1,7 @@
 ﻿#include "../include/widget.h"
 #include <QApplication>
 //#include <QCoreApplication>
-//#include <vld.h>
+#include <vld.h>
 
 class Widget;
 

@@ -14,8 +14,7 @@ public:
 
 	Widget* get();
 	
-public:
-	//virtual void restore() = 0;
+public:;
 	virtual void initialize() = 0;
 	void update(const cv::Mat& tMt);
 

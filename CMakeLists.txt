@@ -38,6 +38,8 @@ add_executable(QtPro
     src/LabelImg.cpp
     src/Contours.cpp
     src/Cvtcolor.cpp
+    src/DrawWidget.cpp
+    src/GraphicsScene.cpp
 
     include/widget.h
     include/belongsToEnum.h 
@@ -51,10 +53,14 @@ add_executable(QtPro
     include/QImage2Mat.h 
     include/LabelImg.h 
     include/Contours.h
-    include/Cvtcolor.h "include/Common.h")
+    include/Cvtcolor.h 
+    include/Common.h
+    include/DrawWidget.h 
+    include/GraphicsScene.h
+)
 
  add_executable(QtTest
-    QtTest/test.cpp  "include/Common.h")
+    QtTest/test.cpp )
 
 
 

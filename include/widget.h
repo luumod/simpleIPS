@@ -26,6 +26,7 @@ class QColorDialog;
 class CvtColor;
 class QActionGroup;
 class QHBoxLayout;
+class DrawWidget;
 
 class Widget :public QMainWindow {
 	Q_OBJECT
@@ -132,6 +133,8 @@ public:
 
 	int now = -1; //全局定位点，定位在哪个功能位置
 private:
+	DrawWidget* widget_draw = nullptr;
+
 
 	QAction* action_exit = nullptr;
 	QAction* action_open = nullptr;
@@ -146,6 +149,7 @@ private:
 	QAction* action_rgb = nullptr;
 	QAction* action_hsv = nullptr;
 	QAction* action_lab = nullptr;
+	QAction* action_draw = nullptr;
 	QActionGroup* action_group = nullptr;
 
 	//上下文菜单

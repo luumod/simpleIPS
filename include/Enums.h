@@ -12,6 +12,14 @@ enum TYPE {
 	LAB,
 };
 
+enum SHAPE {
+	Line = TYPE::LAB + 1,
+	Rect,
+	Eillipse,
+	Path,
+};
+
+
 enum BLUR {
 	Average = 1,
 	Gaussian,

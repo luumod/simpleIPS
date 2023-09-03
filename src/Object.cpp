@@ -3,7 +3,6 @@
 #include "../include/Mat2QImage.h"
 #include "../include/LabelImg.h"
 #include <QDebug>
-//#include <QLabel>
 
 Object::Object()
 {

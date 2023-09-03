@@ -8,6 +8,7 @@
 #include "../include/LabelImg.h"
 #include "../include/Contours.h"
 #include "../include/Cvtcolor.h"
+#include "../include/DrawWidget.h"
 #include "../include/Common.h"
 #include <QDebug>
 #include <QBoxLayout>
@@ -58,6 +59,8 @@ Widget::Widget(QMainWindow* parent)
 	ori_img(Mat2QImage(ori_mt))
 {
 	ori_mt.copyTo(origin_convert);
+	ori_img = Mat2QImage(ori_mt);
+	img = Mat2QImage(ori_mt);
 	cv::utils::logging::setLogLevel(cv::utils::logging::LOG_LEVEL_ERROR);
 	resize(880,780);
 	this->move(200,20);
@@ -155,12 +158,6 @@ void Widget::initFunction()
 
 void Widget::dataClear()
 {
-	/*ori_mt = origin_convert;
-	lab_img->setPixmap(QPixmap::fromImage(Mat2QImage(ori_mt)));
-	ori_mt.copyTo(mt);
-	ori_mt.copyTo(savePoint_mt);
-	img = Mat2QImage(mt);*/
-
 	loadANewPicture(origin_convert);
 }
 
@@ -585,10 +582,21 @@ void Widget::createAction()
 	action_preview->setStatusTip(tr("确定操作"));
 	connect(action_preview, &QAction::triggered, this, &Widget::onTriggered_action_previewToNormal);
 
+	action_draw = new QAction(tr("绘画"), this);
+	action_draw->setIcon(QIcon("../resource/draw.png"));
+	action_draw->setStatusTip(tr("绘图操作"));
+	connect(action_draw, &QAction::triggered, this, [=]() {
+		widget_draw = new DrawWidget;
+		widget_draw->show();
+		widget_draw->setAttribute(Qt::WA_DeleteOnClose);
+		});
+
 	//颜色
 	colorDialog = new QColorDialog(this);
 	connect(colorDialog, &QColorDialog::currentColorChanged,
 		this, &Widget::onTriggered_ColorDialog_choice);
+
+
 
 	action_group = new QActionGroup(this);
 	action_group->addAction(action_ori = new QAction("转换为原图", this));
@@ -597,6 +605,8 @@ void Widget::createAction()
 	action_group->addAction(action_rgb = new QAction("转换为RGB格式", this));
 	action_group->addAction(action_lab = new QAction("转换为LAB格式", this));
 	connect(action_group, &QActionGroup::triggered, this, &Widget::onTriggered_actionGroup);
+
+
 }
 
 void Widget::createMenu()
@@ -633,7 +643,10 @@ void Widget::createToolBar()
 	toolbar1->addAction(action_restore);
 	toolbar1->addAction(action_return);
 	toolbar1->addAction(action_preview);
+	toolbar1->addAction(action_draw);
+
 }
+
 
 
 void Widget::createToolBox()

@@ -166,16 +166,16 @@ void Blur::onTriggered_slider3_valueChange_bilateralBlur(int value)
 
 
 void Blur::onReturnPressed_Edit(QList<QString> strs) {
-	if (get()->now == BLUR::Average) {
+	if (get()->now_operation == BLUR::Average) {
 		onReturnPressed_AvgBlur_Edit(strs);
 	}
-	else if (get()->now == BLUR::Gaussian) {
+	else if (get()->now_operation == BLUR::Gaussian) {
 		onReturnPressed_Gaussian_Edit(strs);
 	}
-	else if (get()->now == BLUR::Median) {
+	else if (get()->now_operation == BLUR::Median) {
 		onReturnPressed_Median_Edit(strs);
 	}
-	else if (get()->now == BLUR::Bilateral) {
+	else if (get()->now_operation == BLUR::Bilateral) {
 		onReturnPressed_Bilateral_Edit(strs);
 	}
 }

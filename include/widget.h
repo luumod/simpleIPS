@@ -49,19 +49,20 @@ public:
 
 	QWidget* createToolBtnItemWidget(const QString& text, int id, const QString& fileName = "");
 
+	//创建每个操作的输入数值方式
 	template <typename Type>
 	QHBoxLayout* create_Edit_hLayout(const QString& filter, const QString& text, Type* t);
 
 	//GUI创建
-	QWidget* create_GUIAvgBlur();		//均值滤波
-	QWidget* create_GUIGaussianBlur();	//高斯滤波
-	QWidget* create_GUIMedianBlur();	//中值滤波
-	QWidget* create_GUIBilateralBlur(); //双边滤波
-	QWidget* create_GUIThreshold();	//阈值化
-	QWidget* create_GUIMorphology();	//形态学
-	QWidget* create_GUIConnected();		//连通块分析
-	QWidget* create_GUIContours();		//轮廓检测
-	QWidget* create_GUIChangeImg();		//颜色模型转换
+	QHBoxLayout* create_GUIAvgBlur();		//均值滤波
+	QHBoxLayout* create_GUIGaussianBlur();	//高斯滤波
+	QHBoxLayout* create_GUIMedianBlur();	//中值滤波
+	QHBoxLayout* create_GUIBilateralBlur(); //双边滤波
+	QHBoxLayout* create_GUIThreshold();		//阈值化
+	QHBoxLayout* create_GUIMorphology();	//形态学
+	QHBoxLayout* create_GUIConnected();		//连通块分析
+	QHBoxLayout* create_GUIContours();		//轮廓检测
+	QWidget* create_GUIChangeImg();			//颜色模型转换
 public slots:
 	void onClicked_buttonGroup_blur(QAbstractButton* btn);
 	void onClicked_buttonGroup_threshold(QAbstractButton* btn);
@@ -69,6 +70,7 @@ public slots:
 	void onClicked_buttonGroup_connected(QAbstractButton* btn);
 	void onClicked_buttonGroup_contours(QAbstractButton* btn);
 
+	//cvtColor转换
 	void onTriggered_actionGroup(QAction* action);
 
 	//打开新图片
@@ -104,6 +106,9 @@ public slots:
 	//读取保存点
 	void returnPoint();
 
+	//隐藏其他的QDialog
+	void hideAllDialog(QDialog* currDialog);
+
 private: //辅助函数
 	//清除某一页参数的数值
 	void setIndexPageWidgetValue(int index = -1);
@@ -127,13 +132,15 @@ public:
 	std::stack<cv::Mat> sta;
 
 	QLabel* lab_img = nullptr;
-	Label* sub_lab_img = nullptr; //预览图片
+	Label* sub_lab_img = nullptr; //自定义预览图片类
 	static Widget* widget;
 	bool mode = false;
 
-	int now = -1; //全局定位点，定位在哪个功能位置
+	int now_operation = -1; //记录当前操作位置，根据button的id。此变量用于在blur中选择
+	int now_dialog = 0;	    //记录当前的操作对话框 默认在第一个页面
 private:
-	DrawWidget* widget_draw = nullptr;
+
+	DrawWidget* widget_draw = nullptr; //一个简单的绘图板
 
 
 	QAction* action_exit = nullptr;
@@ -162,9 +169,7 @@ private:
 	QToolBar* toolbar1 = nullptr;
 
 	QToolBox* toolbox_side = nullptr;
-	int preToolBoxIndex = 0, curToolBoxIndex = 0;
-
-	
+	int preToolBoxIndex = 0, curToolBoxIndex = 0; //切换toolbox页面时清除选择状态
 
 	QLabel* statusLab = nullptr;
 	
@@ -176,6 +181,14 @@ private:
 	QButtonGroup* btngroup_contours = nullptr;
 	QButtonGroup* btngroup_cvtColor = nullptr;
 
+	//模糊操作对话框
+	QList<QDialog*> all_dlg;
+	QList<QDialog*> ls_dlg_avg;
+	QDialog* dlg_threshold = nullptr;
+	QDialog* dlg_morphology = nullptr;
+	QDialog* dlg_connected = nullptr;
+	QDialog* dlg_contours = nullptr;
+
 	QList<QButtonGroup*> btngroups;
 
 	QFileDialog* fileDialog = nullptr;
@@ -183,7 +196,6 @@ private:
 
 	//窗口布局
 	QVBoxLayout* vlayout_right = nullptr;
-	QStackedWidget* stack_tools = nullptr;
 
 	//---------------功能实现-----------------
 	Blur* blur = nullptr; //模糊

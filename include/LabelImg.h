@@ -6,16 +6,15 @@
 #include <QEvent>
 #include <QPixmap>
 
+/*
+实现对于预览图片的操作
+*/
+
 class Label :public QLabel {
 	Q_OBJECT
 public:
 	using QLabel::QLabel;
-	~Label() {
-		if (img) {
-			delete img;
-			img = nullptr;
-		}
-	}
+	~Label();
 protected:
 	void enterEvent(QEnterEvent* ev)override;
 	void leaveEvent(QEvent* ev)override;

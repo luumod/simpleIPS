@@ -1,6 +1,13 @@
 ﻿#include "../include/LabelImg.h"
 #include "../include/widget.h"
 
+Label::~Label() {
+	if (img) {
+		delete img;
+		img = nullptr;
+	}
+}
+
 void Label::enterEvent(QEnterEvent* ev)
 {
 	if (img) {

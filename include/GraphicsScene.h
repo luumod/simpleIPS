@@ -5,6 +5,10 @@
 #include <QPainterPath>
 #include "Enums.h"
 
+/*
+实现简单的绘图板场景
+*/
+
 class QPointF;
 class QGraphicsLineItem;
 class QGraphicsEllipseItem;
@@ -24,17 +28,15 @@ public:
 	QGraphicsPathItem* pathItem = nullptr;
 	QGraphicsRectItem* rectItem = nullptr;
 private:
-	QList<QGraphicsItem*> lsItems;
-	QPointF start, end;
-	QPainterPath path;
-	bool ok = false;
-	
-
-private:
 	void init();
 	void draw(SHAPE type);
 	void choice(QPointF start, QPointF end);
 	void choice(QPainterPath path);
+private:
+	QList<QGraphicsItem*> lsItems;
+	QPointF start, end;
+	QPainterPath path;
+	bool ok = false;
 };
 
 #endif

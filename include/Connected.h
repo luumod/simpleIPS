@@ -5,6 +5,9 @@
 #include <QWidget>
 #include <opencv2/opencv.hpp>
 
+/*
+图像连通操作
+*/
 class Connected :public Object {
 public:
 	Connected();

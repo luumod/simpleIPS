@@ -4,6 +4,11 @@
 
 主要是为了巩固 Qt 与学习 OpenCV 来做的这个软件。
 
+### 项目demo
+
+![image](https://github.com/luumod/myPhotoshopApp/assets/93420580/047d8674-0f01-4031-86a0-2813b3b50be4)
+
+
 ### 目前进度
 
 * 图像模糊操作

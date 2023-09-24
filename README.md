@@ -29,6 +29,8 @@
 * 2023年9月24日：优化界面，改为对话框操作。
 
 ### 项目demo
+视频演示地址：
+【使用opencv+Qt 自制的简易版图片处理软件（待完善）】 https://www.bilibili.com/video/BV1884y1D7Np/?share_source=copy_web&vd_source=465851c9e6a74ed955b31fc247cb8b9e
 
 ![image](https://github.com/luumod/myPhotoshopApp/assets/93420580/047d8674-0f01-4031-86a0-2813b3b50be4)
 ![image](https://github.com/luumod/myPhotoshopApp/assets/93420580/d94eb48b-cc0f-490b-a743-fcc9573a1aea)

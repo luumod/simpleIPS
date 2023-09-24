@@ -4,11 +4,6 @@
 
 主要是为了巩固 Qt 与学习 OpenCV 来做的这个软件。
 
-### 项目demo
-
-![image](https://github.com/luumod/myPhotoshopApp/assets/93420580/047d8674-0f01-4031-86a0-2813b3b50be4)
-
-
 ### 目前进度
 
 * 图像模糊操作
@@ -30,7 +25,17 @@
 * 2023年8月19日：完善代码，主类使用单例设计模式优化了图片造成的内存消耗。
 * 2023年8月28日：增加轮廓绘制功能，完善按钮的图标
 * 2023年8月31日：增加撤销功能。
-* 2023年9月3日：增加基本图形绘制模式
+* 2023年9月3日：增加基本图形绘制模式。
+* 2023年9月24日：优化界面，改为对话框操作。
+
+### 项目demo
+视频演示地址：
+【使用opencv+Qt 自制的简易版图片处理软件（待完善）】 https://www.bilibili.com/video/BV1884y1D7Np/?share_source=copy_web&vd_source=465851c9e6a74ed955b31fc247cb8b9e
+
+![image](https://github.com/luumod/myPhotoshopApp/assets/93420580/047d8674-0f01-4031-86a0-2813b3b50be4)
+![image](https://github.com/luumod/myPhotoshopApp/assets/93420580/d94eb48b-cc0f-490b-a743-fcc9573a1aea)
+![image](https://github.com/luumod/myPhotoshopApp/assets/93420580/e2505d01-dd78-4709-8b74-266efb5ce480)
+
 ### 联系作者
 
 QQ： 1173012900

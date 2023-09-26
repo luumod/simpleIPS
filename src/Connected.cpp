@@ -1,5 +1,5 @@
-﻿#include "../include/Connected.h"
-#include "../include/Mat2QImage.h"
+﻿#include "../include/opencv_functions/Connected.h"
+#include "../include/assist/Mat2QImage.h"
 #include "../include/widget.h"
 #include <QString>
 

@@ -1,15 +1,18 @@
 ﻿#include "../include/widget.h"
-#include "../include/belongsToEnum.h"
-#include "../include/Mat2QImage.h"
-#include "../include/Blur.h"
-#include "../include/Threshold.h"
-#include "../include/Morphology.h"
-#include "../include/Connected.h"
-#include "../include/LabelImg.h"
-#include "../include/Contours.h"
-#include "../include/Cvtcolor.h"
-#include "../include/DrawWidget.h"
 #include "../include/Common.h"
+#include "../include/assist/belongsToEnum.h"
+#include "../include/assist/Mat2QImage.h"
+#include "../include/assist/Cvtcolor.h"
+
+#include "../include/opencv_functions/Blur.h"
+#include "../include/opencv_functions/Threshold.h"
+#include "../include/opencv_functions/Morphology.h"
+#include "../include/opencv_functions/Connected.h"
+#include "../include/opencv_functions/Contours.h"
+#include "../include/opencv_functions/BaseOperate.h"
+
+#include "../include/other_functions/LabelImg.h"
+#include "../include/other_functions/DrawWidget.h"
 #include <QDebug>
 #include <QBoxLayout>
 #include <QGridLayout>
@@ -59,7 +62,7 @@ Widget::Widget(QMainWindow* parent)
 	ori_mt(cv::imread("../resource/testImages/122.png")),
 	ori_img(Mat2QImage(ori_mt))
 {
-	ori_mt.copyTo(origin_convert);
+	ori_mt.copyTo(root_mt);
 	ori_img = Mat2QImage(ori_mt);
 	img = Mat2QImage(ori_mt);
 	cv::utils::logging::setLogLevel(cv::utils::logging::LOG_LEVEL_ERROR);
@@ -68,7 +71,7 @@ Widget::Widget(QMainWindow* parent)
 	this->move(200,20);
 
 	lab_img = new QLabel;
-	lab_img->setObjectName("main_Lab");
+	lab_img->setObjectName("main_ab");
 
 	initFunction();
 	createAction();
@@ -152,6 +155,23 @@ Widget::Widget(QMainWindow* parent)
 
 	this->setCentralWidget(mainWindow);
 
+	//连接信号
+	connect(this, &Widget::modeChanged, this, [=]() {
+		/*if (mode) {
+			auto actions = action_cvtColor_group->actions();
+			for (QAction* action : actions) {
+				action->setEnabled(false);
+			}
+		}
+		else{
+			auto actions = action_cvtColor_group->actions();
+			for (QAction* action : actions) {
+				action->setEnabled(true);
+			}
+		}*/
+		});
+
+
 	//读取QSS美化
 	//外部加载
 	QFile qssFile("../resource/qss/meihua.css");
@@ -189,16 +209,11 @@ void Widget::initFunction()
 	ls.push_back(morphology = new Morphology);
 	ls.push_back(connected = new Connected);
 	ls.push_back(contours = new Contours);
-}
-
-void Widget::dataClear()
-{
-	loadANewPicture(origin_convert);
+	ls.push_back(img_base = new BaseOperate);
 }
 
 void Widget::onClicked_buttonGroup_blur(QAbstractButton* btn) 
 {
-
 	int id = btngroup_blur->id(btn); //获取按下的按钮的id
 	now_operation = id;  //一定首先获取当前位置
 	now_dialog = 0;
@@ -213,7 +228,6 @@ void Widget::onClicked_buttonGroup_blur(QAbstractButton* btn)
 	else {
 		restore_cutOperation();
 	}
-
 	savePoint();
 
 	hideAllDialog(ls_dlg_avg[id - BLUR::Average]);
@@ -366,28 +380,6 @@ void Widget::onClicked_buttonGroup_contours(QAbstractButton* btn)
 	}
 }
 
-void Widget::onTriggered_actionGroup(QAction* action)
-{
-	cv::Mat ori_mt_res;
-	if (action == action_hsv) {
-		cv::cvtColor(origin_convert, ori_mt_res, cv::COLOR_BGR2HSV);
-	}
-	else if (action == action_hls) {
-		cv::cvtColor(origin_convert, ori_mt_res, cv::COLOR_BGR2HLS);
-	}
-	else if (action == action_lab) {
-		cv::cvtColor(origin_convert, ori_mt_res, cv::COLOR_BGR2Lab);
-	}
-	else if (action == action_rgb) {
-		cv::cvtColor(origin_convert, ori_mt_res, cv::COLOR_BGR2RGB);
-	}
-	else {
-		//原图
-		ori_mt_res = origin_convert;
-	}
-	loadANewPicture(ori_mt_res);
-}
-
 void Widget::onTriggered_action_openFile()
 {
 	QString fileName = QFileDialog::getOpenFileName(nullptr, "选择文件", ".",	"图像文件(*.png *.jpg)");
@@ -397,7 +389,7 @@ void Widget::onTriggered_action_openFile()
 		auto t_ori_mt = cv::imread(fileName.toLocal8Bit().data());
 		cv::resize(t_ori_mt, ori_mt, scaledSize);
 		ori_mt.copyTo(savePoint_mt);
-		ori_mt.copyTo(origin_convert);
+		ori_mt.copyTo(root_mt);
 		ori_mt.copyTo(mt);
 
 		//存图片
@@ -417,7 +409,7 @@ void Widget::onTriggered_action_openFile()
 	}
 }
 
-void Widget::onTriggered_action_saveFile()
+void Widget::onTriggered_action_saveToFile()
 {
 	//保存加工后的图片
 	QString FileName = QFileDialog::getSaveFileName(nullptr, "save image", ".", "Images(*.png *.bmp *.jpg)");
@@ -439,7 +431,7 @@ void Widget::onTriggered_action_allRestore()
 
 	clearAllWidgetValue();
 
-	dataClear();
+	ClearImageToRoot();
 }
 
 void Widget::onTriggered_action_previewToNormal()
@@ -462,8 +454,8 @@ void Widget::restore_cutOperation()
 {
 	sub_lab_img->setVisible(false);
 	clearAllWidgetValue();
-	//重置图片数据 ori_mt 不变
-	dataClear();
+
+	ClearImageToOrigin();
 }
 
 void Widget::onTriggered_action_process(){
@@ -478,14 +470,19 @@ void Widget::onTriggered_action_process(){
 
 		statusLab->setText(tr("混合加工模式"));
 
+		//状态改变
+		emit modeChanged();
 	}
 	else {
 		mode = false;
 		statusLab->setText(tr("默认模式"));
+
+		//状态改变
+		emit modeChanged();
 	}
 	clearAllWidgetValue();
 	//数据清空
-	dataClear();
+	ClearImageToOrigin();
 }
 
 void Widget::onTriggered_action_undo()
@@ -571,9 +568,8 @@ void Widget::clearAllWidgetValue()
 	}
 }
 
-void Widget::loadANewPicture(const cv::Mat& new_mt)
+void Widget::ClearImageToOrigin()
 {
-	new_mt.copyTo(ori_mt);
 	ori_mt.copyTo(savePoint_mt);
 	ori_mt.copyTo(mt);
 
@@ -582,6 +578,14 @@ void Widget::loadANewPicture(const cv::Mat& new_mt)
 	img = Mat2QImage(ori_mt);
 	lab_img->setPixmap(QPixmap::fromImage(ori_img));
 }
+
+void Widget::ClearImageToRoot()
+{
+	root_mt.copyTo(ori_mt); //重置ori_mt
+	ClearImageToOrigin();
+}
+
+
 
 void Widget::createAction()
 {
@@ -603,7 +607,7 @@ void Widget::createAction()
 	action_save = new QAction(tr("保存图片"), this);
 	action_save->setStatusTip(tr("保存此图片"));
 	action_save->setShortcut(tr("Ctrl+S"));
-	connect(action_save, &QAction::triggered, this, &Widget::onTriggered_action_saveFile);
+	connect(action_save, &QAction::triggered, this, &Widget::onTriggered_action_saveToFile);
 
 	//重置图片
 	action_restore = new QAction(tr("重置图片"), this);
@@ -645,15 +649,27 @@ void Widget::createAction()
 	connect(colorDialog, &QColorDialog::currentColorChanged,
 		this, &Widget::onTriggered_ColorDialog_choice);
 
+	action_cvtColor_group = new QActionGroup(this);
+	action_cvtColor_group->addAction(action_ori = new QAction("转换为原图", this));
+	action_cvtColor_group->addAction(action_hls = new QAction("转换为HLS格式",this));
+	action_cvtColor_group->addAction(action_hsv = new QAction("转换为HSV格式", this));
+	action_cvtColor_group->addAction(action_rgb = new QAction("转换为RGB格式", this));
+	action_cvtColor_group->addAction(action_lab = new QAction("转换为LAB格式", this));
+	connect(action_cvtColor_group, &QActionGroup::triggered, this, [=](QAction* action) {
+		img_base->cvtColor(action);
+		});
 
-
-	action_group = new QActionGroup(this);
-	action_group->addAction(action_ori = new QAction("转换为原图", this));
-	action_group->addAction(action_hls = new QAction("转换为HLS格式",this));
-	action_group->addAction(action_hsv = new QAction("转换为HSV格式", this));
-	action_group->addAction(action_rgb = new QAction("转换为RGB格式", this));
-	action_group->addAction(action_lab = new QAction("转换为LAB格式", this));
-	connect(action_group, &QActionGroup::triggered, this, &Widget::onTriggered_actionGroup);
+	action_rotate_group = new QActionGroup(this);
+	action_rotate_group->addAction(action_right90 = new QAction(tr("顺时针旋转90度"), this));
+	action_rotate_group->addAction(action_right180 = new QAction(tr("顺时针旋转180度"), this));
+	connect(action_rotate_group, &QActionGroup::triggered, this, [=](QAction* action) {
+		if (action == action_right90) {
+			img_base->onTriggered_picture_rotate90();
+		}
+		else if (action == action_right180) {
+			img_base->onTriggered_picture_rotate180();
+		}
+		});
 
 
 }
@@ -673,9 +689,6 @@ void Widget::createMenu()
 	menu_file->addSeparator();
 	menu_file->addAction(action_exit);
 
-	//menu_edit = menuBar()->addMenu(tr("&编辑"));
-	//menu_edit->addAction(action_restore);
-
 	//图片格式转换
 	menu_convert = menuBar()->addMenu(tr("&转换"));
 	menu_convert->addAction(action_ori);
@@ -683,6 +696,11 @@ void Widget::createMenu()
 	menu_convert->addAction(action_hsv);
 	menu_convert->addAction(action_lab);
 	menu_convert->addAction(action_rgb);
+
+	//图像翻转
+	menu_reverse = menuBar()->addMenu(tr("翻转"));
+	menu_reverse->addAction(action_right90);
+	menu_reverse->addAction(action_right180);
 }
 
 void Widget::createToolBar()
@@ -1505,6 +1523,15 @@ QHBoxLayout* Widget::create_GUIContours()
 	contours->onTriggered_Comb3_currentTextChanged_contoursThick(index);
 		});
 
+	QPushButton* btn = new QPushButton;
+	btn->setText("绘制图像凸包");
+	connect(btn, &QPushButton::clicked, this, [=]() {
+		if (mode) {
+			sub_lab_img->setVisible(true);
+		}
+		contours->onClicked_btn_convexHull();
+	});
+
 	QToolButton* color = new QToolButton;
 	color->setIcon(QPixmap("../resource/colors.png"));
 	color->setMinimumSize(48, 48);
@@ -1557,6 +1584,7 @@ QHBoxLayout* Widget::create_GUIContours()
 	vlayoutLeft->addWidget(w1);
 	vlayoutLeft->addWidget(w2);
 	vlayoutLeft->addWidget(w3);
+	vlayoutLeft->addWidget(btn);
 
 	QHBoxLayout* hlayout = new QHBoxLayout;
 	hlayout->addLayout(vlayoutLeft);
@@ -1567,3 +1595,4 @@ QHBoxLayout* Widget::create_GUIContours()
 
 	return hboxl;
 }
+

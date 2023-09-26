@@ -1,4 +1,4 @@
-﻿#include "../include/Morphology.h"
+﻿#include "../include/opencv_functions/Morphology.h"
 #include "../include/widget.h"
 
 Morphology::Morphology() :Object() {}

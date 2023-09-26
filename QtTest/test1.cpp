@@ -1,6 +1,6 @@
 ﻿#include <QApplication>
 #include <opencv2/opencv.hpp>
-#include "DrawWidget.h"
+#include "../include/other_functions/DrawWidget.h"
 
 int main(int argc, char* argv[])
 {

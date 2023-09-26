@@ -1,11 +1,16 @@
 ﻿#ifndef BLUR_H_
 #define BLUR_H_
 
+/// <summary>
+/// 图像轮廓模糊操作
+/// author: Yuleo
+/// </summary>
+/// 
+
 #include "Object.h"
 #include <QWidget>
 #include <opencv2/opencv.hpp>
 class QImage;
-
 class Blur :public Object {
 public:
 	Blur();

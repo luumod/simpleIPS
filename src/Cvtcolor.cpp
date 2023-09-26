@@ -1,5 +1,5 @@
-﻿#include "../include/Cvtcolor.h"
-#include "../include/Mat2QImage.h"
+﻿#include "../include/assist/Cvtcolor.h"
+#include "../include/assist/Mat2QImage.h"
 #include "../include/widget.h"
 
 CvtColor::CvtColor() :Object() {}

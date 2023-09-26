@@ -1,5 +1,5 @@
-﻿#include "../include/GraphicsScene.h"
-#include "../include/Enums.h"
+﻿#include "../include/other_functions/GraphicsScene.h"
+#include "../include/assist/Enums.h"
 #include <QGraphicsSceneMouseEvent>
 #include <QPointF>
 #include <QGraphicsLineItem>

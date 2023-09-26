@@ -1,7 +1,7 @@
-﻿#include "../include/Object.h"
+﻿#include "../include/opencv_functions/Object.h"
 #include "../include/widget.h"
-#include "../include/Mat2QImage.h"
-#include "../include/LabelImg.h"
+#include "../include/assist/Mat2QImage.h"
+#include "../include/other_functions/LabelImg.h"
 #include <QDebug>
 
 Object::Object()

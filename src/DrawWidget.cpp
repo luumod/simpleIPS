@@ -1,6 +1,6 @@
-﻿#include "../include/DrawWidget.h"
-#include "../include/Enums.h"
-#include "../include/GraphicsScene.h"
+﻿#include "../include/other_functions/DrawWidget.h"
+#include "../include/assist/Enums.h"
+#include "../include/other_functions/GraphicsScene.h"
 #include "../include/widget.h"
 #include <QButtonGroup>
 #include <QPushButton>

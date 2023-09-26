@@ -1,6 +1,12 @@
 ﻿#ifndef THRESHOLD_H_
 #define THRESHOLD_H_
 
+/// <summary>
+/// 图像阈值操作
+/// author: Yuleo
+/// </summary>
+/// 
+
 #include "Object.h"
 #include <QWidget>
 #include <opencv2/opencv.hpp>

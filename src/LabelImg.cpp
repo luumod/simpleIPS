@@ -1,4 +1,4 @@
-﻿#include "../include/LabelImg.h"
+﻿#include "../include/other_functions/LabelImg.h"
 #include "../include/widget.h"
 
 Label::~Label() {

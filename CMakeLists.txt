@@ -40,27 +40,31 @@ add_executable(QtPro
     src/Cvtcolor.cpp
     src/DrawWidget.cpp
     src/GraphicsScene.cpp
+    src/BaseOperate.cpp
 
     include/widget.h
-    include/belongsToEnum.h 
-    include/Blur.h
-    include/Mat2QImage.h
-    include/Enums.h 
-    include/Threshold.h 
-    include/Morphology.h
-    include/Connected.h  
-    include/Object.h  
-    include/QImage2Mat.h 
-    include/LabelImg.h 
-    include/Contours.h
-    include/Cvtcolor.h 
     include/Common.h
-    include/DrawWidget.h 
-    include/GraphicsScene.h
+    include/assist/belongsToEnum.h 
+    include/assist/Mat2QImage.h
+    include/assist/Enums.h 
+    include/assist/QImage2Mat.h 
+    include/assist/Cvtcolor.h 
+
+    include/opencv_functions/Blur.h
+    include/opencv_functions/Threshold.h 
+    include/opencv_functions/Morphology.h
+    include/opencv_functions/Connected.h
+    include/opencv_functions/Object.h 
+    include/opencv_functions/Contours.h
+    include/opencv_functions/BaseOperate.h
+
+    include/other_functions/LabelImg.h 
+    include/other_functions/DrawWidget.h 
+    include/other_functions/GraphicsScene.h
 )
 
  add_executable(QtTest
-    QtTest/test.cpp )
+    QtTest/test1.cpp )
 
 
 

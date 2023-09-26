@@ -1,5 +1,5 @@
-﻿#include "../include/Blur.h"
-#include "../include/widget.h"
+﻿#include "../include/widget.h"
+#include "../include/opencv_functions/Blur.h"
 #include <QDebug>
 #include <QLabel>
 
@@ -30,7 +30,7 @@ void Blur::avg_blur()
 		_mt = get()->savePoint_mt;
 	}
 	else {
-		_mt = get()->ori_mt; //当前图片
+		_mt = get()->ori_mt;
 	}
 	cv::Mat tMt;
 
@@ -50,7 +50,7 @@ void Blur::Gaussian_blur()
 		_mt = get()->savePoint_mt;
 	}
 	else {
-		_mt = get()->ori_mt; //当前图片
+		_mt = get()->ori_mt;
 	}
 	cv::Mat tMt;
 
@@ -66,7 +66,7 @@ void Blur::median_blur()
 		_mt = get()->savePoint_mt;
 	}
 	else {
-		_mt = get()->ori_mt; //当前图片
+		_mt = get()->ori_mt;
 	}
 	cv::Mat tMt{};
 
@@ -82,9 +82,8 @@ void Blur::bilateral_blur()
 		_mt = get()->savePoint_mt;
 	}
 	else {
-		_mt = get()->ori_mt; //当前图片
+		_mt = get()->ori_mt;
 	}
-
 	if (_mt.type() != CV_8UC1 && _mt.type() != CV_8UC3) {
 		return;
 	}

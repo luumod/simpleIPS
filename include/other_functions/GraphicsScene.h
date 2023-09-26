@@ -3,7 +3,7 @@
 
 #include <QGraphicsScene>
 #include <QPainterPath>
-#include "Enums.h"
+#include "../assist/Enums.h"
 
 /*
 实现简单的绘图板场景

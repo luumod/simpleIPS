@@ -1,6 +1,12 @@
 ﻿#ifndef FORM_H_
 #define FORM_H_
 
+/// <summary>
+/// 图像形态学操作
+/// author: Yuleo
+/// </summary>
+/// 
+
 #include "Object.h"
 #include <QWidget>
 #include <opencv2/opencv.hpp>

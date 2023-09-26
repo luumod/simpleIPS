@@ -1,7 +1,7 @@
 ﻿#ifndef CVTCOLOR_H_
 #define CVTCOLOR_H_
 
-#include "Object.h"
+#include "../opencv_functions/Object.h"
 #include <QWidget>
 #include <opencv2/opencv.hpp>
 

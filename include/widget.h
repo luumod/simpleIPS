@@ -1,6 +1,6 @@
 ﻿#ifndef WIDGET_H_
 #define WIDGET_H_
-
+#define FUNCTION_
 #include <QMainWindow>
 #include <opencv2/opencv.hpp>
 #include <stack>
@@ -27,6 +27,7 @@ class CvtColor;
 class QActionGroup;
 class QHBoxLayout;
 class DrawWidget;
+class BaseOperate;
 
 class Widget :public QMainWindow {
 	Q_OBJECT
@@ -62,7 +63,9 @@ public:
 	QHBoxLayout* create_GUIMorphology();	//形态学
 	QHBoxLayout* create_GUIConnected();		//连通块分析
 	QHBoxLayout* create_GUIContours();		//轮廓检测
-	QWidget* create_GUIChangeImg();			//颜色模型转换
+signals:
+	void modeChanged(); //模式改变 默认->加工->默认
+	
 public slots:
 	void onClicked_buttonGroup_blur(QAbstractButton* btn);
 	void onClicked_buttonGroup_threshold(QAbstractButton* btn);
@@ -70,23 +73,17 @@ public slots:
 	void onClicked_buttonGroup_connected(QAbstractButton* btn);
 	void onClicked_buttonGroup_contours(QAbstractButton* btn);
 
-	//cvtColor转换
-	void onTriggered_actionGroup(QAction* action);
-
 	//打开新图片
 	void onTriggered_action_openFile();
 
-	//保存当前图片: lab_img
-	void onTriggered_action_saveFile();
+	//保存当前图片到文件夹中: lab_img
+	void onTriggered_action_saveToFile();
 
 	//重置所有操作至原始状态
 	void onTriggered_action_allRestore();
 
 	//确定加载预览图片到主图片
 	void onTriggered_action_previewToNormal();
-
-	//选择颜色
-	void onTriggered_ColorDialog_choice(const QColor& color);
 
 	//非加工模式下：切换不同的操作时，清除原来的操作
 	void restore_cutOperation();
@@ -97,9 +94,6 @@ public slots:
 	//撤销此次操作
 	void onTriggered_action_undo();
 
-	//图片数据还原原始状态: ori_mt
-	void dataClear();
-
 	//保存图片，设置保存点
 	void savePoint();
 
@@ -109,24 +103,29 @@ public slots:
 	//隐藏其他的QDialog
 	void hideAllDialog(QDialog* currDialog);
 
+	//清除图片到最开始的状态（不包括对图像格式的改变与旋转等基础操作造成的改变）
+	void ClearImageToOrigin(); 
+
+	//清除图片到原始状态（绝对）
+	void ClearImageToRoot();
 private: //辅助函数
 	//清除某一页参数的数值
 	void setIndexPageWidgetValue(int index = -1);
 	void clearAllWidgetValue();
-	void loadANewPicture(const cv::Mat& new_mt);
+
+public FUNCTION_: //功能性函数
+	//选择颜色
+	void onTriggered_ColorDialog_choice(const QColor& color);
 
 public:
 	cv::Mat ori_mt; //保存原始的加载的图片
 	QImage ori_img;
-	//cv::Mat temp_mt;//如果是创作者模式，则需要保存每次更新后的图片
-
 
 	cv::Mat savePoint_mt;
-	cv::Mat mt;
-
-	cv::Mat origin_convert; //转换前的原图
-
+	cv::Mat mt; //用于读取栈顶的Mat
 	QImage img;
+
+	cv::Mat	root_mt; //根Mat
 
 	//撤销功能
 	std::stack<cv::Mat> sta;
@@ -151,20 +150,29 @@ private:
 	QAction* action_return = nullptr;
 	QAction* action_preview = nullptr;
 
+public:
+
 	QAction* action_ori = nullptr;
 	QAction* action_hls = nullptr;
 	QAction* action_rgb = nullptr;
 	QAction* action_hsv = nullptr;
 	QAction* action_lab = nullptr;
 	QAction* action_draw = nullptr;
-	QActionGroup* action_group = nullptr;
+	QActionGroup* action_cvtColor_group = nullptr;
 
+	//旋转
+	QAction* action_right90 = nullptr;
+	QAction* action_right180 = nullptr;
+	QActionGroup* action_rotate_group = nullptr;
+
+private:
 	//上下文菜单
 	QMenu* context_menu = nullptr;
 	//主菜单
 	QMenu* menu_file = nullptr;
 	QMenu* menu_edit = nullptr;
 	QMenu* menu_convert = nullptr;
+	QMenu* menu_reverse = nullptr;
 
 	QToolBar* toolbar1 = nullptr;
 
@@ -203,6 +211,7 @@ private:
 	Morphology* morphology = nullptr;
 	Connected* connected = nullptr;
 	Contours* contours = nullptr;
+	BaseOperate* img_base = nullptr; //图像基础操作
 	QList<Object*> ls;
 };
 

@@ -1,6 +1,12 @@
 ﻿#ifndef CONNECTED_H_
 #define CONNECTED_H_
 
+/// <summary>
+/// 图像连通性分析操作
+/// author: Yuleo
+/// </summary>
+/// 
+
 #include "Object.h"
 #include <QWidget>
 #include <opencv2/opencv.hpp>

@@ -20,7 +20,7 @@ protected:
 	void leaveEvent(QEvent* ev)override;
 	void mousePressEvent(QMouseEvent* ev)override;
 private:
-	QPixmap* img = nullptr;
+	QPixmap* curr_img = nullptr;
 };
 
 #endif // !LABELIMG_H_

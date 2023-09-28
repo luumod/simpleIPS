@@ -28,10 +28,10 @@ void Contours::handle(cv::Mat& tMt, cv::Mat& tMt2, bool convexHull) {
 	*/
 	cv::Mat _mt;
 	if (get()->mode) {
-		_mt = get()->savePoint_mt;
+		_mt = get()->preview_mt;
 	}
 	else {
-		_mt = get()->ori_mt;
+		_mt = get()->inter_mt;
 	}
 	//转换为灰度图
 	cv::cvtColor(_mt, tMt, cv::COLOR_BGR2GRAY);
@@ -60,7 +60,7 @@ void Contours::findContours()
 void Contours::drawContours()
 {
 	findContours(); //获取points轮廓信息
-	cv::Mat tMt = cv::Mat::zeros(get()->ori_mt.size(), CV_8UC3);
+	cv::Mat tMt = cv::Mat::zeros(get()->inter_mt.size(), CV_8UC3);
 	
 	for (int i = 0; i < points.size();i++) {
 		cv::Scalar scolor = cv::Scalar(color.blue(), color.green(), color.red());
@@ -83,10 +83,10 @@ void Contours::convexHull()
 
 	//4. 寻找凸包轮廓
 	if (get()->mode) {
-		_mt = get()->savePoint_mt;
+		_mt = get()->preview_mt;
 	}
 	else {
-		_mt = get()->ori_mt; //当前图片
+		_mt = get()->inter_mt; //当前图片
 	}
 	cv::Mat tMt;
 	_mt.copyTo(tMt);

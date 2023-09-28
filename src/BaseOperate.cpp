@@ -20,7 +20,8 @@ void BaseOperate::initialize()
 void BaseOperate::cvtColor(QAction* action) {
 
 	cv::Mat _mt;
-	_mt = get()->root_mt; //每次都对原始根图片进行操作，因为重复的cvtColor操作会导致图片显示出现问题！！！
+	//每次都对原始根图片进行操作，然后获取一份副本，因为重复的cvtColor操作会导致图片重叠转换！！！
+	_mt = get()->root_mt; 
 	cv::Mat ori_mt_res;
 	if (action == get()->action_hsv) {
 		cv::cvtColor(_mt, ori_mt_res, cv::COLOR_BGR2HSV);
@@ -38,31 +39,40 @@ void BaseOperate::cvtColor(QAction* action) {
 		//原图
 		ori_mt_res = _mt;
 	}
-	//对原图片进行修改
-	get()->ori_mt = ori_mt_res;
-	get()->ClearImageToOrigin();
+	get()->inter_mt = ori_mt_res;
+	get()->updateFromIntermediate();
 	//对子图片进行及时修改，防止出现更新不及时
-	get()->sub_lab_img->setPixmap(QPixmap::fromImage(get()->img.scaled(200, 200)));
+	get()->sub_lab_img->setPixmap(QPixmap::fromImage(get()->curr_img.scaled(200, 200)));
 }
 
 void BaseOperate::onTriggered_picture_rotate90() {
 	cv::Mat _mt;
-	_mt = get()->mt;
+	//对当前lab_img显示的Mat进行操作
+	_mt = get()->curr_mt;
 	cv::Mat tMt;
 	cv::rotate(_mt, tMt, cv::RotateFlags::ROTATE_90_CLOCKWISE);
-
-	tMt.copyTo(get()->ori_mt);
-	get()->ClearImageToOrigin();
-	get()->sub_lab_img->setPixmap(QPixmap::fromImage(get()->img.scaled(200, 200)));
+	get()->inter_mt = tMt;
+	get()->updateFromIntermediate();
+	get()->sub_lab_img->setPixmap(QPixmap::fromImage(get()->curr_img.scaled(200, 200)));
 }
 
 void BaseOperate::onTriggered_picture_rotate180() {
 	cv::Mat _mt;
-	_mt = get()->mt;
+	_mt = get()->curr_mt;
 	cv::Mat tMt;
 	cv::rotate(_mt, tMt, cv::RotateFlags::ROTATE_180);
+	get()->inter_mt = tMt;
+	get()->updateFromIntermediate();
+	get()->sub_lab_img->setPixmap(QPixmap::fromImage(get()->curr_img.scaled(200, 200)));
+}
 
-	tMt.copyTo(get()->ori_mt);
-	get()->ClearImageToOrigin();
-	get()->sub_lab_img->setPixmap(QPixmap::fromImage(get()->img.scaled(200, 200)));
+void BaseOperate::onTriggered_picture_rotate270() {
+	//逆时针旋转90度
+	cv::Mat _mt;
+	_mt = get()->curr_mt;
+	cv::Mat tMt;
+	cv::rotate(_mt, tMt, cv::RotateFlags::ROTATE_90_COUNTERCLOCKWISE);
+	get()->inter_mt = tMt;
+	get()->updateFromIntermediate();
+	get()->sub_lab_img->setPixmap(QPixmap::fromImage(get()->curr_img.scaled(200, 200)));
 }

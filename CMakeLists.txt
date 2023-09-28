@@ -37,7 +37,7 @@ add_executable(QtPro
     src/Object.cpp
     src/LabelImg.cpp
     src/Contours.cpp
-    src/Cvtcolor.cpp
+    
     src/DrawWidget.cpp
     src/GraphicsScene.cpp
     src/BaseOperate.cpp
@@ -48,7 +48,6 @@ add_executable(QtPro
     include/assist/Mat2QImage.h
     include/assist/Enums.h 
     include/assist/QImage2Mat.h 
-    include/assist/Cvtcolor.h 
 
     include/opencv_functions/Blur.h
     include/opencv_functions/Threshold.h 

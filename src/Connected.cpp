@@ -44,10 +44,10 @@ void Connected::handle(cv::Mat& tMt,cv::Mat& tMt2) {
 	*/
 	cv::Mat _mt;
 	if (get()->mode) {
-		_mt = get()->savePoint_mt;
+		_mt = get()->preview_mt;
 	}
 	else {
-		_mt = get()->ori_mt; 
+		_mt = get()->inter_mt; 
 	}
 	//转换为灰度图
 	cv::cvtColor(_mt, tMt, cv::COLOR_BGR2GRAY);

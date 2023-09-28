@@ -18,15 +18,16 @@ Widget* Object::get() {
 
 void Object::update(const cv::Mat& tMt)
 {
-	get()->mt = tMt;
-	get()->img = Mat2QImage(tMt);
+	//修改当前Mat与其对应的Image
+	get()->curr_mt = tMt;
+	get()->curr_img = Mat2QImage(tMt);
 
 	if (get()->mode) {
-		//混合加工模式，修改当前预览图片 sub_lab_img
-		get()->sub_lab_img->setPixmap(QPixmap::fromImage(get()->img.scaled(200, 200)));
+		//混合加工模式，首先修改当前预览图片，然后由用户决定是否将其预览作为主图片
+		get()->sub_lab_img->setPixmap(QPixmap::fromImage(get()->curr_img.scaled(200, 200)));
 	}
 	else {
 		//不是混合加工，直接修改当前lab_img图片
-		get()->lab_img->setPixmap(QPixmap::fromImage(get()->img)); //直接修改当前图片
+		get()->lab_img->setPixmap(QPixmap::fromImage(get()->curr_img));
 	}
 }

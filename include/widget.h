@@ -103,11 +103,11 @@ public slots:
 	//隐藏其他的QDialog
 	void hideAllDialog(QDialog* currDialog);
 
-	//清除图片到最开始的状态（不包括对图像格式的改变与旋转等基础操作造成的改变）
-	void ClearImageToOrigin(); 
+	//依照inter_mt更新所有图片数据（不包括对图像格式的改变与旋转等基础操作造成的改变）
+	void updateFromIntermediate(); 
 
-	//清除图片到原始状态（绝对）
-	void ClearImageToRoot();
+	//依照root_mt更新所有图片数据：相当于清除所有操作
+	void updateFromRoot();
 private: //辅助函数
 	//清除某一页参数的数值
 	void setIndexPageWidgetValue(int index = -1);
@@ -118,17 +118,17 @@ public FUNCTION_: //功能性函数
 	void onTriggered_ColorDialog_choice(const QColor& color);
 
 public:
-	cv::Mat ori_mt; //保存原始的加载的图片
-	QImage ori_img;
+	cv::Mat	root_mt; //root根层：保存原始的加载的图片
 
-	cv::Mat savePoint_mt;
-	cv::Mat mt; //用于读取栈顶的Mat
-	QImage img;
+	cv::Mat inter_mt; //intermediate中间层：普通模式下对此图片进行操作
 
-	cv::Mat	root_mt; //根Mat
+	cv::Mat preview_mt; //preview预览层：加工模式下对此图片进行预操作
+
+	cv::Mat curr_mt; //current当前层：lab_img的实际显示图片
+	QImage  curr_img;
 
 	//撤销功能
-	std::stack<cv::Mat> sta;
+	std::stack<cv::Mat> undo_sta;
 
 	QLabel* lab_img = nullptr;
 	Label* sub_lab_img = nullptr; //自定义预览图片类
@@ -163,6 +163,7 @@ public:
 	//旋转
 	QAction* action_right90 = nullptr;
 	QAction* action_right180 = nullptr;
+	QAction* action_right270 = nullptr;
 	QActionGroup* action_rotate_group = nullptr;
 
 private:

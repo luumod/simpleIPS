@@ -18,10 +18,10 @@ void Threshold::threshold() {
 
 	cv::Mat _mt;
 	if (get()->mode) {
-		_mt = get()->savePoint_mt;
+		_mt = get()->preview_mt;
 	}
 	else {
-		_mt = get()->ori_mt; //当前图片
+		_mt = get()->inter_mt; //当前图片
 	}
 	cv::Mat tMt;
 

@@ -23,6 +23,7 @@ public slots:
 	void cvtColor(QAction* action);
 	void onTriggered_picture_rotate90();
 	void onTriggered_picture_rotate180();
+	void onTriggered_picture_rotate270();
 public:
 	
 };

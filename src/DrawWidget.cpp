@@ -20,7 +20,7 @@ DrawWidget::DrawWidget(QWidget* parent) : QMainWindow(parent) {
 	scene->setSceneRect(0, 0, 400, 400);
 
 	QGraphicsPixmapItem* pixItem = new QGraphicsPixmapItem;
-	QPixmap pixmap = QPixmap::fromImage(get()->img);
+	QPixmap pixmap = QPixmap::fromImage(get()->curr_img);
 	if (!pixmap.isNull()) {
 		// 获取场景和图像的大小
 		QRectF sceneRect = scene->sceneRect();
@@ -53,13 +53,13 @@ DrawWidget::DrawWidget(QWidget* parent) : QMainWindow(parent) {
 		保存diy后的场景图片
 		*/
 		QString saveName = QFileDialog::getSaveFileName(nullptr, "save image", ".", "Images(*.png *.bmp *.jpg)");	 
-		QImage img(scene->sceneRect().size().toSize(), QImage::Format_ARGB32);
-		img.fill(Qt::white);
-		QPainter painter(&img);
+		QImage curr_img(scene->sceneRect().size().toSize(), QImage::Format_ARGB32);
+		curr_img.fill(Qt::white);
+		QPainter painter(&curr_img);
 		scene->render(&painter);
 
 		if (!saveName.isEmpty()) {
-			img.save(saveName);
+			curr_img.save(saveName);
 		}
 		});
 

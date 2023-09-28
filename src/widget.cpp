@@ -2,7 +2,6 @@
 #include "../include/Common.h"
 #include "../include/assist/belongsToEnum.h"
 #include "../include/assist/Mat2QImage.h"
-#include "../include/assist/Cvtcolor.h"
 
 #include "../include/opencv_functions/Blur.h"
 #include "../include/opencv_functions/Threshold.h"
@@ -59,12 +58,11 @@ Widget* Widget::getInstance() {
 
 Widget::Widget(QMainWindow* parent)
 	:QMainWindow(parent),
-	ori_mt(cv::imread("../resource/testImages/122.png")),
-	ori_img(Mat2QImage(ori_mt))
+	root_mt(cv::imread("../resource/testImages/122.png"))
 {
-	ori_mt.copyTo(root_mt);
-	ori_img = Mat2QImage(ori_mt);
-	img = Mat2QImage(ori_mt);
+	root_mt.copyTo(inter_mt);
+	root_mt.copyTo(curr_mt);
+	curr_img = Mat2QImage(curr_mt);
 	cv::utils::logging::setLogLevel(cv::utils::logging::LOG_LEVEL_ERROR);
 	//窗口固定大小
 	this->setFixedSize(910, 780);
@@ -86,7 +84,7 @@ Widget::Widget(QMainWindow* parent)
 		context_menu->exec(QCursor::pos());
 		});
 	
-	auto main_tpic = QPixmap::fromImage(ori_img);
+	auto main_tpic = QPixmap::fromImage(curr_img);
 	auto main_pic = main_tpic.scaled(400, 400, Qt::KeepAspectRatio, Qt::SmoothTransformation);
 	lab_img->setPixmap(main_pic);	
 	lab_img->setScaledContents(true);
@@ -157,18 +155,6 @@ Widget::Widget(QMainWindow* parent)
 
 	//连接信号
 	connect(this, &Widget::modeChanged, this, [=]() {
-		/*if (mode) {
-			auto actions = action_cvtColor_group->actions();
-			for (QAction* action : actions) {
-				action->setEnabled(false);
-			}
-		}
-		else{
-			auto actions = action_cvtColor_group->actions();
-			for (QAction* action : actions) {
-				action->setEnabled(true);
-			}
-		}*/
 		});
 
 
@@ -193,8 +179,8 @@ Widget::~Widget()
 		delete x;
 		x = nullptr;
 	}
-	while (!sta.empty()) {
-		sta.pop();
+	while (!undo_sta.empty()) {
+		undo_sta.pop();
 	}
 
 
@@ -220,15 +206,19 @@ void Widget::onClicked_buttonGroup_blur(QAbstractButton* btn)
 
 	if (mode) {
 		if (sub_lab_img->isVisible()) {
+			//如果我操作了图片，但是没有将预览的效果应用到主图片上，则说明此次修改无效。
+			//返回上一个保存点
 			returnPoint();
 			sub_lab_img->setVisible(false);
 		}
+		//先恢复再保存
+		savePoint();
 		clearAllWidgetValue();
 	}
 	else {
 		restore_cutOperation();
 	}
-	savePoint();
+	
 
 	hideAllDialog(ls_dlg_avg[id - BLUR::Average]);
 	ls_dlg_avg[id - BLUR::Average]->open();//0-0 1-0 2-0 3-0
@@ -257,13 +247,12 @@ void Widget::onClicked_buttonGroup_threshold(QAbstractButton* btn)
 			returnPoint();
 			sub_lab_img->setVisible(false);
 		}
+		savePoint();
 		clearAllWidgetValue();
 	}
 	else {
 		restore_cutOperation();
 	}
-
-	savePoint();
 
 	hideAllDialog(dlg_threshold);
 	dlg_threshold->open();
@@ -288,17 +277,16 @@ void Widget::onClicked_buttonGroup_morphology(QAbstractButton* btn)
 			returnPoint();
 			sub_lab_img->setVisible(false);
 		}
+		savePoint();
 		clearAllWidgetValue();
 	}
 	else {
 		restore_cutOperation();
 	}
 
-	savePoint();
-
 	int type = cv::MorphTypes(id - FORM::Erode);
 	if (type == cv::MorphTypes::MORPH_HITMISS) {
-		if (mt.type() != CV_8UC1) {
+		if (curr_mt.type() != CV_8UC1) {
 			//只有CV_8UC1可以使用MORPH_HITMISS
 			type = 0;
 		}
@@ -331,13 +319,12 @@ void Widget::onClicked_buttonGroup_connected(QAbstractButton* btn)
 			returnPoint();
 			sub_lab_img->setVisible(false);
 		}
+		savePoint();
 		clearAllWidgetValue();
 	}
 	else {
 		restore_cutOperation();
 	}
-
-	savePoint();
 
 	hideAllDialog(dlg_connected);
 	dlg_connected->open();
@@ -361,13 +348,12 @@ void Widget::onClicked_buttonGroup_contours(QAbstractButton* btn)
 			returnPoint();
 			sub_lab_img->setVisible(false);
 		}
+		savePoint();
 		clearAllWidgetValue();
 	}
 	else {
 		restore_cutOperation();
 	}
-
-	savePoint();
 
 	hideAllDialog(dlg_contours);
 	dlg_contours->open();
@@ -387,15 +373,14 @@ void Widget::onTriggered_action_openFile()
 		cv::Size scaledSize(400, 400);
 
 		auto t_ori_mt = cv::imread(fileName.toLocal8Bit().data());
-		cv::resize(t_ori_mt, ori_mt, scaledSize);
-		ori_mt.copyTo(savePoint_mt);
-		ori_mt.copyTo(root_mt);
-		ori_mt.copyTo(mt);
+		cv::resize(t_ori_mt, root_mt, scaledSize);
+		root_mt.copyTo(inter_mt);
+		root_mt.copyTo(preview_mt);
+		root_mt.copyTo(curr_mt);
 
 		//存图片
-		ori_img = Mat2QImage(ori_mt);
-		img = Mat2QImage(ori_mt);
-		lab_img->setPixmap(QPixmap::fromImage(ori_img));
+		curr_img = Mat2QImage(curr_mt);
+		lab_img->setPixmap(QPixmap::fromImage(curr_img));
 
 		//更新数值
 		for (auto& x : ls) {
@@ -431,7 +416,7 @@ void Widget::onTriggered_action_allRestore()
 
 	clearAllWidgetValue();
 
-	ClearImageToRoot();
+	updateFromRoot();
 }
 
 void Widget::onTriggered_action_previewToNormal()
@@ -440,7 +425,7 @@ void Widget::onTriggered_action_previewToNormal()
 	if (mode) {
 		//点击确定，预览图片消失
 		sub_lab_img->setVisible(false);
-		lab_img->setPixmap(QPixmap::fromImage(img));
+		lab_img->setPixmap(QPixmap::fromImage(curr_img));
 	}
 }
 
@@ -455,7 +440,7 @@ void Widget::restore_cutOperation()
 	sub_lab_img->setVisible(false);
 	clearAllWidgetValue();
 
-	ClearImageToOrigin();
+	updateFromIntermediate();
 }
 
 void Widget::onTriggered_action_process(){
@@ -482,7 +467,7 @@ void Widget::onTriggered_action_process(){
 	}
 	clearAllWidgetValue();
 	//数据清空
-	ClearImageToOrigin();
+	updateFromIntermediate();
 }
 
 void Widget::onTriggered_action_undo()
@@ -491,8 +476,8 @@ void Widget::onTriggered_action_undo()
 
 	if (mode) {
 		returnPoint();
-		sub_lab_img->setPixmap(QPixmap::fromImage(img.scaled(200, 200)));
-		lab_img->setPixmap(QPixmap::fromImage(img));
+		sub_lab_img->setPixmap(QPixmap::fromImage(curr_img.scaled(200, 200)));
+		lab_img->setPixmap(QPixmap::fromImage(curr_img));
 		//清除滑块的值
 		setIndexPageWidgetValue();
 	}
@@ -505,18 +490,19 @@ void Widget::onTriggered_action_undo()
 void Widget::savePoint()
 {
 	//每次切换操作时自动保存当前图片作为保存点
-	mt.copyTo(savePoint_mt); //保存一份副本
-	sta.push(mt);
+	curr_mt.copyTo(preview_mt);
+	undo_sta.push(curr_mt);
 }
 
 void Widget::returnPoint()
 {
 	//读取存档保存点
 	//获取当前栈顶的mat
-	if (!sta.empty()) {
-		mt = sta.top();
-		sta.pop();
-		img = Mat2QImage(mt);
+	if (!undo_sta.empty()) {
+		//修改当前显示的mt与图片
+		curr_mt = undo_sta.top();
+		curr_img = Mat2QImage(curr_mt);
+		undo_sta.pop();
 	}
 }
 
@@ -568,21 +554,18 @@ void Widget::clearAllWidgetValue()
 	}
 }
 
-void Widget::ClearImageToOrigin()
+void Widget::updateFromIntermediate()
 {
-	ori_mt.copyTo(savePoint_mt);
-	ori_mt.copyTo(mt);
-
-	//存图片
-	ori_img = Mat2QImage(ori_mt);
-	img = Mat2QImage(ori_mt);
-	lab_img->setPixmap(QPixmap::fromImage(ori_img));
+	inter_mt.copyTo(curr_mt);	 //修改当前图片
+	inter_mt.copyTo(preview_mt); //修改快照图片
+	curr_img = Mat2QImage(curr_mt);
+	lab_img->setPixmap(QPixmap::fromImage(curr_img));
 }
 
-void Widget::ClearImageToRoot()
+void Widget::updateFromRoot()
 {
-	root_mt.copyTo(ori_mt); //重置ori_mt
-	ClearImageToOrigin();
+	root_mt.copyTo(inter_mt); //重置inter_mt
+	updateFromIntermediate();
 }
 
 
@@ -662,12 +645,16 @@ void Widget::createAction()
 	action_rotate_group = new QActionGroup(this);
 	action_rotate_group->addAction(action_right90 = new QAction(tr("顺时针旋转90度"), this));
 	action_rotate_group->addAction(action_right180 = new QAction(tr("顺时针旋转180度"), this));
+	action_rotate_group->addAction(action_right270 = new QAction(tr("逆时针旋转90度"),this));
 	connect(action_rotate_group, &QActionGroup::triggered, this, [=](QAction* action) {
 		if (action == action_right90) {
 			img_base->onTriggered_picture_rotate90();
 		}
 		else if (action == action_right180) {
 			img_base->onTriggered_picture_rotate180();
+		}
+		else if (action == action_right270) {
+			img_base->onTriggered_picture_rotate270();
 		}
 		});
 
@@ -698,9 +685,10 @@ void Widget::createMenu()
 	menu_convert->addAction(action_rgb);
 
 	//图像翻转
-	menu_reverse = menuBar()->addMenu(tr("翻转"));
+	menu_reverse = menuBar()->addMenu(tr("&翻转"));
 	menu_reverse->addAction(action_right90);
 	menu_reverse->addAction(action_right180);
+	menu_reverse->addAction(action_right270);
 }
 
 void Widget::createToolBar()

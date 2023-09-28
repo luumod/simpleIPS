@@ -27,10 +27,10 @@ void Blur::avg_blur()
 
 	cv::Mat _mt;
 	if (get()->mode) {
-		_mt = get()->savePoint_mt;
+		_mt = get()->preview_mt;
 	}
 	else {
-		_mt = get()->ori_mt;
+		_mt = get()->inter_mt;
 	}
 	cv::Mat tMt;
 
@@ -47,10 +47,10 @@ void Blur::Gaussian_blur()
 
 	cv::Mat _mt;
 	if (get()->mode) {
-		_mt = get()->savePoint_mt;
+		_mt = get()->preview_mt;
 	}
 	else {
-		_mt = get()->ori_mt;
+		_mt = get()->inter_mt;
 	}
 	cv::Mat tMt;
 
@@ -63,10 +63,10 @@ void Blur::median_blur()
 {
 	cv::Mat _mt;
 	if (get()->mode) {
-		_mt = get()->savePoint_mt;
+		_mt = get()->preview_mt;
 	}
 	else {
-		_mt = get()->ori_mt;
+		_mt = get()->inter_mt;
 	}
 	cv::Mat tMt{};
 
@@ -79,10 +79,10 @@ void Blur::bilateral_blur()
 {
 	cv::Mat _mt;
 	if (get()->mode) {
-		_mt = get()->savePoint_mt;
+		_mt = get()->preview_mt;
 	}
 	else {
-		_mt = get()->ori_mt;
+		_mt = get()->inter_mt;
 	}
 	if (_mt.type() != CV_8UC1 && _mt.type() != CV_8UC3) {
 		return;

@@ -27,7 +27,8 @@
 * 2023年8月31日：增加撤销功能。
 * 2023年9月3日：增加基本图形绘制模式。
 * 2023年9月24日：优化界面，改为对话框操作。
-* 2023年9月26日：新增图片格式转换与图像旋转。
+* 2023年9月26日：新增图片格式转换与图像旋转，翻转等。
+* 2023年9月28日：完善项目层次结构，新增图片的亮度，对比度等操作。
 
 ### 项目demo
 视频演示地址：
@@ -36,6 +37,11 @@
 ![image](https://github.com/luumod/myPhotoshopApp/assets/93420580/047d8674-0f01-4031-86a0-2813b3b50be4)
 ![image](https://github.com/luumod/myPhotoshopApp/assets/93420580/d94eb48b-cc0f-490b-a743-fcc9573a1aea)
 ![image](https://github.com/luumod/myPhotoshopApp/assets/93420580/e2505d01-dd78-4709-8b74-266efb5ce480)
+
+### 待解决bug
+
+* 在create_GUIShow中对滑块设置位置无效，但是setValue值有效，因此引入了两个滑块分别控制亮度升高和降低。
+* 图像的掩膜操作的Kernel的设置。
 
 ### 联系作者
 

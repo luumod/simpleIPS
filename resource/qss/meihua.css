@@ -1,5 +1,4 @@
-/*主题颜色*/
-*{
+﻿*{
     background-color: #9edfbd;
 }
 
@@ -14,9 +13,8 @@ QToolBox::tab:hover{
     background-color: rgba(156,230,220,220);
 }
 
-/*
-    功能性按钮
-*/
+
+
 
 QToolButton#function_tbtn{
     border: 2px solid rebeccapurple;

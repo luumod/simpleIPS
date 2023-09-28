@@ -1,25 +1,8 @@
 ﻿#ifndef ENUM_H_
 #define ENUM_H_
-
-enum TYPE {
-	BGR = 999,
-	BGR555,
-	BGR565,
-	RGB,
-	GRAY,
-	HSV,
-	HLS,
-	LAB,
-};
-
-enum SHAPE {
-	Line = TYPE::LAB + 1,
-	Rect,
-	Eillipse,
-	Path,
-};
-
-
+/*
+从 1 开始
+*/
 enum BLUR {
 	Average = 1,
 	Gaussian,
@@ -55,5 +38,33 @@ enum CONTOURS {
 enum CVTCOLOR {
 	CVTCOLOR_TYPE1 = 21,
 };
+
+/*
+显示效果增强
+*/
+enum SHOW {
+	LIGHT = 22,
+	SHARPEN,
+};
+
+enum TYPE {
+	BGR = 999,
+	BGR555,
+	BGR565,
+	RGB,
+	GRAY,
+	HSV,
+	HLS,
+	LAB,
+};
+
+enum SHAPE {
+	Line = TYPE::LAB + 1,
+	Rect,
+	Eillipse,
+	Path,
+};
+
+
 
 #endif

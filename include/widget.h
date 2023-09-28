@@ -9,7 +9,8 @@ class QButtonGroup;
 class QGridLayout;
 class QToolButton;
 class QToolBox;
-class Label;
+class Main_Label;	//主图片
+class Sub_Label;	//预览图片
 class QLabel;
 class QAction;
 class QStackedWidget;
@@ -28,6 +29,8 @@ class QActionGroup;
 class QHBoxLayout;
 class DrawWidget;
 class BaseOperate;
+class QMouseEvent;
+class Showeffect;
 
 class Widget :public QMainWindow {
 	Q_OBJECT
@@ -38,6 +41,8 @@ public:
 	//返回实例
 	static Widget* getInstance();
 	~Widget();
+protected:
+	void mousePressEvent(QMouseEvent* ev)override;
 public:
 	//操作对象
 	void initFunction();
@@ -47,7 +52,7 @@ public:
 	void createToolBar();
 	void createToolBox();
 	void createStatusBar();
-
+	
 	QWidget* createToolBtnItemWidget(const QString& text, int id, const QString& fileName = "");
 
 	//创建每个操作的输入数值方式
@@ -63,6 +68,8 @@ public:
 	QHBoxLayout* create_GUIMorphology();	//形态学
 	QHBoxLayout* create_GUIConnected();		//连通块分析
 	QHBoxLayout* create_GUIContours();		//轮廓检测
+	QVBoxLayout* create_GUIShow();			//效果增强
+
 signals:
 	void modeChanged(); //模式改变 默认->加工->默认
 	
@@ -72,6 +79,7 @@ public slots:
 	void onClicked_buttonGroup_morphology(QAbstractButton* btn);
 	void onClicked_buttonGroup_connected(QAbstractButton* btn);
 	void onClicked_buttonGroup_contours(QAbstractButton* btn);
+	void onClicked_buttonGroup_show(QAbstractButton* btn);
 
 	//打开新图片
 	void onTriggered_action_openFile();
@@ -130,8 +138,8 @@ public:
 	//撤销功能
 	std::stack<cv::Mat> undo_sta;
 
-	QLabel* lab_img = nullptr;
-	Label* sub_lab_img = nullptr; //自定义预览图片类
+	Main_Label* lab_img = nullptr;
+	Sub_Label* sub_lab_img = nullptr; //自定义预览图片类
 	static Widget* widget;
 	bool mode = false;
 
@@ -160,11 +168,20 @@ public:
 	QAction* action_draw = nullptr;
 	QActionGroup* action_cvtColor_group = nullptr;
 
+	//翻转
+	QAction* action_flip0 = nullptr;
+	QAction* action_flip1 = nullptr;
+	QAction* action_flip_1 = nullptr;
+	QActionGroup* action_flip_group = nullptr;
+
 	//旋转
 	QAction* action_right90 = nullptr;
 	QAction* action_right180 = nullptr;
 	QAction* action_right270 = nullptr;
 	QActionGroup* action_rotate_group = nullptr;
+
+	//掩膜
+	QAction* action_mark = nullptr;
 
 private:
 	//上下文菜单
@@ -174,6 +191,9 @@ private:
 	QMenu* menu_edit = nullptr;
 	QMenu* menu_convert = nullptr;
 	QMenu* menu_reverse = nullptr;
+	QMenu* menu_flip = nullptr;
+	QMenu* menu_mark = nullptr;
+	
 
 	QToolBar* toolbar1 = nullptr;
 
@@ -189,15 +209,20 @@ private:
 	QButtonGroup* btngroup_connected = nullptr;
 	QButtonGroup* btngroup_contours = nullptr;
 	QButtonGroup* btngroup_cvtColor = nullptr;
+	QButtonGroup* btngroup_show = nullptr;
 
 	//模糊操作对话框
-	QList<QDialog*> all_dlg;
+
 	QList<QDialog*> ls_dlg_avg;
 	QDialog* dlg_threshold = nullptr;
 	QDialog* dlg_morphology = nullptr;
 	QDialog* dlg_connected = nullptr;
 	QDialog* dlg_contours = nullptr;
+	QDialog* dlg_showeffect = nullptr;
+	//汇总
+	QList<QDialog*> all_dlg;
 
+	//-----------------------------
 	QList<QButtonGroup*> btngroups;
 
 	QFileDialog* fileDialog = nullptr;
@@ -212,6 +237,7 @@ private:
 	Morphology* morphology = nullptr;
 	Connected* connected = nullptr;
 	Contours* contours = nullptr;
+	Showeffect* showeffect = nullptr;
 	BaseOperate* img_base = nullptr; //图像基础操作
 	QList<Object*> ls;
 };

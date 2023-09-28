@@ -41,6 +41,7 @@ add_executable(QtPro
     src/DrawWidget.cpp
     src/GraphicsScene.cpp
     src/BaseOperate.cpp
+    src/Showeffect.cpp
 
     include/widget.h
     include/Common.h
@@ -56,14 +57,15 @@ add_executable(QtPro
     include/opencv_functions/Object.h 
     include/opencv_functions/Contours.h
     include/opencv_functions/BaseOperate.h
+    include/opencv_functions/Showeffect.h
 
     include/other_functions/LabelImg.h 
     include/other_functions/DrawWidget.h 
     include/other_functions/GraphicsScene.h
-)
+ )
 
  add_executable(QtTest
-    QtTest/test1.cpp )
+    QtTest/test1.cpp)
 
 
 

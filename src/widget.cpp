@@ -9,6 +9,7 @@
 #include "../include/opencv_functions/Connected.h"
 #include "../include/opencv_functions/Contours.h"
 #include "../include/opencv_functions/BaseOperate.h"
+#include "../include/opencv_functions/Showeffect.h"
 
 #include "../include/other_functions/LabelImg.h"
 #include "../include/other_functions/DrawWidget.h"
@@ -46,6 +47,7 @@
 #include <QLineEdit>
 #include <QRegularExpressionValidator>
 #include <QDialog>
+#include <QMouseEvent>
 
 Widget* Widget::widget = nullptr;
 
@@ -68,7 +70,7 @@ Widget::Widget(QMainWindow* parent)
 	this->setFixedSize(910, 780);
 	this->move(200,20);
 
-	lab_img = new QLabel;
+	lab_img = new Main_Label;
 	lab_img->setObjectName("main_ab");
 
 	initFunction();
@@ -85,12 +87,13 @@ Widget::Widget(QMainWindow* parent)
 		});
 	
 	auto main_tpic = QPixmap::fromImage(curr_img);
-	auto main_pic = main_tpic.scaled(400, 400, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+	auto main_pic = main_tpic;
+	//main_tpic.scaled(400, 400, Qt::KeepAspectRatio, Qt::SmoothTransformation);
 	lab_img->setPixmap(main_pic);	
 	lab_img->setScaledContents(true);
 	lab_img->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-	sub_lab_img = new Label(lab_img); //子图片设置依附在父图片上
+	sub_lab_img = new Sub_Label(lab_img); //子图片设置依附在父图片上
 	sub_lab_img->setPixmap(lab_img->pixmap().scaled(200, 200));
 	sub_lab_img->move(0,0);
 	sub_lab_img->raise();  //提升：实现依附的关键
@@ -132,6 +135,11 @@ Widget::Widget(QMainWindow* parent)
 	dlg_contours = new QDialog;
 	dlg_contours->setLayout(create_GUIContours());
 	all_dlg.push_back(dlg_contours);
+
+	dlg_showeffect = new QDialog;
+	dlg_showeffect->setLayout(create_GUIShow());
+	all_dlg.push_back(dlg_showeffect);
+	
 
 	for (auto& x : all_dlg) {
 		x->setGeometry(this->rect().x() + this->width(), this->rect().y() + 100, 200, 200);
@@ -187,6 +195,11 @@ Widget::~Widget()
 
 }
 
+void Widget::mousePressEvent(QMouseEvent* ev)
+{
+	hideAllDialog(nullptr);
+}
+
 void Widget::initFunction()
 {
 	//初始化
@@ -195,6 +208,7 @@ void Widget::initFunction()
 	ls.push_back(morphology = new Morphology);
 	ls.push_back(connected = new Connected);
 	ls.push_back(contours = new Contours);
+	ls.push_back(showeffect = new Showeffect);
 	ls.push_back(img_base = new BaseOperate);
 }
 
@@ -366,14 +380,41 @@ void Widget::onClicked_buttonGroup_contours(QAbstractButton* btn)
 	}
 }
 
+void Widget::onClicked_buttonGroup_show(QAbstractButton* btn)
+{
+	int id = btngroup_show->id(btn);
+	now_operation = id;  //获取当前位置
+	now_dialog = 5;
+
+	if (mode) {
+		if (sub_lab_img->isVisible()) {
+			returnPoint();
+			sub_lab_img->setVisible(false);
+		}
+		savePoint();
+		clearAllWidgetValue();
+	}
+	else {
+		restore_cutOperation();
+	}
+
+	hideAllDialog(dlg_showeffect);
+	dlg_showeffect->open();
+
+	QList<QAbstractButton*> btns = btngroup_show->buttons();
+	for (auto& m_btn : btns) {
+		if (m_btn == btn) {
+			m_btn->setChecked(true);
+		}
+	}
+}
+
 void Widget::onTriggered_action_openFile()
 {
 	QString fileName = QFileDialog::getOpenFileName(nullptr, "选择文件", ".",	"图像文件(*.png *.jpg)");
 	if (!fileName.isEmpty()) {
-		cv::Size scaledSize(400, 400);
-
 		auto t_ori_mt = cv::imread(fileName.toLocal8Bit().data());
-		cv::resize(t_ori_mt, root_mt, scaledSize);
+		root_mt = t_ori_mt;
 		root_mt.copyTo(inter_mt);
 		root_mt.copyTo(preview_mt);
 		root_mt.copyTo(curr_mt);
@@ -659,6 +700,26 @@ void Widget::createAction()
 		});
 
 
+	action_flip_group = new QActionGroup(this);
+	action_flip_group->addAction(action_flip0 = new QAction(tr("垂直翻转"),this));
+	action_flip_group->addAction(action_flip1 = new QAction(tr("水平翻转"), this));
+	action_flip_group->addAction(action_flip_1 = new QAction(tr("垂直水平翻转"), this));
+	connect(action_flip_group, &QActionGroup::triggered, this, [=](QAction* action) {
+		if (action == action_flip0) {
+			img_base->onTriggered_picture_flip0();
+		}
+		else if (action == action_flip1) {
+			img_base->onTriggered_picture_flip1();
+		}
+		else if (action == action_flip_1) {
+			img_base->onTriggered_picture_flip_1();
+		}
+		});
+
+	action_mark = new QAction(tr("图像对比度提高"),this);
+	connect(action_mark, &QAction::triggered, this, [=]() {
+		img_base->onTriggered_picture_mask();
+		});
 }
 
 void Widget::createMenu()
@@ -684,11 +745,21 @@ void Widget::createMenu()
 	menu_convert->addAction(action_lab);
 	menu_convert->addAction(action_rgb);
 
-	//图像翻转
-	menu_reverse = menuBar()->addMenu(tr("&翻转"));
+	//图像旋转
+	menu_reverse = menuBar()->addMenu(tr("&旋转"));
 	menu_reverse->addAction(action_right90);
 	menu_reverse->addAction(action_right180);
 	menu_reverse->addAction(action_right270);
+
+	//图像翻转
+	menu_flip = menuBar()->addMenu(tr("翻转"));
+	menu_flip->addAction(action_flip0);
+	menu_flip->addAction(action_flip1);
+	menu_flip->addAction(action_flip_1);
+	
+	//对比度
+	menu_mark = menuBar()->addMenu(tr("掩膜"));
+	menu_mark->addAction(action_mark);
 }
 
 void Widget::createToolBar()
@@ -852,6 +923,23 @@ void Widget::createToolBox()
 	QWidget* widget_contours = new QWidget;
 	widget_contours->setLayout(gird_contours);
 
+	//-----------------图像效果增强------------------------------
+	btngroups.push_back(btngroup_show = new QButtonGroup(this));
+	btngroup_show->setExclusive(true);
+
+	connect(btngroup_show, &QButtonGroup::buttonClicked, this, &Widget::onClicked_buttonGroup_show);
+
+	QGridLayout* gird_effect = new QGridLayout;
+
+	QWidget* f1 = createToolBtnItemWidget(tr("亮度调整"), SHOW::LIGHT, "../resource/light.png");
+	f1->setStatusTip(tr("图像亮度调整：增强图像的亮度"));
+	gird_effect->addWidget(f1, 0, 0);
+
+	gird_effect->setRowStretch(4, 10);
+	gird_effect->setColumnStretch(1, 10);
+
+	QWidget* widget_effect= new QWidget;
+	widget_effect->setLayout(gird_effect);
 
 	//-----------------创建ToolBox-----------------
 	toolbox_side = new QToolBox(this);
@@ -864,6 +952,7 @@ void Widget::createToolBox()
 	toolbox_side->addItem(widget_from, "图像形态化操作");
 	toolbox_side->addItem(widget_connected, "图像连通分析");
 	toolbox_side->addItem(widget_contours, "图像轮廓分析");
+	toolbox_side->addItem(widget_effect, "图像效果增强");
 	toolbox_side->setCurrentIndex(0); 
 
 
@@ -924,6 +1013,9 @@ QWidget* Widget::createToolBtnItemWidget(const QString& text, int id, const QStr
 	}
 	else if (belongsToEnum<CVTCOLOR>(id)) {
 		btngroup_cvtColor->addButton(btn, id); //图像转换
+	}
+	else if (belongsToEnum<SHOW>(id)) {
+		btngroup_show->addButton(btn, id);	  //效果增强
 	}
 	
 
@@ -1465,6 +1557,7 @@ QHBoxLayout* Widget::create_GUIConnected()
 	return hboxl;
 }
 
+//----------------图像轮廓分析GUI----------------------------
 QHBoxLayout* Widget::create_GUIContours()
 {
 	QComboBox* comb1 = new QComboBox; // mode
@@ -1584,3 +1677,51 @@ QHBoxLayout* Widget::create_GUIContours()
 	return hboxl;
 }
 
+
+//----------------图像效果增强GUI----------------------------
+QVBoxLayout* Widget::create_GUIShow()
+{
+	QSlider* slider1 = new QSlider(Qt::Horizontal);
+	slider1->setRange(1,100);
+	slider1->setObjectName("bright_value");
+	slider1->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
+	
+	QSlider* slider2 = new QSlider(Qt::Horizontal);
+	slider2->setRange(1, 100);
+	slider2->setObjectName("bright_value");
+	slider2->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
+	connect(slider1, &QSlider::sliderMoved, this, [=](int value) {
+		slider2->setValue(slider2->minimum());
+	if (mode) {
+		sub_lab_img->setVisible(true);
+	}
+	showeffect->onTriggered_slider_valueChange_brighten(value);
+		});
+
+
+	connect(slider2, &QSlider::sliderMoved, this, [=](int value) {
+		value = -value;	
+	slider1->setValue(slider1->minimum());
+		if (mode) {
+			sub_lab_img->setVisible(true);
+		}
+		showeffect->onTriggered_slider_valueChange_brighten(value);
+		});
+
+
+	QHBoxLayout* hlayout1 = new QHBoxLayout;
+	hlayout1->addWidget(new QLabel("亮度增加"));
+	hlayout1->addWidget(slider1);
+
+	QHBoxLayout* hlayout2 = new QHBoxLayout;
+	hlayout2->addWidget(new QLabel("亮度降低"));
+	hlayout2->addWidget(slider2);
+
+	QVBoxLayout* vlayout = new QVBoxLayout;
+	vlayout->addLayout(hlayout1);
+	vlayout->addLayout(hlayout2);
+
+	return vlayout;
+}

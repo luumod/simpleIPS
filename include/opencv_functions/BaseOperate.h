@@ -21,9 +21,18 @@ public:
 	
 public slots:
 	void cvtColor(QAction* action);
+	//旋转
 	void onTriggered_picture_rotate90();
 	void onTriggered_picture_rotate180();
 	void onTriggered_picture_rotate270();
+	//翻转
+	void onTriggered_picture_flip(int flag);
+	void onTriggered_picture_flip0();
+	void onTriggered_picture_flip1();
+	void onTriggered_picture_flip_1();
+
+	//对比度提高
+	void onTriggered_picture_mask();
 public:
 	
 };

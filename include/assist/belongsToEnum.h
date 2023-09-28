@@ -68,6 +68,16 @@ inline bool belongsToEnum(int data) {
 			return false;
 		}
 	}
+	else if constexpr (std::is_same_v<T, SHOW>) {
+		switch (static_cast<T>(data)) {
+		case T::LIGHT:
+			return true;
+		case T::SHARPEN:
+			return true;
+		default:
+			return false;
+		}
+	}
 	return false;
 }
 

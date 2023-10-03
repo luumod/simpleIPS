@@ -3,6 +3,7 @@
 #include "../include/assist/Mat2QImage.h"
 #include "../include/other_functions/LabelImg.h"
 #include <QDebug>
+#include "../include/Common.h"
 
 Object::Object()
 {
@@ -24,7 +25,7 @@ void Object::update(const cv::Mat& tMt)
 
 	if (get()->mode) {
 		//混合加工模式，首先修改当前预览图片，然后由用户决定是否将其预览作为主图片
-		get()->sub_lab_img->setPixmap(QPixmap::fromImage(get()->curr_img.scaled(200, 200)));
+		get()->sub_lab_img->setPixmap(QPixmap::fromImage(get()->curr_img.scaled(SUB_LAB_IMG_WIDTH, SUB_LAB_IMG_HEIGHT)));
 	}
 	else {
 		//不是混合加工，直接修改当前lab_img图片

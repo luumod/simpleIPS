@@ -6,6 +6,7 @@
 #include <QEvent>
 #include <QPixmap>
 #include <QMainWindow>
+
 class Widget;
 class QMouseEvent;
 class QRubberBand;
@@ -13,24 +14,8 @@ class QRubberBand;
 class QPoint;
 class LookWidget;
 class QAction;
-/*
-实现对于预览图片的操作
-*/
 
 Widget* get();
-
-class Sub_Label :public QLabel {
-	Q_OBJECT
-public:
-	using QLabel::QLabel;
-	~Sub_Label();
-protected:
-	void enterEvent(QEnterEvent* ev)override;
-	void leaveEvent(QEvent* ev)override;
-	void mousePressEvent(QMouseEvent* ev)override;
-private:
-	QPixmap* curr_img = nullptr;
-};
 
 /*
 对主图片的操作
@@ -53,8 +38,27 @@ private:
 	bool isSelecting_ = false;
 	bool isMoving = false;
 	LookWidget* selectedRegionDisplay = nullptr;
-
 };
+
+/*
+实现对于预览图片的操作
+*/
+
+
+class Sub_Label :public QLabel {
+	Q_OBJECT
+public:
+	Sub_Label(QWidget* parent = nullptr);
+	~Sub_Label();
+protected:
+	void enterEvent(QEnterEvent* ev)override;
+	void leaveEvent(QEvent* ev)override;
+	void mousePressEvent(QMouseEvent* ev)override;
+private:
+	QPixmap* curr_img = nullptr;
+};
+
+
 
 class LookWidget :public QMainWindow {
 	Q_OBJECT

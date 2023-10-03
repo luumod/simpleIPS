@@ -62,10 +62,10 @@ add_executable(QtPro
     include/other_functions/LabelImg.h 
     include/other_functions/DrawWidget.h 
     include/other_functions/GraphicsScene.h
- )
+  "include/widget_include_files.h")
 
  add_executable(QtTest
-    QtTest/test1.cpp)
+    QtTest/test1.cpp "include/widget_include_files.h")
 
 
 
@@ -87,6 +87,8 @@ target_link_libraries(QtTest
 add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 add_definitions(-DUNICODE -D_UNICODE)
 
+
+# 以下内容可以直接删除
 set(VLD_INCLUDE_DIRS "F:\\vld\\Visual Leak Detector\\include")
 set(VLD_LIBRARIES "F:\\vld\\Visual Leak Detector\\lib\\Win64\\vld.lib")
 include_directories(${VLD_INCLUDE_DIRS})

@@ -1,56 +1,9 @@
-﻿#include "../include/widget.h"
-#include "../include/Common.h"
-#include "../include/assist/belongsToEnum.h"
-#include "../include/assist/Mat2QImage.h"
+﻿#include "../include/widget_include_files.h"
 
-#include "../include/opencv_functions/Blur.h"
-#include "../include/opencv_functions/Threshold.h"
-#include "../include/opencv_functions/Morphology.h"
-#include "../include/opencv_functions/Connected.h"
-#include "../include/opencv_functions/Contours.h"
-#include "../include/opencv_functions/BaseOperate.h"
-#include "../include/opencv_functions/Showeffect.h"
-
-#include "../include/other_functions/LabelImg.h"
-#include "../include/other_functions/DrawWidget.h"
-#include <QDebug>
-#include <QBoxLayout>
-#include <QGridLayout>
-#include <QLabel>
-#include <opencv2/core/utils/logger.hpp>
-#include <QToolButton>
-#include <QButtonGroup>
-#include <QToolBox>
-#include <QAction>
-#include <QMenuBar>
-#include <QMenu>
-#include <QFileDialog>
-#include <QMessageBox>
-#include <QScreen>
-#include <QApplication>
-#include <QProgressBar>
-#include <QSlider>
-#include <QGroupBox>
-#include <QFormLayout>
-#include <QPainter>
-#include <QStackedWidget>
-#include <QSizePolicy>
-#include <QToolBar>
-#include <QPushButton>
-#include <QComboBox>
-#include <QMessageBox>
-#include <QPalette>
-#include <QColorDialog>
-#include <QFile>
-#include <QStatusBar>
-#include <QActionGroup>
-#include <QLineEdit>
-#include <QRegularExpressionValidator>
-#include <QDialog>
-#include <QMouseEvent>
-
+//单例对象
 Widget* Widget::widget = nullptr;
 
+//获取单例对象
 Widget* Widget::getInstance() {
 	if (widget == nullptr) {
 		widget = new Widget;
@@ -62,109 +15,24 @@ Widget::Widget(QMainWindow* parent)
 	:QMainWindow(parent),
 	root_mt(cv::imread("../resource/testImages/122.png"))
 {
-	root_mt.copyTo(inter_mt);
-	root_mt.copyTo(curr_mt);
-	curr_img = Mat2QImage(curr_mt);
-	cv::utils::logging::setLogLevel(cv::utils::logging::LOG_LEVEL_ERROR);
-	//窗口固定大小
-	this->setFixedSize(910, 780);
-	this->move(200,20);
+	init_readJson(); //读取配置文件
 
-	lab_img = new Main_Label;
-	lab_img->setObjectName("main_ab");
+	init_WidgetInfo();
+	init_MatResource();
+	init_WidgetLocation();
 
-	initFunction();
+	init_Label();
+
+	init_OpencvFunctions();
 	createAction();
 	createMenu();
 	createToolBar();
 	createToolBox();
 	createStatusBar();
 
-	//处理如何设置上下文菜单CustomContextMenu：发出customContextMenuRequested信号
-	lab_img->setContextMenuPolicy(Qt::CustomContextMenu);
-	connect(lab_img, &QLabel::customContextMenuRequested, this, [=](const QPoint& pos) {
-		context_menu->exec(QCursor::pos());
-		});
-	
-	auto main_tpic = QPixmap::fromImage(curr_img);
-	auto main_pic = main_tpic;
-	//main_tpic.scaled(400, 400, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-	lab_img->setPixmap(main_pic);	
-	lab_img->setScaledContents(true);
-	lab_img->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+	init_Optsdialog();
 
-	sub_lab_img = new Sub_Label(lab_img); //子图片设置依附在父图片上
-	sub_lab_img->setPixmap(lab_img->pixmap().scaled(200, 200));
-	sub_lab_img->move(0,0);
-	sub_lab_img->raise();  //提升：实现依附的关键
-	sub_lab_img->setVisible(false); //隐藏
-
-	//右侧布局添加图片与调整栏
-	vlayout_right = new QVBoxLayout;
-	vlayout_right->addWidget(lab_img);
-
-	//很多的调整框 
-	ls_dlg_avg.push_back(new QDialog);
-	ls_dlg_avg[0]->setLayout(create_GUIAvgBlur());
-	all_dlg.push_back(ls_dlg_avg[0]);
-
-	ls_dlg_avg.push_back(new QDialog);
-	ls_dlg_avg[1]->setLayout(create_GUIGaussianBlur());
-	all_dlg.push_back(ls_dlg_avg[1]);
-
-	ls_dlg_avg.push_back(new QDialog);
-	ls_dlg_avg[2]->setLayout(create_GUIMedianBlur());
-	all_dlg.push_back(ls_dlg_avg[2]);
-
-	ls_dlg_avg.push_back(new QDialog);
-	ls_dlg_avg[3]->setLayout(create_GUIBilateralBlur());
-	all_dlg.push_back(ls_dlg_avg[3]);
-
-	dlg_threshold = new QDialog;
-	dlg_threshold->setLayout(create_GUIThreshold());
-	all_dlg.push_back(dlg_threshold);
-
-	dlg_morphology = new QDialog;
-	dlg_morphology->setLayout(create_GUIMorphology());
-	all_dlg.push_back(dlg_morphology);
-
-	dlg_connected = new QDialog;
-	dlg_connected->setLayout(create_GUIConnected());
-	all_dlg.push_back(dlg_connected);
-
-	dlg_contours = new QDialog;
-	dlg_contours->setLayout(create_GUIContours());
-	all_dlg.push_back(dlg_contours);
-
-	dlg_showeffect = new QDialog;
-	dlg_showeffect->setLayout(create_GUIShow());
-	all_dlg.push_back(dlg_showeffect);
-	
-
-	for (auto& x : all_dlg) {
-		x->setGeometry(this->rect().x() + this->width(), this->rect().y() + 100, 200, 200);
-		x->setWindowFlags(x->windowFlags() | Qt::WindowStaysOnTopHint);
-	}
-
-	//右侧主窗口
-	QWidget* picture_show = new QWidget;
-	picture_show->setLayout(vlayout_right);
-	picture_show->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-
-	//主程序布局
-	QHBoxLayout* layout = new QHBoxLayout;
-	layout->addWidget(toolbox_side); //左侧主窗口
-	layout->addWidget(picture_show); //右侧主窗口
-
-	QWidget* mainWindow = new QWidget(this);
-	mainWindow->setLayout(layout);
-
-	this->setCentralWidget(mainWindow);
-
-	//连接信号
-	connect(this, &Widget::modeChanged, this, [=]() {
-		});
-
+	init_WidgetLayout();
 
 	//读取QSS美化
 	//外部加载
@@ -183,16 +51,175 @@ Widget::~Widget()
 	}
 
 	//内存释放
-	for (auto& x : ls) {
+	for (auto& x : Opts) {
 		delete x;
 		x = nullptr;
 	}
 	while (!undo_sta.empty()) {
 		undo_sta.pop();
 	}
+}
 
+void Widget::init_readJson()
+{
+	//读取json文件
+	QFile jsonFile("../resource/config/init.json");
+	if (!jsonFile.open(QIODevice::ReadOnly)) {
+		qWarning() << "json文件打开失败";
+		return;
+	}
+	QJsonDocument json = QJsonDocument::fromJson(jsonFile.readAll());
+	if (json.isNull()) {
+		qWarning() << "json文件为Null";
+		return;
+	}
+	QJsonObject obj1 = json.object();
+	if (obj1.contains("win_title")) {
+		config.win_title = obj1.value("win_title").toString();
+	}
+	if (obj1.contains("win_location_x")) {
+		config.win_location_x = obj1.value("win_location_x").toInt();
+	}
+	if (obj1.contains("win_location_x")) {
+		config.win_location_y = obj1.value("win_location_y").toInt();
+	}
+	qInfo() << config;
+}
 
+void Widget::init_WidgetInfo()
+{
+	this->setWindowTitle(config.win_title);
+}
 
+void Widget::init_MatResource()
+{
+	inter_mt = root_mt.clone();
+	preview_mt = root_mt.clone();
+	curr_mt = root_mt.clone();
+	curr_img = Mat2QImage(curr_mt);
+}
+
+void Widget::init_Label()
+{
+	lab_img = new Main_Label(this);
+	lab_img->setPixmap(QPixmap::fromImage(curr_img));
+	//图片上下文菜单
+	connect(lab_img, &QLabel::customContextMenuRequested, this, &Widget::on_label_customContextMenuRequested);
+
+	sub_lab_img = new Sub_Label(lab_img);
+	sub_lab_img->setPixmap(lab_img->pixmap().scaled(SUB_LAB_IMG_WIDTH, SUB_LAB_IMG_HEIGHT));
+	sub_lab_img->move(0, 0);
+	sub_lab_img->raise();  //提升：实现依附的关键
+	sub_lab_img->setVisible(false); //隐藏
+}
+
+void Widget::init_WidgetLocation()
+{
+	QScreen* windowScreen = QApplication::primaryScreen();
+	this->move(config.win_location_x, config.win_location_y); 
+}
+
+void Widget::init_Optsdialog()
+{
+	//很多的调整框 
+	all_dlg.push_back(new QDialog);
+	auto dlg_avgBlur = all_dlg.back();
+	dlg_avgBlur->setWindowTitle(tr("均值滤波"));
+	all_dlg.back()->setLayout(create_GUIAvgBlur());
+
+	all_dlg.push_back(new QDialog);
+	auto dlg_gaussBlur = all_dlg.back();
+	dlg_gaussBlur->setWindowTitle(tr("高斯滤波"));
+	all_dlg.back()->setLayout(create_GUIGaussianBlur());
+
+	all_dlg.push_back(new QDialog);
+	auto dlg_MedianBlur = all_dlg.back();
+	dlg_MedianBlur->setWindowTitle(tr("中值滤波"));
+	all_dlg.back()->setLayout(create_GUIMedianBlur());
+
+	all_dlg.push_back(new QDialog);
+	auto dlg_BilaterBlur = all_dlg.back();
+	dlg_BilaterBlur->setWindowTitle(tr("双边滤波"));
+	all_dlg.back()->setLayout(create_GUIBilateralBlur());
+
+	all_dlg.push_back(new QDialog);
+	auto dlg_ThresholdBlur = all_dlg.back();
+	dlg_ThresholdBlur->setWindowTitle(tr("图像的阈值化"));
+	all_dlg.back()->setLayout(create_GUIThreshold());
+
+	all_dlg.push_back(new QDialog);
+	auto dlg_MorphologyBlur = all_dlg.back();
+	dlg_MorphologyBlur->setWindowTitle(tr("图像的形态学操作"));
+	all_dlg.back()->setLayout(create_GUIMorphology());
+
+	all_dlg.push_back(new QDialog);
+	auto dlg_connectedBlur = all_dlg.back();
+	dlg_connectedBlur->setWindowTitle(tr("图像的连通性操作"));
+	all_dlg.back()->setLayout(create_GUIConnected());
+
+	all_dlg.push_back(new QDialog);
+	auto dlg_contoursBlur = all_dlg.back();
+	dlg_contoursBlur->setWindowTitle(tr("图像的轮廓检测操作"));
+	all_dlg.back()->setLayout(create_GUIContours());
+
+	all_dlg.push_back(new QDialog);
+	auto dlg_showBlur = all_dlg.back();
+	dlg_showBlur->setWindowTitle(tr("图像的基础显示操作"));
+	all_dlg.back()->setLayout(create_GUIShow());
+
+	for (auto& x : all_dlg) {
+		x->setGeometry(this->rect().x() + this->width(), this->rect().y() + 100, 200, 200);
+		x->setWindowFlags(x->windowFlags() | Qt::WindowStaysOnTopHint);
+	}
+}
+
+void Widget::init_WidgetLayout()
+{
+	//左侧是一个DockWidget，其内部是一个QToolBox
+	QDockWidget* dockWidget = new QDockWidget("操作区域", this);
+	dockWidget->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+
+	QHBoxLayout* toolBox_layout = new QHBoxLayout;
+	toolBox_layout->addWidget(toolbox_side);
+
+	//Dock内部空间
+	QWidget* dockContent = new QWidget;
+	dockContent->setLayout(toolBox_layout);//添加一个内容
+
+	dockWidget->setWidget(dockContent);
+
+	//添加到mainWindow中
+	this->addDockWidget(Qt::LeftDockWidgetArea, dockWidget);
+
+	//--------------------------------------------------
+	//右侧
+	//添加一个QScrollArea用于处理不同尺寸的图片
+	scrollArea = new QScrollArea;
+	scrollArea->setFixedSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+	//滚动窗口添加此图片
+	scrollArea->setWidget(lab_img);
+	int w = root_mt.cols;
+	int h = root_mt.rows;
+	//超过此区域就出现滚动条
+	if (w > 640 || h > 640) {
+		scrollArea->setWidgetResizable(true);
+	}
+	else {
+		scrollArea->setWidgetResizable(false);
+	}
+	this->setCentralWidget(scrollArea);
+}
+
+void Widget::init_OpencvFunctions()
+{
+	//初始化
+	Opts.push_back(blur = new Blur);
+	Opts.push_back(threshold = new Threshold);
+	Opts.push_back(morphology = new Morphology);
+	Opts.push_back(connected = new Connected);
+	Opts.push_back(contours = new Contours);
+	Opts.push_back(showeffect = new Showeffect);
+	Opts.push_back(img_base = new BaseOperate);
 }
 
 void Widget::mousePressEvent(QMouseEvent* ev)
@@ -200,24 +227,361 @@ void Widget::mousePressEvent(QMouseEvent* ev)
 	hideAllDialog(nullptr);
 }
 
-void Widget::initFunction()
+void Widget::moveEvent(QMoveEvent* ev)
 {
-	//初始化
-	ls.push_back(blur = new Blur);
-	ls.push_back(threshold = new Threshold);
-	ls.push_back(morphology = new Morphology);
-	ls.push_back(connected = new Connected);
-	ls.push_back(contours = new Contours);
-	ls.push_back(showeffect = new Showeffect);
-	ls.push_back(img_base = new BaseOperate);
+	config.win_location_x = this->pos().x(); //获取坐标
+	config.win_location_y = this->pos().y()	;
 }
 
-void Widget::onClicked_buttonGroup_blur(QAbstractButton* btn) 
+void Widget::on_label_customContextMenuRequested(const QPoint& pos) {
+	context_menu->exec(QCursor::pos());
+}
+
+
+void Widget::on_bttuonGroup_blur_clicked(QAbstractButton* btn) 
 {
 	int id = btngroup_blur->id(btn); //获取按下的按钮的id
 	now_operation = id;  //一定首先获取当前位置
 	now_dialog = 0;
 
+	choice_buttonGroupsBtns();
+
+	hideAllDialog(all_dlg[id-BLUR::Average]);
+	all_dlg[id - BLUR::Average]->open();//0-0 1-0 2-0 3-0
+}
+
+void Widget::on_bttuonGroup_threshold_clicked(QAbstractButton* btn)
+{
+	int id = btngroup_threshold->id(btn); //获取按下的按钮的id
+	now_operation = id;  //获取当前位置
+	now_dialog = 1;
+
+	int type = cv::ThresholdTypes(id - THRESHOLD::Binary);
+
+	//选择当前阈值模式
+	threshold->current_choice = type;
+
+	choice_buttonGroupsBtns();
+
+	hideAllDialog(all_dlg[4]);
+	all_dlg[4]->open();
+}
+
+void Widget::on_bttuonGroup_morphology_clicked(QAbstractButton* btn)
+{
+	int id = btngroup_form->id(btn);
+	now_operation = id;  //获取当前位置
+	now_dialog = 2;
+	
+
+	choice_buttonGroupsBtns();
+
+	int type = cv::MorphTypes(id - FORM::Erode);
+	if (type == cv::MorphTypes::MORPH_HITMISS) {
+		if (curr_mt.type() != CV_8UC1) {
+			//只有CV_8UC1可以使用MORPH_HITMISS
+			type = 0;
+		}
+	}
+	//选择当前形态学操作模式
+	morphology->current_choice = type;
+
+	hideAllDialog(all_dlg[5]);
+	all_dlg[5]->open();
+}
+
+void Widget::on_bttuonGroup_connected_clicked(QAbstractButton* btn)
+{
+	int id = btngroup_connected->id(btn);
+	now_operation = id;  //获取当前位置
+	now_dialog = 3;
+	
+	//选择当前连通性分析操作模式
+	connected->current_choice = id - CONNECTED::CONNECTED_TYPE1; // 0 1
+
+	choice_buttonGroupsBtns();
+
+	hideAllDialog(all_dlg[6]);
+	all_dlg[6]->open();
+}
+
+void Widget::on_bttuonGroup_contours_clicked(QAbstractButton* btn)
+{
+	int id = btngroup_contours->id(btn);
+	now_operation = id;  //获取当前位置
+	now_dialog = 4;
+
+	choice_buttonGroupsBtns();
+
+	hideAllDialog(all_dlg[7]);
+	all_dlg[7]->open();
+}
+
+void Widget::on_bttuonGroup_show_clicked(QAbstractButton* btn)
+{
+	int id = btngroup_show->id(btn);
+	now_operation = id;  //获取当前位置
+	now_dialog = 5;
+
+	choice_buttonGroupsBtns();
+
+	hideAllDialog(all_dlg[8]);
+	all_dlg[8]->open();
+}
+
+void Widget::on_action_exit_triggered()
+{
+	this->close();
+}
+
+void Widget::on_action_openFile_triggered()
+{
+	QString fileName = QFileDialog::getOpenFileName(nullptr, "选择文件", ".",	"图像文件(*.png *.jpg)");
+	if (!fileName.isEmpty()) {
+		root_mt = cv::imread(fileName.toLocal8Bit().data());
+		init_MatResource();
+
+		lab_img->setPixmap(QPixmap::fromImage(curr_img));
+		sub_lab_img->setPixmap(lab_img->pixmap().scaled(SUB_LAB_IMG_WIDTH, SUB_LAB_IMG_HEIGHT));
+
+		//删除滚动区域的QLabel，然后重新添加
+		scrollArea->takeWidget();
+		scrollArea->setWidget(lab_img);
+
+		//更新数值
+		for (auto& x : Opts) {
+			x->initialize();
+		}
+		clearAllWidgetValue();
+		sub_lab_img->setVisible(false);
+	}
+}
+
+void Widget::on_action_openWorks_triggered()
+{
+	//清除原始内容
+	wid_stacked.clear();
+	work_files.clear();
+	QString FloderPath = QFileDialog::getExistingDirectory(this, "选择文件夹", "../resource/testImages", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+	loadImagesFormFloder(FloderPath); //初始化
+	
+	for (const QString& imageFile : work_files) {
+		Main_Label* imageLabel = new Main_Label;
+		QPixmap pixmap(imageFile);
+		imageLabel->setPixmap(pixmap);
+		wid_stacked.push_back(imageLabel); //只添加Label图片
+	}
+	//主动释放：会丢弃原来的lab_img的内存空间，sub_lab_img也会跟着一起释放
+	delete scrollArea->takeWidget();
+
+	root_mt = cv::imread(work_files[currentIndex].toLocal8Bit().data());
+	init_MatResource();
+
+	lab_img = nullptr;
+	sub_lab_img = nullptr;
+	//重新进行初始化
+	init_Label();
+	//重新设置滑动区域
+	scrollArea->setWidget(lab_img);
+
+	//更新数值
+	for (auto& x : Opts) {
+		x->initialize();
+	}
+	clearAllWidgetValue();
+	sub_lab_img->setVisible(false);
+
+	//----------------------------------------------------
+
+
+	next = new QPushButton("下一页");
+	prev = new QPushButton("上一页");
+
+	buttonLayout = new QHBoxLayout;
+	buttonLayout->addWidget(prev);
+	buttonLayout->addWidget(next);
+
+	// 创建主布局
+	QVBoxLayout* mainLayout = new QVBoxLayout;
+	mainLayout->addWidget(scrollArea);
+	mainLayout->addLayout(buttonLayout);
+
+	// 创建主窗口
+	QWidget* centralWidget = new QWidget(this);
+	centralWidget->setLayout(mainLayout);
+	setCentralWidget(centralWidget);
+
+	connect(next, &QPushButton::clicked, this, &Widget::on_pushButton_next_clicked);
+	connect(prev, &QPushButton::clicked, this, &Widget::on_pushButton_prev_clicked);
+}
+
+void Widget::on_action_saveFile_triggered()
+{
+	//保存加工后的图片
+	QString FileName = QFileDialog::getSaveFileName(nullptr, "save image", ".", "Images(*.png *.bmp *.jpg)");
+	if (!FileName.isEmpty()) {
+		lab_img->pixmap().save(FileName);
+	}
+}
+
+void Widget::on_action_allRestore_triggered()
+{
+	/*
+	重置所有操作至原始图片
+	*/
+	//清除所有的数据信息
+	for (auto& x : Opts) {
+		x->initialize();
+	}
+	sub_lab_img->setVisible(false);
+
+	clearAllWidgetValue();
+
+	updateFromRoot();
+}
+
+void Widget::on_action_previewToNormal_triggered()
+{
+	//预览图点击确定转换为正常图 lan_img
+	if (mode) {
+		//点击确定，预览图片消失
+		sub_lab_img->setVisible(false);
+		lab_img->setPixmap(QPixmap::fromImage(curr_img));
+	}
+}
+
+void Widget::on_action_drawBoard_triggered()
+{
+	widget_draw = new DrawWidget;
+	widget_draw->show();
+	widget_draw->setAttribute(Qt::WA_DeleteOnClose);
+}
+
+void Widget::on_colorDialog_choice_triggered(const QColor& color)
+{
+	//选择颜色
+	contours->onTriggered_Color_currentTextChanged_contoursColor(color);
+}
+
+void Widget::on_actionGroup_cvtColor_triggered(QAction* action)
+{
+	img_base->cvtColor(action);
+}
+
+void Widget::on_actionGroup_rotate_triggered(QAction* action)
+{
+	if (action == action_right90) {
+		img_base->onTriggered_picture_rotate90();
+	}
+	else if (action == action_right180) {
+		img_base->onTriggered_picture_rotate180();
+	}
+	else if (action == action_right270) {
+		img_base->onTriggered_picture_rotate270();
+	}
+}
+
+void Widget::on_actionGroup_flip_triggered(QAction* action)
+{
+	if (action == action_flip0) {
+		img_base->onTriggered_picture_flip0();
+	}
+	else if (action == action_flip1) {
+		img_base->onTriggered_picture_flip1();
+	}
+	else if (action == action_flip_1) {
+		img_base->onTriggered_picture_flip_1();
+	}
+}
+
+void Widget::on_actionGroup_help_triggered(QAction* action)
+{
+	if (action == action_help) {
+		//打开帮助文档
+		QUrl help_url("https://github.com/luumod/myPhotoshopApp");
+		if (!QDesktopServices::openUrl(help_url)) {
+			qWarning() << "打开帮助文档失败!";
+		}
+	}
+	else if (action == action_aboutme) {
+		// 创建关于作者的对话框
+		QDialog aboutDialog;
+		aboutDialog.raise();
+		aboutDialog.setWindowTitle("关于作者");
+
+		// 添加作者信息标签
+		QLabel authorLabel("作者：🌈Yuelo");
+		authorLabel.setAlignment(Qt::AlignCenter);
+
+		// 添加版权信息标签
+		QLabel copyrightLabel("版权所有 © 2023 🌈Yuleo");
+		copyrightLabel.setAlignment(Qt::AlignCenter);
+
+		// 添加主页网址标签
+		QLabel homepageLabel("<a href='https://www.helloylh.com'>点击打开我的主页</a>");
+		homepageLabel.setAlignment(Qt::AlignCenter);
+		homepageLabel.setOpenExternalLinks(true); // 允许打开外部链接
+
+		// 添加关闭按钮
+		QPushButton closeButton("关闭");
+		QObject::connect(&closeButton, &QPushButton::clicked, &aboutDialog, &QDialog::close);
+
+		// 创建垂直布局来组织内容
+		QVBoxLayout layout;
+		layout.addWidget(&authorLabel);
+		layout.addWidget(&homepageLabel);
+		layout.addWidget(&copyrightLabel);
+		layout.addWidget(&closeButton);
+
+		// 将布局设置为对话框的布局
+		aboutDialog.setLayout(&layout);
+
+		// 显示关于作者的对话框
+		aboutDialog.exec();
+	}	
+}
+
+void Widget::on_pushButton_next_clicked()
+{
+	preIndex = currentIndex;
+	currentIndex++;
+	if (currentIndex == 9) {
+		qInfo() << "dda";
+	}
+	if (currentIndex >= wid_stacked.count()) {
+		currentIndex = 0;
+		preIndex = wid_stacked.count() - 1;
+	}
+	qInfo() << currentIndex;
+	updateImageView();
+}
+
+void Widget::on_pushButton_prev_clicked()
+{
+	preIndex = currentIndex;
+	currentIndex--;
+	if (currentIndex < 0) {
+		preIndex = 0;
+		currentIndex = wid_stacked.count() - 1;
+	}
+	qInfo() << currentIndex;
+	updateImageView();
+}
+
+void Widget::loadImagesFormFloder(const QString& floderPath)
+{
+	QDir dir(floderPath);
+	QStringList filters;
+	filters << "*.jpg" << "*.jpeg" << "*.png" << "*.bmp"; // 支持的图片格式
+	QFileInfoList fileInfoList = dir.entryInfoList(filters, QDir::Files, QDir::Name);
+	for (auto& x : fileInfoList) {
+		work_files.push_back(x.absoluteFilePath());
+	}
+	currentIndex = preIndex = 0;
+}
+
+void Widget::choice_buttonGroupsBtns()
+{
 	if (mode) {
 		if (sub_lab_img->isVisible()) {
 			//如果我操作了图片，但是没有将预览的效果应用到主图片上，则说明此次修改无效。
@@ -232,248 +596,6 @@ void Widget::onClicked_buttonGroup_blur(QAbstractButton* btn)
 	else {
 		restore_cutOperation();
 	}
-	
-
-	hideAllDialog(ls_dlg_avg[id - BLUR::Average]);
-	ls_dlg_avg[id - BLUR::Average]->open();//0-0 1-0 2-0 3-0
-
-	QList<QAbstractButton*> btns = btngroup_blur->buttons();
-	for (auto& m_btn : btns) {
-		if (m_btn == btn) {
-			m_btn->setChecked(true);
-		}
-	}
-}
-
-void Widget::onClicked_buttonGroup_threshold(QAbstractButton* btn)
-{
-	int id = btngroup_threshold->id(btn); //获取按下的按钮的id
-	now_operation = id;  //获取当前位置
-	now_dialog = 1;
-
-	int type = cv::ThresholdTypes(id - THRESHOLD::Binary);
-
-	//选择当前阈值模式
-	threshold->current_choice = type;
-
-	if (mode) {
-		if (sub_lab_img->isVisible()) {
-			returnPoint();
-			sub_lab_img->setVisible(false);
-		}
-		savePoint();
-		clearAllWidgetValue();
-	}
-	else {
-		restore_cutOperation();
-	}
-
-	hideAllDialog(dlg_threshold);
-	dlg_threshold->open();
-
-	QList<QAbstractButton*> btns = btngroup_threshold->buttons();
-	for (auto& m_btn : btns) {
-		if (m_btn == btn) {
-			m_btn->setChecked(true);
-		}
-	}
-}
-
-void Widget::onClicked_buttonGroup_morphology(QAbstractButton* btn)
-{
-	int id = btngroup_form->id(btn);
-	now_operation = id;  //获取当前位置
-	now_dialog = 2;
-	
-
-	if (mode) {
-		if (sub_lab_img->isVisible()) {
-			returnPoint();
-			sub_lab_img->setVisible(false);
-		}
-		savePoint();
-		clearAllWidgetValue();
-	}
-	else {
-		restore_cutOperation();
-	}
-
-	int type = cv::MorphTypes(id - FORM::Erode);
-	if (type == cv::MorphTypes::MORPH_HITMISS) {
-		if (curr_mt.type() != CV_8UC1) {
-			//只有CV_8UC1可以使用MORPH_HITMISS
-			type = 0;
-		}
-	}
-	//选择当前形态学操作模式
-	morphology->current_choice = type;
-
-	hideAllDialog(dlg_morphology);
-	dlg_morphology->open();
-
-	QList<QAbstractButton*> btns = btngroup_form->buttons();
-	for (auto& m_btn : btns) {
-		if (m_btn == btn) {
-			m_btn->setChecked(true);
-		}
-	}
-}
-
-void Widget::onClicked_buttonGroup_connected(QAbstractButton* btn)
-{
-	int id = btngroup_connected->id(btn);
-	now_operation = id;  //获取当前位置
-	now_dialog = 3;
-	
-	//选择当前连通性分析操作模式
-	connected->current_choice = id - CONNECTED::CONNECTED_TYPE1; // 0 1
-
-	if (mode) {
-		if (sub_lab_img->isVisible()) {
-			returnPoint();
-			sub_lab_img->setVisible(false);
-		}
-		savePoint();
-		clearAllWidgetValue();
-	}
-	else {
-		restore_cutOperation();
-	}
-
-	hideAllDialog(dlg_connected);
-	dlg_connected->open();
-
-	QList<QAbstractButton*> btns = btngroup_connected->buttons();
-	for (auto& m_btn : btns) {
-		if (m_btn == btn) {
-			m_btn->setChecked(true);
-		}
-	}
-}
-
-void Widget::onClicked_buttonGroup_contours(QAbstractButton* btn)
-{
-	int id = btngroup_contours->id(btn);
-	now_operation = id;  //获取当前位置
-	now_dialog = 4;
-
-	if (mode) {
-		if (sub_lab_img->isVisible()) {
-			returnPoint();
-			sub_lab_img->setVisible(false);
-		}
-		savePoint();
-		clearAllWidgetValue();
-	}
-	else {
-		restore_cutOperation();
-	}
-
-	hideAllDialog(dlg_contours);
-	dlg_contours->open();
-
-	QList<QAbstractButton*> btns = btngroup_contours->buttons();
-	for (auto& m_btn : btns) {
-		if (m_btn == btn) {
-			m_btn->setChecked(true);
-		}
-	}
-}
-
-void Widget::onClicked_buttonGroup_show(QAbstractButton* btn)
-{
-	int id = btngroup_show->id(btn);
-	now_operation = id;  //获取当前位置
-	now_dialog = 5;
-
-	if (mode) {
-		if (sub_lab_img->isVisible()) {
-			returnPoint();
-			sub_lab_img->setVisible(false);
-		}
-		savePoint();
-		clearAllWidgetValue();
-	}
-	else {
-		restore_cutOperation();
-	}
-
-	hideAllDialog(dlg_showeffect);
-	dlg_showeffect->open();
-
-	QList<QAbstractButton*> btns = btngroup_show->buttons();
-	for (auto& m_btn : btns) {
-		if (m_btn == btn) {
-			m_btn->setChecked(true);
-		}
-	}
-}
-
-void Widget::onTriggered_action_openFile()
-{
-	QString fileName = QFileDialog::getOpenFileName(nullptr, "选择文件", ".",	"图像文件(*.png *.jpg)");
-	if (!fileName.isEmpty()) {
-		auto t_ori_mt = cv::imread(fileName.toLocal8Bit().data());
-		root_mt = t_ori_mt;
-		root_mt.copyTo(inter_mt);
-		root_mt.copyTo(preview_mt);
-		root_mt.copyTo(curr_mt);
-
-		//存图片
-		curr_img = Mat2QImage(curr_mt);
-		lab_img->setPixmap(QPixmap::fromImage(curr_img));
-
-		//更新数值
-		for (auto& x : ls) {
-			x->initialize();
-		}
-		clearAllWidgetValue();
-		sub_lab_img->setVisible(false);
-	}
-	else {
-		QMessageBox::warning(nullptr, tr("警告"), "图片文件打开失败!");
-	}
-}
-
-void Widget::onTriggered_action_saveToFile()
-{
-	//保存加工后的图片
-	QString FileName = QFileDialog::getSaveFileName(nullptr, "save image", ".", "Images(*.png *.bmp *.jpg)");
-	if (!FileName.isEmpty()) {
-		lab_img->pixmap().save(FileName);
-	}
-}
-
-void Widget::onTriggered_action_allRestore()
-{
-	/*
-	重置所有操作至原始图片
-	*/
-	//清除所有的数据信息
-	for (auto& x : ls) {
-		x->initialize();
-	}
-	sub_lab_img->setVisible(false);
-
-	clearAllWidgetValue();
-
-	updateFromRoot();
-}
-
-void Widget::onTriggered_action_previewToNormal()
-{
-	//预览图点击确定转换为正常图 lan_img
-	if (mode) {
-		//点击确定，预览图片消失
-		sub_lab_img->setVisible(false);
-		lab_img->setPixmap(QPixmap::fromImage(curr_img));
-	}
-}
-
-void Widget::onTriggered_ColorDialog_choice(const QColor& color)
-{
-	//选择颜色
-	contours->onTriggered_Color_currentTextChanged_contoursColor(color);
 }
 
 void Widget::restore_cutOperation()
@@ -484,34 +606,25 @@ void Widget::restore_cutOperation()
 	updateFromIntermediate();
 }
 
-void Widget::onTriggered_action_process(){
+void Widget::on_action_process_triggered(){
 	//点击此开始创作模式
 	//图片清除，重新开始，所有滑块归零
 	if (!mode) {
-
 		//开启预览
 		sub_lab_img->setVisible(false);
-
-		mode = true;
-
+		this->mode = true;
 		statusLab->setText(tr("混合加工模式"));
-
-		//状态改变
-		emit modeChanged();
 	}
 	else {
 		mode = false;
 		statusLab->setText(tr("默认模式"));
-
-		//状态改变
-		emit modeChanged();
 	}
 	clearAllWidgetValue();
 	//数据清空
 	updateFromIntermediate();
 }
 
-void Widget::onTriggered_action_undo()
+void Widget::on_action_undo_triggered()
 {
 	//仅仅在创作者模式下生效：触发时会将图片置回到未操作前的位置
 
@@ -523,7 +636,7 @@ void Widget::onTriggered_action_undo()
 		setIndexPageWidgetValue();
 	}
 	else {
-		onTriggered_action_allRestore();
+		on_action_allRestore_triggered();
 	}
 }
 
@@ -543,6 +656,7 @@ void Widget::returnPoint()
 		//修改当前显示的mt与图片
 		curr_mt = undo_sta.top();
 		curr_img = Mat2QImage(curr_mt);
+		sub_lab_img->setPixmap(lab_img->pixmap().scaled(SUB_LAB_IMG_WIDTH, SUB_LAB_IMG_HEIGHT));
 		undo_sta.pop();
 	}
 }
@@ -558,18 +672,16 @@ void Widget::hideAllDialog(QDialog* currDialog)
 
 void Widget::setIndexPageWidgetValue(int index)
 {
-	/*
-	获取所有的指定的QSlider 控件并且清除值
-	*/
 	//传递默认的index，则选择当前页
 	if (index == -1) {
-		index = now_dialog; 
+		clearAllWidgetValue();
+		return;
 	}
 	
 	//否则就是第index页
-	QList<QWidget*> ls = all_dlg[index]->findChildren<QWidget*>();
+	QList<QWidget*> Opts = all_dlg[index]->findChildren<QWidget*>();
 
-	for (auto& x : ls) {
+	for (auto& x : Opts) {
 		if (QSlider* slider = qobject_cast<QSlider*>(x)) {
 			if (slider->objectName() == tr("threshold_value")) {
 				slider->setValue(128);
@@ -590,7 +702,7 @@ void Widget::setIndexPageWidgetValue(int index)
 void Widget::clearAllWidgetValue()
 {
 	//清除所有的滑块的值
-	for (int i = 0; i < all_dlg.count(); i++) { // (0 1 2 3) 4 5 6 7
+	for (int i = 0; i < all_dlg.count(); i++) { // (0 1 2 3) 4 5 6 7 8
 		setIndexPageWidgetValue(i);
 	}
 }
@@ -601,6 +713,7 @@ void Widget::updateFromIntermediate()
 	inter_mt.copyTo(preview_mt); //修改快照图片
 	curr_img = Mat2QImage(curr_mt);
 	lab_img->setPixmap(QPixmap::fromImage(curr_img));
+	sub_lab_img->setPixmap(QPixmap::fromImage(get()->curr_img.scaled(SUB_LAB_IMG_WIDTH, SUB_LAB_IMG_HEIGHT)));
 }
 
 void Widget::updateFromRoot()
@@ -609,117 +722,106 @@ void Widget::updateFromRoot()
 	updateFromIntermediate();
 }
 
-
-
 void Widget::createAction()
 {
 	//关闭窗口
 	action_exit = new QAction(tr("退出"), this);
 	action_exit->setStatusTip(tr("退出程序"));
 	action_exit->setShortcut(tr("Ctrl+E"));
-	connect(action_exit, &QAction::triggered, this, [=]() {
-		this->close();
-	});
+	connect(action_exit, &QAction::triggered, this,&Widget::on_action_exit_triggered);
 
 	//打开文件
 	action_open = new QAction(tr("打开文件"), this);
 	action_open->setStatusTip(tr("选择并且打开一个图片"));
 	action_open->setShortcut(tr("Ctrl+O"));
-	connect(action_open, &QAction::triggered, this,&Widget::onTriggered_action_openFile);
+	connect(action_open, &QAction::triggered, this,&Widget::on_action_openFile_triggered);
+
+	//打开文件夹
+	action_works = new QAction(tr("打开文件夹/工作区"), this);
+	action_works->setStatusTip(tr("选择并且打开文件夹作为当前工作区域"));
+	action_works->setShortcut(tr("Ctrl+F"));
+	connect(action_works, &QAction::triggered, this, &Widget::on_action_openWorks_triggered);
 
 	//保存图片
 	action_save = new QAction(tr("保存图片"), this);
 	action_save->setStatusTip(tr("保存此图片"));
 	action_save->setShortcut(tr("Ctrl+S"));
-	connect(action_save, &QAction::triggered, this, &Widget::onTriggered_action_saveToFile);
+	connect(action_save, &QAction::triggered, this, &Widget::on_action_saveFile_triggered);
 
 	//重置图片
 	action_restore = new QAction(tr("重置图片"), this);
 	action_restore->setStatusTip(tr("重置此图片，取消所有加工"));
 	action_restore->setIcon(QIcon("../resource/restore.png"));
 	action_restore->setShortcut(tr("Ctrl+Shift+Z"));
-	connect(action_restore, &QAction::triggered, this, &Widget::onTriggered_action_allRestore);
+	connect(action_restore, &QAction::triggered, this, &Widget::on_action_allRestore_triggered);
 
 	//开始制作模式
 	action_begin = new QAction(tr("图片加工"),this);
 	action_begin->setStatusTip(tr("图片加工模式，可以混合修改图片"));
 	action_begin->setIcon(QIcon("../resource/begin.png"));
 	action_begin->setCheckable(true);
-	connect(action_begin, &QAction::triggered, this, &Widget::onTriggered_action_process);
+	connect(action_begin, &QAction::triggered, this, &Widget::on_action_process_triggered);
 
 	//撤销
 	action_return = new QAction(tr("撤销"), this);
 	action_return->setShortcut(tr("Ctrl+Z"));
 	action_return->setStatusTip(tr("撤销此操作"));
 	action_return->setIcon(QIcon("../resource/return.png"));
-	connect(action_return, &QAction::triggered, this, &Widget::onTriggered_action_undo);
+	connect(action_return, &QAction::triggered, this, &Widget::on_action_undo_triggered);
 
-	action_preview = new QAction(tr("确定"),this);
-	action_preview->setIcon(QIcon("../resource/previewOk.png"));
-	action_preview->setStatusTip(tr("确定操作"));
-	connect(action_preview, &QAction::triggered, this, &Widget::onTriggered_action_previewToNormal);
+	//预览图点击确定
+	action_previewOk = new QAction(tr("确定"),this);
+	action_previewOk->setIcon(QIcon("../resource/previewOk.png"));
+	action_previewOk->setStatusTip(tr("确定操作"));
+	connect(action_previewOk, &QAction::triggered, this, &Widget::on_action_previewToNormal_triggered);
 
+	//打开简单绘图板
 	action_draw = new QAction(tr("绘画"), this);
 	action_draw->setIcon(QIcon("../resource/draw.png"));
 	action_draw->setStatusTip(tr("绘图操作"));
-	connect(action_draw, &QAction::triggered, this, [=]() {
-		widget_draw = new DrawWidget;
-		widget_draw->show();
-		widget_draw->setAttribute(Qt::WA_DeleteOnClose);
-		});
+	connect(action_draw, &QAction::triggered, this,&Widget::on_action_drawBoard_triggered);
 
-	//颜色
+	//轮廓操作时 选择颜色 自动更新
 	colorDialog = new QColorDialog(this);
 	connect(colorDialog, &QColorDialog::currentColorChanged,
-		this, &Widget::onTriggered_ColorDialog_choice);
+		this, &Widget::on_colorDialog_choice_triggered);
 
+	//颜色转换
 	action_cvtColor_group = new QActionGroup(this);
 	action_cvtColor_group->addAction(action_ori = new QAction("转换为原图", this));
 	action_cvtColor_group->addAction(action_hls = new QAction("转换为HLS格式",this));
 	action_cvtColor_group->addAction(action_hsv = new QAction("转换为HSV格式", this));
 	action_cvtColor_group->addAction(action_rgb = new QAction("转换为RGB格式", this));
 	action_cvtColor_group->addAction(action_lab = new QAction("转换为LAB格式", this));
-	connect(action_cvtColor_group, &QActionGroup::triggered, this, [=](QAction* action) {
-		img_base->cvtColor(action);
-		});
+	connect(action_cvtColor_group, &QActionGroup::triggered, this,&Widget::on_actionGroup_cvtColor_triggered);
 
+	//图片旋转菜单
 	action_rotate_group = new QActionGroup(this);
 	action_rotate_group->addAction(action_right90 = new QAction(tr("顺时针旋转90度"), this));
 	action_rotate_group->addAction(action_right180 = new QAction(tr("顺时针旋转180度"), this));
 	action_rotate_group->addAction(action_right270 = new QAction(tr("逆时针旋转90度"),this));
-	connect(action_rotate_group, &QActionGroup::triggered, this, [=](QAction* action) {
-		if (action == action_right90) {
-			img_base->onTriggered_picture_rotate90();
-		}
-		else if (action == action_right180) {
-			img_base->onTriggered_picture_rotate180();
-		}
-		else if (action == action_right270) {
-			img_base->onTriggered_picture_rotate270();
-		}
-		});
+	connect(action_rotate_group, &QActionGroup::triggered, this, &Widget::on_actionGroup_rotate_triggered);
 
 
+	//图片翻转菜单
 	action_flip_group = new QActionGroup(this);
 	action_flip_group->addAction(action_flip0 = new QAction(tr("垂直翻转"),this));
 	action_flip_group->addAction(action_flip1 = new QAction(tr("水平翻转"), this));
 	action_flip_group->addAction(action_flip_1 = new QAction(tr("垂直水平翻转"), this));
-	connect(action_flip_group, &QActionGroup::triggered, this, [=](QAction* action) {
-		if (action == action_flip0) {
-			img_base->onTriggered_picture_flip0();
-		}
-		else if (action == action_flip1) {
-			img_base->onTriggered_picture_flip1();
-		}
-		else if (action == action_flip_1) {
-			img_base->onTriggered_picture_flip_1();
-		}
-		});
+	connect(action_flip_group, &QActionGroup::triggered, this, &Widget::on_actionGroup_flip_triggered);
 
+	//图片对比度提高
 	action_mark = new QAction(tr("图像对比度提高"),this);
 	connect(action_mark, &QAction::triggered, this, [=]() {
 		img_base->onTriggered_picture_mask();
 		});
+
+	//帮助菜单
+	action_help_group = new QActionGroup(this);
+	action_help_group->addAction(action_help = new QAction(tr("查看帮助"), this));
+	action_help_group->addAction(action_aboutme = new QAction(tr("关于作者"), this));
+	connect(action_help_group, &QActionGroup::triggered, this, &Widget::on_actionGroup_help_triggered);
+
 }
 
 void Widget::createMenu()
@@ -733,6 +835,7 @@ void Widget::createMenu()
 	//菜单栏
 	menu_file = menuBar()->addMenu(tr("&文件"));
 	menu_file->addAction(action_open);
+	menu_file->addAction(action_works);
 	menu_file->addAction(action_save);
 	menu_file->addSeparator();
 	menu_file->addAction(action_exit);
@@ -760,6 +863,11 @@ void Widget::createMenu()
 	//对比度
 	menu_mark = menuBar()->addMenu(tr("掩膜"));
 	menu_mark->addAction(action_mark);
+
+	//帮助
+	menu_help = menuBar()->addMenu(tr("帮助"));
+	menu_help->addAction(action_help);
+	menu_help->addAction(action_aboutme);
 }
 
 void Widget::createToolBar()
@@ -768,12 +876,9 @@ void Widget::createToolBar()
 	toolbar1->addAction(action_begin);
 	toolbar1->addAction(action_restore);
 	toolbar1->addAction(action_return);
-	toolbar1->addAction(action_preview);
+	toolbar1->addAction(action_previewOk);
 	toolbar1->addAction(action_draw);
-
 }
-
-
 
 void Widget::createToolBox()
 {
@@ -781,7 +886,7 @@ void Widget::createToolBox()
 	btngroups.push_back(btngroup_blur = new QButtonGroup(this));
 	btngroup_blur->setExclusive(true);
 	//连接信号
-	connect(btngroup_blur, &QButtonGroup::buttonClicked, this, &Widget::onClicked_buttonGroup_blur);
+	connect(btngroup_blur, &QButtonGroup::buttonClicked, this, &Widget::on_bttuonGroup_blur_clicked);
 
 	
 	QGridLayout* grid_blur = new QGridLayout;
@@ -810,7 +915,7 @@ void Widget::createToolBox()
 	btngroups.push_back(btngroup_threshold = new QButtonGroup(this));
 	btngroup_threshold->setExclusive(true);
 	//连接信号
-	connect(btngroup_threshold, &QButtonGroup::buttonClicked, this, &Widget::onClicked_buttonGroup_threshold);
+	connect(btngroup_threshold, &QButtonGroup::buttonClicked, this, &Widget::on_bttuonGroup_threshold_clicked);
 
 	QGridLayout* grid_threshold = new QGridLayout;
 	QWidget* b1 = createToolBtnItemWidget("二进制化", THRESHOLD::Binary, "../resource/2.png");
@@ -844,7 +949,7 @@ void Widget::createToolBox()
 	btngroups.push_back(btngroup_form = new QButtonGroup(this));
 	btngroup_form->setExclusive(true);
 	//连接信号
-	connect(btngroup_form, &QButtonGroup::buttonClicked, this, &Widget::onClicked_buttonGroup_morphology);
+	connect(btngroup_form, &QButtonGroup::buttonClicked, this, &Widget::on_bttuonGroup_morphology_clicked);
 
 	QGridLayout* grid_form = new QGridLayout;
 	QWidget* c1 = createToolBtnItemWidget("膨胀", FORM::Erode, "../resource/pengzhang.png");
@@ -888,7 +993,7 @@ void Widget::createToolBox()
 	btngroups.push_back(btngroup_connected = new QButtonGroup(this));
 	btngroup_connected->setExclusive(true);//互斥
 
-	connect(btngroup_connected, &QButtonGroup::buttonClicked, this, &Widget::onClicked_buttonGroup_connected);
+	connect(btngroup_connected, &QButtonGroup::buttonClicked, this, &Widget::on_bttuonGroup_connected_clicked);
 	
 	QGridLayout* gird_connected = new QGridLayout;
 
@@ -909,7 +1014,7 @@ void Widget::createToolBox()
 	btngroups.push_back(btngroup_contours = new QButtonGroup(this));
 	btngroup_contours->setExclusive(true);
 
-	connect(btngroup_contours, &QButtonGroup::buttonClicked, this, &Widget::onClicked_buttonGroup_contours);
+	connect(btngroup_contours, &QButtonGroup::buttonClicked, this, &Widget::on_bttuonGroup_contours_clicked);
 
 	QGridLayout* gird_contours = new QGridLayout;
 
@@ -927,7 +1032,7 @@ void Widget::createToolBox()
 	btngroups.push_back(btngroup_show = new QButtonGroup(this));
 	btngroup_show->setExclusive(true);
 
-	connect(btngroup_show, &QButtonGroup::buttonClicked, this, &Widget::onClicked_buttonGroup_show);
+	connect(btngroup_show, &QButtonGroup::buttonClicked, this, &Widget::on_bttuonGroup_show_clicked);
 
 	QGridLayout* gird_effect = new QGridLayout;
 
@@ -945,14 +1050,18 @@ void Widget::createToolBox()
 	toolbox_side = new QToolBox(this);
 	toolbox_side->setMinimumWidth(200);
 	toolbox_side->setMaximumWidth(200);
-	toolbox_side->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
-	toolbox_side->addItem(widget_blur, "图像模糊操作");
 	toolbox_side->setFrameShape(QFrame::StyledPanel);
+	toolbox_side->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
+
+	toolbox_side->addItem(widget_blur, "图像模糊操作");
+	//toolbox_side->setItemIcon(0, QIcon(tr("../resource/2.png")));
+	//toolbox_side->setItemToolTip(0, "");
 	toolbox_side->addItem(widget_threshold, "图像阈值操作");
 	toolbox_side->addItem(widget_from, "图像形态化操作");
 	toolbox_side->addItem(widget_connected, "图像连通分析");
 	toolbox_side->addItem(widget_contours, "图像轮廓分析");
 	toolbox_side->addItem(widget_effect, "图像效果增强");
+
 	toolbox_side->setCurrentIndex(0); 
 
 
@@ -983,6 +1092,7 @@ void Widget::createStatusBar()
 	auto bar = statusBar();
 	statusBar()->addWidget(statusLab = new QLabel("默认模式"));
 }
+
 
 QWidget* Widget::createToolBtnItemWidget(const QString& text, int id, const QString& fileName)
 {
@@ -1079,8 +1189,32 @@ QHBoxLayout* Widget::create_Edit_hLayout(const QString& filter, const QString& t
 	return hLayout;
 }
 
+void Widget::updateImageView()
+{
+	if (currentIndex >= 0 && currentIndex < wid_stacked.count()) {
+		//恢复之前的图片，但是修改仍会保存
+		//wid_stacked[preIndex] = lab_img
+		wid_stacked[preIndex] = scrollArea->takeWidget(); 
 
-//-----------------均值GUI----------------------------
+		root_mt = cv::imread(work_files[currentIndex].toLocal8Bit().data());
+		init_MatResource();
+
+		//重新进行初始化
+		init_Label();
+		//重新设置滑动区域
+		scrollArea->setWidget(lab_img);
+
+		//更新数值
+		for (auto& x : Opts) {
+			x->initialize();
+		}
+		clearAllWidgetValue();
+		sub_lab_img->setVisible(false);
+	}
+}
+
+
+//-----------------均值Dialog GUI----------------------------
 QHBoxLayout* Widget::create_GUIAvgBlur() //1：均值 2：高斯
 {
 	QSlider* slider1 = new QSlider(Qt::Horizontal);
@@ -1096,25 +1230,25 @@ QHBoxLayout* Widget::create_GUIAvgBlur() //1：均值 2：高斯
 	//水平布局管理两个控件：label和滑块
 	QHBoxLayout* hlayout1 = new QHBoxLayout;
 	hlayout1->addWidget(new QLabel("kernel"));
+	hlayout1->setSpacing(10);
 	hlayout1->addWidget(slider1);
+	
 	connect(slider1, &QSlider::sliderMoved, this, [=](int value) {
 		if (slider2->value() == slider2->minimum() && slider3->value() == slider3->minimum()) {
 			blur->anchorX = blur->anchorY = blur->avg_Ksize / 2;
 		}
-		if (mode) {
-			sub_lab_img->setVisible(true);
-		}
-		blur->onTriggered_slider1_valueChange_avgBlur(value);
-	});
+	if (mode) {
+		sub_lab_img->setVisible(true);
+	}
+	blur->onTriggered_slider1_valueChange_avgBlur(value);
+		});
 
-	//将每一个水平布局放到一个窗口中，便于进行隐藏
-	QWidget* adj_avgBlur_s1 = new QWidget;
-	adj_avgBlur_s1->setLayout(hlayout1);
-
+	
 	//--------------------------------
 
 	QHBoxLayout* hlayout2 = new QHBoxLayout;
 	hlayout2->addWidget(new QLabel("sigmaX"));
+	hlayout2->setSpacing(10);
 	hlayout2->addWidget(slider2);
 	//X偏移连接信号
 	connect(slider2, &QSlider::sliderMoved, this, [=](int value) {
@@ -1124,13 +1258,11 @@ QHBoxLayout* Widget::create_GUIAvgBlur() //1：均值 2：高斯
 		blur->onTriggered_slider2_valueChange_avgBlur(value);
 	});
 
-	QWidget* adj_avgBlur_s2 = new QWidget;
-	adj_avgBlur_s2->setLayout(hlayout2);
-
 	//--------------------------------
 
 	QHBoxLayout* hlayout3 = new QHBoxLayout;
 	hlayout3->addWidget(new QLabel("sigmaY"));
+	hlayout3->setSpacing(10);
 	hlayout3->addWidget(slider3);
 	//Y偏移连接信号
 	connect(slider3, &QSlider::sliderMoved, this, [=](int value) {
@@ -1140,23 +1272,16 @@ QHBoxLayout* Widget::create_GUIAvgBlur() //1：均值 2：高斯
 		blur->onTriggered_slider3_valueChange_avgBlur(value);
 		});
 
-	QWidget* adj_avgBlur_s3 = new QWidget;
-	adj_avgBlur_s3->setLayout(hlayout3);
-
 	//将三个QWidget添加到一个垂直布局
 	QVBoxLayout* vLayout = new QVBoxLayout;
-	vLayout->addWidget(adj_avgBlur_s1);
-	vLayout->addWidget(adj_avgBlur_s2);
-	vLayout->addWidget(adj_avgBlur_s3);
-	vLayout->setSpacing(0);
-
-	QVBoxLayout* vLayout_2 = new QVBoxLayout;
-	vLayout_2->addLayout(vLayout);
-	vLayout_2->addLayout(create_Edit_hLayout("\\d+\\s\\d+\\s\\d+", "KSize X Y",&blur));
-	vLayout_2->setSpacing(0);
+	vLayout->addLayout(hlayout1);
+	vLayout->addLayout(hlayout2);
+	vLayout->addLayout(hlayout3);
+	vLayout->addLayout(create_Edit_hLayout("\\d+\\s\\d+\\s\\d+", "KSize X Y", &blur));
+	vLayout->setSpacing(10);
 
 	QHBoxLayout* hboxl = new QHBoxLayout;
-	hboxl->addLayout(vLayout_2);
+	hboxl->addLayout(vLayout);
 
 	return hboxl;
 }
@@ -1178,6 +1303,7 @@ QHBoxLayout* Widget::create_GUIGaussianBlur()
 	//水平布局管理两个控件：label和滑块
 	QHBoxLayout* hlayout1 = new QHBoxLayout;
 	hlayout1->addWidget(new QLabel("ksize"));
+	hlayout1->setSpacing(10);
 	hlayout1->addWidget(slider1);
 	connect(slider1, &QSlider::sliderMoved, this, [=](int value) {
 
@@ -1193,14 +1319,11 @@ QHBoxLayout* Widget::create_GUIGaussianBlur()
 	blur->onTriggered_slider1_valueChange_gaussianBlur(value);
 		});
 
-	//将每一个水平布局放到一个窗口中，便于进行隐藏
-	QWidget* adj_gasBlur_s1 = new QWidget;
-	adj_gasBlur_s1->setLayout(hlayout1);
-
 	//--------------------------------
 
 	QHBoxLayout* hlayout2 = new QHBoxLayout;
 	hlayout2->addWidget(new QLabel("sigmaX"));
+	hlayout2->setSpacing(10);
 	hlayout2->addWidget(slider2);
 	//X偏移连接信号
 	connect(slider2, &QSlider::sliderMoved, this, [=](int value) {
@@ -1210,13 +1333,11 @@ QHBoxLayout* Widget::create_GUIGaussianBlur()
 		blur->onTriggered_slider2_valueChange_gaussianBlur(value);
 		});
 
-	QWidget* adj_gasBlur_s2 = new QWidget;
-	adj_gasBlur_s2->setLayout(hlayout2);
-
 	//--------------------------------
 
 	QHBoxLayout* hlayout3 = new QHBoxLayout;
 	hlayout3->addWidget(new QLabel("sigmaY"));
+	hlayout3->setSpacing(10);
 	hlayout3->addWidget(slider3);
 	//Y偏移连接信号
 	connect(slider3, &QSlider::sliderMoved, this, [=](int value) {
@@ -1226,22 +1347,16 @@ QHBoxLayout* Widget::create_GUIGaussianBlur()
 		blur->onTriggered_slider3_valueChange_gaussianBlur(value);
 		});
 
-	QWidget* adj_gasBlur_s3 = new QWidget;
-	adj_gasBlur_s3->setLayout(hlayout3);
-
 	//将三个QWidget添加到一个垂直布局
 	QVBoxLayout* vLayout = new QVBoxLayout;
-	vLayout->addWidget(adj_gasBlur_s1);
-	vLayout->addWidget(adj_gasBlur_s2);
-	vLayout->addWidget(adj_gasBlur_s3);
-
-	QVBoxLayout* vLayout_2 = new QVBoxLayout;
-	vLayout_2->addLayout(vLayout);
-	vLayout_2->addLayout(create_Edit_hLayout("\\d+\\s\\d+\\s\\d+", "KSize X Y",&blur));
-	vLayout_2->setSpacing(0);
+	vLayout->addLayout(hlayout1);
+	vLayout->addLayout(hlayout2);
+	vLayout->addLayout(hlayout3);
+	vLayout->addLayout(create_Edit_hLayout("\\d+\\s\\d+\\s\\d+", "KSize X Y",&blur));
+	vLayout->setSpacing(10);
 
 	QHBoxLayout* hboxl = new QHBoxLayout;
-	hboxl->addLayout(vLayout_2);
+	hboxl->addLayout(vLayout);
 
 	return hboxl;
 }
@@ -1264,15 +1379,15 @@ QHBoxLayout* Widget::create_GUIMedianBlur()
 		blur->onTriggered_slider_valueChange_medianBlur(value);
 	});
 
-
 	QHBoxLayout* hLayout2 = new QHBoxLayout;
 	hLayout2->addWidget(new QLabel("ksize"));
+	hLayout2->setSpacing(10);
 	hLayout2->addWidget(slider);
 
 	QVBoxLayout* vLayout_2 = new QVBoxLayout;
 	vLayout_2->addLayout(hLayout2);
+	vLayout_2->addSpacing(10);
 	vLayout_2->addLayout(create_Edit_hLayout("\\d+", "KSize",&blur));
-	vLayout_2->setSpacing(0);
 
 	QHBoxLayout* hboxl = new QHBoxLayout;
 	hboxl->addLayout(vLayout_2);
@@ -1298,6 +1413,7 @@ QHBoxLayout* Widget::create_GUIBilateralBlur()
 	//水平布局管理两个控件：label和滑块
 	QHBoxLayout* hlayout1 = new QHBoxLayout;
 	hlayout1->addWidget(new QLabel("ksize"));
+	hlayout1->addSpacing(10);
 	hlayout1->addWidget(slider1);
 	connect(slider1, &QSlider::sliderMoved, this, [=](int value) {
 		if (mode) {
@@ -1306,15 +1422,12 @@ QHBoxLayout* Widget::create_GUIBilateralBlur()
 		blur->onTriggered_slider1_valueChange_bilateralBlur(value);
 	});
 
-	//将每一个水平布局放到一个窗口中，便于进行隐藏
-	QWidget* adj_binBlur_s1 = new QWidget;
-	adj_binBlur_s1->setLayout(hlayout1);
-
 	//--------------------------------
 
 	QHBoxLayout* hlayout2 = new QHBoxLayout;
 	hlayout2->addWidget(new QLabel("sigmaX"));
 	hlayout2->addWidget(slider2);
+	hlayout2->setSpacing(10);
 	//X偏移连接信号
 	connect(slider2, &QSlider::sliderMoved, this, [=](int value) {
 		if (mode) {
@@ -1323,14 +1436,12 @@ QHBoxLayout* Widget::create_GUIBilateralBlur()
 		blur->onTriggered_slider2_valueChange_bilateralBlur(value);
 		});
 
-	QWidget* adj_binBlur_s2 = new QWidget;
-	adj_binBlur_s2->setLayout(hlayout2);
-
 	//--------------------------------
 
 	QHBoxLayout* hlayout3 = new QHBoxLayout;
 	hlayout3->addWidget(new QLabel("sigmaY"));
 	hlayout3->addWidget(slider3);
+	hlayout3->setSpacing(10);
 	//Y偏移连接信号
 	connect(slider3, &QSlider::sliderMoved, this, [=](int value) {
 		if (mode) {
@@ -1339,22 +1450,16 @@ QHBoxLayout* Widget::create_GUIBilateralBlur()
 		blur->onTriggered_slider3_valueChange_bilateralBlur(value);
 		});
 
-	QWidget* adj_binBlur_s3 = new QWidget;
-	adj_binBlur_s3->setLayout(hlayout3);
-
 	//将三个QWidget添加到一个垂直布局
 	QVBoxLayout* vLayout = new QVBoxLayout;
-	vLayout->addWidget(adj_binBlur_s1);
-	vLayout->addWidget(adj_binBlur_s2);
-	vLayout->addWidget(adj_binBlur_s3);
-
-	QVBoxLayout* vLayout_2 = new QVBoxLayout;
-	vLayout_2->addLayout(vLayout);
-	vLayout_2->addLayout(create_Edit_hLayout("\\d+\\s\\d+\\s\\d+", "bin_d sigmaColor sigmaSpace", &blur));
-	vLayout_2->setSpacing(0);
+	vLayout->addLayout(hlayout1);
+	vLayout->addLayout(hlayout2);
+	vLayout->addLayout(hlayout3);
+	vLayout->addLayout(create_Edit_hLayout("\\d+\\s\\d+\\s\\d+", "bin_d sigmaColor sigmaSpace", &blur));
+	vLayout->setSpacing(10);
 
 	QHBoxLayout* hboxl = new QHBoxLayout;
-	hboxl->addLayout(vLayout_2);
+	hboxl->addLayout(vLayout);
 	return hboxl;
 }
 
@@ -1383,10 +1488,6 @@ QHBoxLayout* Widget::create_GUIThreshold()
 		threshold->onTriggered_slider1_valueChanged_thresholdValue(value);
 		});
 
-	//将每一个水平布局放到一个窗口中，便于进行隐藏
-	QWidget* adj_binBlur_s1 = new QWidget;
-	adj_binBlur_s1->setLayout(hlayout1);
-
 	//--------------------------------
 
 	QHBoxLayout* hlayout2 = new QHBoxLayout;
@@ -1400,21 +1501,19 @@ QHBoxLayout* Widget::create_GUIThreshold()
 		threshold->onTriggered_slider2_valueChanged_maxValue(value);
 		});
 
-	QWidget* adj_binBlur_s2 = new QWidget;
-	adj_binBlur_s2->setLayout(hlayout2);
-
 	//--------------------------------
 
 
 	//将三个QWidget添加到一个垂直布局
 	QVBoxLayout* vLayout = new QVBoxLayout;
-	vLayout->addWidget(adj_binBlur_s1);
-	vLayout->addWidget(adj_binBlur_s2);
+	vLayout->addLayout(hlayout1);
+	vLayout->addLayout(hlayout2);
+	vLayout->setSpacing(10);
 
 	QVBoxLayout* vLayout_2 = new QVBoxLayout;
 	vLayout_2->addLayout(vLayout);
 	vLayout_2->addLayout(create_Edit_hLayout("\\d+\\s\\d+", "threshold_value maxVal",&threshold));
-	vLayout_2->setSpacing(0);
+	vLayout_2->setSpacing(10);
 
 	QHBoxLayout* hboxl = new QHBoxLayout;
 	hboxl->addLayout(vLayout_2);
@@ -1443,6 +1542,7 @@ QHBoxLayout* Widget::create_GUIMorphology()
 	QHBoxLayout* hlayout1 = new QHBoxLayout;
 	hlayout1->addWidget(new QLabel("Kernel"));
 	hlayout1->addWidget(slider1);
+	hlayout1->setSpacing(10);
 	connect(slider1, &QSlider::sliderMoved, this, [=](int value) {
 		if (mode) {
 			sub_lab_img->setVisible(true);
@@ -1450,15 +1550,10 @@ QHBoxLayout* Widget::create_GUIMorphology()
 		morphology->onTriggered_slider1_valueChanged_kernel(value);
 		});
 
-	//将每一个水平布局放到一个窗口中，便于进行隐藏
-	QWidget* adj_binBlur_s1 = new QWidget;
-	adj_binBlur_s1->setLayout(hlayout1);
-
-	//--------------------------------
-
 	QHBoxLayout* hlayout2 = new QHBoxLayout;
 	hlayout2->addWidget(new QLabel("anchorX"));
 	hlayout2->addWidget(slider2);
+	hlayout2->setSpacing(10);
 	//X偏移连接信号
 	connect(slider2, &QSlider::sliderMoved, this, [=](int value) {
 		if (mode) {
@@ -1467,14 +1562,10 @@ QHBoxLayout* Widget::create_GUIMorphology()
 		morphology->onTriggered_slider2_valueChanged_anchorX(value);
 		});
 
-	QWidget* adj_binBlur_s2 = new QWidget;
-	adj_binBlur_s2->setLayout(hlayout2);
-
-	//--------------------------------
-
 	QHBoxLayout* hlayout3 = new QHBoxLayout;
 	hlayout3->addWidget(new QLabel("anchorY"));
 	hlayout3->addWidget(slider3);
+	hlayout3->setSpacing(10);
 	//Y偏移连接信号
 	connect(slider3, &QSlider::sliderMoved, this, [=](int value) {
 		if (mode) {
@@ -1483,23 +1574,20 @@ QHBoxLayout* Widget::create_GUIMorphology()
 		morphology->onTriggered_slider3_valueChanged_anchorY(value);
 		});
 
-	QWidget* adj_binBlur_s3 = new QWidget;
-	adj_binBlur_s3->setLayout(hlayout3);
-
 	//将三个QWidget添加到一个垂直布局
 	QVBoxLayout* vLayout = new QVBoxLayout;
-	vLayout->addWidget(adj_binBlur_s1);
-	vLayout->addWidget(adj_binBlur_s2);
-	vLayout->addWidget(adj_binBlur_s3);
+	vLayout->addLayout(hlayout1);
+	vLayout->addLayout(hlayout2);
+	vLayout->addLayout(hlayout3);
+	vLayout->setSpacing(10);
 
 	QVBoxLayout* vLayout_2 = new QVBoxLayout;
 	vLayout_2->addLayout(vLayout);
 	vLayout_2->addLayout(create_Edit_hLayout("\\d+\\s\\d+\\s\\d+\\s\\d+", "Kernel X Y iters",&morphology));
-	vLayout_2->setSpacing(0);
+	vLayout_2->setSpacing(10);
 
 	QHBoxLayout* hboxl = new QHBoxLayout;
 	hboxl->addLayout(vLayout_2);
-
 	return hboxl;
 }
 
@@ -1647,24 +1735,15 @@ QHBoxLayout* Widget::create_GUIContours()
 	hlayout3->addWidget(comb3);
 	hlayout3->setAlignment(Qt::AlignmentFlag::AlignCenter);
 
-	QWidget* w1 = new QWidget;
-	w1->setLayout(hlayout1);
-
-	QWidget* w2 = new QWidget;
-	w2->setLayout(hlayout2);
-
-	QWidget* w3 = new QWidget;
-	w3->setLayout(hlayout3);
-
-	QWidget* w4 = new QWidget;
-	w4->setLayout(grid);
 	QVBoxLayout* vlayoutRight = new QVBoxLayout;
-	vlayoutRight->addWidget(w4);
+	vlayoutRight->addStretch(10);
+	vlayoutRight->addLayout(grid);
+	vlayoutRight->addStretch(10);
 
 	QVBoxLayout* vlayoutLeft = new QVBoxLayout;
-	vlayoutLeft->addWidget(w1);
-	vlayoutLeft->addWidget(w2);
-	vlayoutLeft->addWidget(w3);
+	vlayoutLeft->addLayout(hlayout1);
+	vlayoutLeft->addLayout(hlayout2);
+	vlayoutLeft->addLayout(hlayout3);
 	vlayoutLeft->addWidget(btn);
 
 	QHBoxLayout* hlayout = new QHBoxLayout;

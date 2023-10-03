@@ -117,22 +117,4 @@ void BaseOperate::onTriggered_picture_mask()
 	get()->inter_mt = tMt;
 	get()->updateFromIntermediate();
 	get()->sub_lab_img->setPixmap(QPixmap::fromImage(get()->curr_img.scaled(200, 200)));
-
-	////掩膜操作
-	//cv::Mat _mt;
-	//if (get()->mode) {
-	//	_mt = get()->preview_mt;
-	//}
-	//else {
-	//	_mt = get()->inter_mt;
-	//}
-	//cv::Mat tMt;
-	//cv::Mat kernel = (cv::Mat_<float>(3, 3) <<
-	//	0, -1, 0,
-	//	-1, 5, -1,
-	//	0, -1, 0
-	//	);
-	//cv::filter2D(_mt, tMt, _mt.depth(), kernel);
-
-	//Object::update(tMt);
 }

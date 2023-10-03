@@ -1,6 +1,12 @@
 ﻿#ifndef COMMON_H_
 #define COMMON_H_
 
+constexpr auto WINDOW_WIDTH = 720;
+constexpr auto WINDOW_HEIGHT = 720;
+
+constexpr auto SUB_LAB_IMG_WIDTH = 200;
+constexpr auto SUB_LAB_IMG_HEIGHT = 200;
+
 #define AVG_BLUR_MIN_SIZE 1
 #define AVG_BLUR_MAX_SIZE 30
 
@@ -11,9 +17,9 @@
 
 #define MEDIAN_BLUR_MAX 81
 
-#define BILATERAL_BLUR_MAX_SIZE 100
-#define BILATERAL_BLUR_MAX_COLOR 255
-#define BILATERAL_BLUR_MAX_SPACE 300
+#define BILATERAL_BLUR_MAX_SIZE 50
+#define BILATERAL_BLUR_MAX_COLOR 120
+#define BILATERAL_BLUR_MAX_SPACE 150
 
 
 #endif

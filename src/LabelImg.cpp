@@ -11,39 +11,10 @@
 #include <QLabel>
 #include <QRect>
 
+
 Widget* get() {
 	return Widget::getInstance();
 }
-
-Sub_Label::~Sub_Label() {
-	if (curr_img) {
-		delete curr_img;
-		curr_img = nullptr;
-	}
-}
-
-void Sub_Label::enterEvent(QEnterEvent* ev)
-{
-	if (curr_img) {
-		delete curr_img;
-		curr_img = nullptr;
-	}
-	curr_img = new QPixmap(get()->lab_img->pixmap());
-	Widget::getInstance()->lab_img->setPixmap(get()->sub_lab_img->pixmap());
-}
-
-void Sub_Label::leaveEvent(QEvent* ev)
-{
-	if (curr_img) {
-		get()->lab_img->setPixmap(*curr_img);
-	}
-}
-
-void Sub_Label::mousePressEvent(QMouseEvent* ev)
-{
-	get()->onTriggered_action_previewToNormal();
-}
-
 
 /*
 Main_Label
@@ -52,7 +23,12 @@ Main_Label
 Main_Label::Main_Label(QWidget* parent)
 	:QLabel(parent)
 {
-	rubber = new QRubberBand(QRubberBand::Line,this);
+	this->setScaledContents(true);
+	this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+	this->setObjectName("main_lab_img");
+	this->setContextMenuPolicy(Qt::CustomContextMenu);
+
+	rubber = new QRubberBand(QRubberBand::Line, this);
 }
 
 Main_Label::~Main_Label()
@@ -114,6 +90,44 @@ void Main_Label::mouseReleaseEvent(QMouseEvent* ev)
 	}
 	QWidget::mouseReleaseEvent(ev);
 }
+
+
+Sub_Label::Sub_Label(QWidget* parent)
+	:QLabel(parent)
+{
+	
+}
+
+Sub_Label::~Sub_Label() {
+	if (curr_img) {
+		delete curr_img;
+		curr_img = nullptr;
+	}
+}
+
+void Sub_Label::enterEvent(QEnterEvent* ev)
+{
+	if (curr_img) {
+		delete curr_img;
+		curr_img = nullptr;
+	}
+	curr_img = new QPixmap(get()->lab_img->pixmap());
+	Widget::getInstance()->lab_img->setPixmap(get()->sub_lab_img->pixmap());
+}
+
+void Sub_Label::leaveEvent(QEvent* ev)
+{
+	if (curr_img) {
+		get()->lab_img->setPixmap(*curr_img);
+	}
+}
+
+void Sub_Label::mousePressEvent(QMouseEvent* ev)
+{
+	get()->on_action_previewToNormal_triggered();
+}
+
+
 
 
 /*

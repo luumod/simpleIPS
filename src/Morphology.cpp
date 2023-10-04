@@ -19,12 +19,7 @@ void Morphology::morphology()
 	}
 
 	cv::Mat _mt;
-	if (get()->mode) {
-		_mt = get()->preview_mt;
-	}
-	else {
-		_mt = get()->inter_mt; //当前图片
-	}
+	getMat(_mt);
 	cv::Mat tMt;
 
 	cv::Mat kernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(Kernel, Kernel));

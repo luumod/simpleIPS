@@ -16,12 +16,7 @@ void Showeffect::initialize()
 void Showeffect::Bright()
 {
 	cv::Mat _mt;
-	if (get()->mode) {
-		_mt = get()->preview_mt;
-	}
-	else {
-		_mt = get()->inter_mt;
-	}
+	getMat(_mt);
 	cv::Mat tMt = cv::Mat::zeros(_mt.size(), _mt.type());
 
 	//调整亮度

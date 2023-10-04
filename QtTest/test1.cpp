@@ -12,7 +12,7 @@
 class ImageViewer : public QMainWindow {
 public:
 	ImageViewer(QWidget* parent = nullptr)
-		: QMainWindow(parent), currentIndex(0) {
+		: QMainWindow(parent), work_currentIndex(0) {
 		setupUI();
 	}
 
@@ -31,22 +31,22 @@ private:
 			imageLabel->setPixmap(pixmap); 
 			wid_stacked.push_back(imageLabel); //只添加Label图片
 		}
-		scrollArea->setWidget(wid_stacked[currentIndex]);
+		scrollArea->setWidget(wid_stacked[work_currentIndex]);
 
-		next = new QPushButton("下一页");
-		prev = new QPushButton("上一页");
+		btn_work_next = new QPushButton("下一页");
+		btn_work_prev = new QPushButton("上一页");
 
-		buttonLayout = new QHBoxLayout;
-		buttonLayout->addWidget(prev);
-		buttonLayout->addWidget(next);
+		btn_work_layout = new QHBoxLayout;
+		btn_work_layout->addWidget(btn_work_prev);
+		btn_work_layout->addWidget(btn_work_next);
 
 		// 创建主布局
 		mainLayout = new QVBoxLayout();
 		mainLayout->addWidget(scrollArea);
-		mainLayout->addLayout(buttonLayout);
+		mainLayout->addLayout(btn_work_layout);
 
-		connect(next, &QPushButton::clicked, this, &ImageViewer::showNextImage);
-		connect(prev, &QPushButton::clicked, this, &ImageViewer::showPreviousImage);
+		connect(btn_work_next, &QPushButton::clicked, this, &ImageViewer::showNextImage);
+		connect(btn_work_prev, &QPushButton::clicked, this, &ImageViewer::showPreviousImage);
 
 
 		// 创建主窗口
@@ -65,51 +65,46 @@ private:
 		for (const QFileInfo& fileInfo : fileInfoList) {
 			imagePaths.append(fileInfo.absoluteFilePath());
 		}
-		currentIndex = 0;
-		preIndex = 0;
+		work_currentIndex = 0;
+		work_prevIndex = 0;
 	}
 
 	void updateImageView() {
-		if (currentIndex >= 0 && currentIndex < wid_stacked.count()) {
-			wid_stacked[preIndex] = scrollArea->takeWidget();
-			scrollArea->setWidget(wid_stacked[currentIndex]);
+		if (work_currentIndex >= 0 && work_currentIndex < wid_stacked.count()) {
+			wid_stacked[work_prevIndex] = scrollArea->takeWidget();
+			scrollArea->setWidget(wid_stacked[work_currentIndex]);
 		}
 	}
 
 	void showPreviousImage() {
-		preIndex = currentIndex;
-		currentIndex--;
-		if (currentIndex < 0) {
-			preIndex = 0;
-			currentIndex = wid_stacked.count() - 1;
+		work_prevIndex = work_currentIndex;
+		work_currentIndex--;
+		if (work_currentIndex < 0) {
+			work_prevIndex = 0;
+			work_currentIndex = wid_stacked.count() - 1;
 		}
-		qInfo() << currentIndex;
 		updateImageView();
 	}
 
 	void showNextImage() {
-		preIndex = currentIndex;
-		currentIndex++;
-		if (currentIndex == 9) {
-			qInfo() << "dda";
+		work_prevIndex = work_currentIndex;
+		work_currentIndex++;
+		if (work_currentIndex >= wid_stacked.count()) {
+			work_currentIndex = 0;
+			work_prevIndex = wid_stacked.count() - 1;
 		}
-		if (currentIndex >= wid_stacked.count()) {
-			currentIndex = 0;
-			preIndex = wid_stacked.count() - 1;
-		}
-		qInfo() << currentIndex;
 		updateImageView();
 	}
 
 	QScrollArea* scrollArea;
 	QLabel* label;
 	QList<QWidget*> wid_stacked;
-	QPushButton* next = nullptr;
-	QPushButton* prev = nullptr;
+	QPushButton* btn_work_next = nullptr;
+	QPushButton* btn_work_prev = nullptr;
 	QVBoxLayout* mainLayout;
-	QHBoxLayout* buttonLayout;
+	QHBoxLayout* btn_work_layout;
 	QStringList imagePaths;
-	int currentIndex,preIndex;
+	int work_currentIndex,work_prevIndex;
 };
 
 int main(int argc, char* argv[]) {

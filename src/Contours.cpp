@@ -27,12 +27,7 @@ void Contours::handle(cv::Mat& tMt, cv::Mat& tMt2, bool convexHull) {
 	tMt2为转换后的阈值图
 	*/
 	cv::Mat _mt;
-	if (get()->mode) {
-		_mt = get()->preview_mt;
-	}
-	else {
-		_mt = get()->inter_mt;
-	}
+	getMat(_mt);
 	//转换为灰度图
 	cv::cvtColor(_mt, tMt, cv::COLOR_BGR2GRAY);
 	//阈值化
@@ -75,19 +70,12 @@ void Contours::convexHull()
 	//2. 图像阈值化处理
 	cv::Mat _mt, tMt2;
 	handle(_mt,tMt2,true);
-	cv::imshow("test1", _mt);
-	cv::imshow("tes2", tMt2);
 	//3. 寻找轮廓
 	cv::findContours(tMt2, points, hierarchy,
 		cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
 
 	//4. 寻找凸包轮廓
-	if (get()->mode) {
-		_mt = get()->preview_mt;
-	}
-	else {
-		_mt = get()->inter_mt; //当前图片
-	}
+	getMat(_mt);
 	cv::Mat tMt;
 	_mt.copyTo(tMt);
 	for (int i = 0; i < points.size(); i++) {

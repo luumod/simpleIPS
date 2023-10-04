@@ -22,7 +22,7 @@ public:
 public:;
 	virtual void initialize() = 0;
 	void update(const cv::Mat& tMt);
-
+	void getMat(cv::Mat& res_mt);
 };
 
 

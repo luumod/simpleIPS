@@ -2,6 +2,7 @@
 #include "Common.h"
 #include "assist/belongsToEnum.h"
 #include "assist/Mat2QImage.h"
+#include "assist/QImage2Mat.h"
 
 #include "opencv_functions/Blur.h"
 #include "opencv_functions/Threshold.h"
@@ -55,3 +56,4 @@
 #include <QJsonDocument>
 #include <QJsonValue>
 #include <QDesktopServices>
+#include <QCheckBox>

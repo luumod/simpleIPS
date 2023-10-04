@@ -1,4 +1,5 @@
 ﻿#include "../include/widget_include_files.h"
+#include "opencv2/core/utils/logger.hpp"
 
 //单例对象
 Widget* Widget::widget = nullptr;
@@ -15,6 +16,8 @@ Widget::Widget(QMainWindow* parent)
 	:QMainWindow(parent),
 	root_mt(cv::imread("../resource/testImages/122.png"))
 {
+	//消除Debug信息
+	cv::utils::logging::setLogLevel(cv::utils::logging::LOG_LEVEL_ERROR);
 	init_readJson(); //读取配置文件
 
 	init_WidgetInfo();
@@ -49,15 +52,26 @@ Widget::~Widget()
 		delete x;
 		x = nullptr;
 	}
+	all_dlg.clear();
 
 	//内存释放
 	for (auto& x : Opts) {
 		delete x;
 		x = nullptr;
 	}
+	Opts.clear();
+
+	for (auto& x : wid_stacked) {
+		delete x;
+		x = nullptr;
+	}
+	wid_stacked.clear();
+
 	while (!undo_sta.empty()) {
 		undo_sta.pop();
 	}
+
+
 }
 
 void Widget::init_readJson()
@@ -83,7 +97,6 @@ void Widget::init_readJson()
 	if (obj1.contains("win_location_x")) {
 		config.win_location_y = obj1.value("win_location_y").toInt();
 	}
-	qInfo() << config;
 }
 
 void Widget::init_WidgetInfo()
@@ -101,7 +114,7 @@ void Widget::init_MatResource()
 
 void Widget::init_Label()
 {
-	lab_img = new Main_Label(this);
+	lab_img = new Main_Label;
 	lab_img->setPixmap(QPixmap::fromImage(curr_img));
 	//图片上下文菜单
 	connect(lab_img, &QLabel::customContextMenuRequested, this, &Widget::on_label_customContextMenuRequested);
@@ -360,28 +373,50 @@ void Widget::on_action_openFile_triggered()
 void Widget::on_action_openWorks_triggered()
 {
 	//清除原始内容
+	for (auto& x : wid_stacked) {
+		if (x) {
+			delete x;
+			x = nullptr;
+		}
+	}
 	wid_stacked.clear();
 	work_files.clear();
-	QString FloderPath = QFileDialog::getExistingDirectory(this, "选择文件夹", "../resource/testImages", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-	loadImagesFormFloder(FloderPath); //初始化
-	
-	for (const QString& imageFile : work_files) {
-		Main_Label* imageLabel = new Main_Label;
-		QPixmap pixmap(imageFile);
-		imageLabel->setPixmap(pixmap);
-		wid_stacked.push_back(imageLabel); //只添加Label图片
-	}
-	//主动释放：会丢弃原来的lab_img的内存空间，sub_lab_img也会跟着一起释放
-	delete scrollArea->takeWidget();
+	QString FloderPath = QFileDialog::getExistingDirectory(this, "选择文件夹", "../resource/testImages");
+	if (!loadImagesFormFloder(FloderPath)) {//初始化
+		//为空！没有找到图片资源
+		QMessageBox msgBox;
+		msgBox.setWindowTitle(tr("打开失败"));
+		msgBox.setText(tr("在此文件夹中没有找到任何图片资源，请重新选择文件夹或取消"));
+		msgBox.setIcon(QMessageBox::Warning);
+		msgBox.addButton(tr("继续"), QMessageBox::AcceptRole);
+		msgBox.addButton(tr("取消"), QMessageBox::RejectRole);
 
-	root_mt = cv::imread(work_files[currentIndex].toLocal8Bit().data());
+		// 显示消息框并等待用户响应
+		int result = msgBox.exec();
+
+		// 根据用户的选择执行不同的操作
+		if (result == QMessageBox::AcceptRole) {
+			//重新选择文件夹
+			on_action_openWorks_triggered();
+			return;
+		}
+		else if (result == QMessageBox::RejectRole) {
+			return; //取消选择
+		}
+	}
+	for (const QString& imageFile : work_files) {
+		cv::Mat* mat = new cv::Mat(cv::imread(imageFile.toStdString()));
+		wid_stacked.push_back(mat);
+	}
+	//销毁当前root_mt资源，自动销毁？TODO
+
+	root_mt = *wid_stacked[work_currentIndex];
 	init_MatResource();
 
-	lab_img = nullptr;
-	sub_lab_img = nullptr;
-	//重新进行初始化
-	init_Label();
-	//重新设置滑动区域
+	lab_img->setPixmap(QPixmap::fromImage(curr_img));
+	sub_lab_img->setPixmap(lab_img->pixmap().scaled(SUB_LAB_IMG_WIDTH, SUB_LAB_IMG_HEIGHT));
+
+	//重新设置滑动区域的content
 	scrollArea->setWidget(lab_img);
 
 	//更新数值
@@ -392,27 +427,27 @@ void Widget::on_action_openWorks_triggered()
 	sub_lab_img->setVisible(false);
 
 	//----------------------------------------------------
+	btn_work_next = new QPushButton("下一页");
+	btn_work_prev = new QPushButton("上一页");
+	cbx_work_autoSave = new QCheckBox("离开时自动保存");
 
-
-	next = new QPushButton("下一页");
-	prev = new QPushButton("上一页");
-
-	buttonLayout = new QHBoxLayout;
-	buttonLayout->addWidget(prev);
-	buttonLayout->addWidget(next);
+	btn_work_layout = new QHBoxLayout;
+	btn_work_layout->addWidget(btn_work_prev);
+	btn_work_layout->addWidget(btn_work_next);
+	btn_work_layout->addWidget(cbx_work_autoSave);
 
 	// 创建主布局
 	QVBoxLayout* mainLayout = new QVBoxLayout;
 	mainLayout->addWidget(scrollArea);
-	mainLayout->addLayout(buttonLayout);
+	mainLayout->addLayout(btn_work_layout);
 
 	// 创建主窗口
 	QWidget* centralWidget = new QWidget(this);
 	centralWidget->setLayout(mainLayout);
 	setCentralWidget(centralWidget);
 
-	connect(next, &QPushButton::clicked, this, &Widget::on_pushButton_next_clicked);
-	connect(prev, &QPushButton::clicked, this, &Widget::on_pushButton_prev_clicked);
+	connect(btn_work_next, &QPushButton::clicked, this, &Widget::on_pushButton_next_clicked);
+	connect(btn_work_prev, &QPushButton::clicked, this, &Widget::on_pushButton_prev_clicked);
 }
 
 void Widget::on_action_saveFile_triggered()
@@ -543,41 +578,50 @@ void Widget::on_actionGroup_help_triggered(QAction* action)
 
 void Widget::on_pushButton_next_clicked()
 {
-	preIndex = currentIndex;
-	currentIndex++;
-	if (currentIndex == 9) {
-		qInfo() << "dda";
+	work_prevIndex = work_currentIndex;
+	work_currentIndex++;
+	if (work_currentIndex >= wid_stacked.count()) {
+		work_currentIndex = 0;
+		work_prevIndex = wid_stacked.count() - 1;
 	}
-	if (currentIndex >= wid_stacked.count()) {
-		currentIndex = 0;
-		preIndex = wid_stacked.count() - 1;
-	}
-	qInfo() << currentIndex;
+	on_checkBox_LeaveAutoSave_clicked();
 	updateImageView();
 }
 
 void Widget::on_pushButton_prev_clicked()
 {
-	preIndex = currentIndex;
-	currentIndex--;
-	if (currentIndex < 0) {
-		preIndex = 0;
-		currentIndex = wid_stacked.count() - 1;
+	work_prevIndex = work_currentIndex;
+	work_currentIndex--;
+	if (work_currentIndex < 0) {
+		work_prevIndex = 0;
+		work_currentIndex = wid_stacked.count() - 1;
 	}
-	qInfo() << currentIndex;
+	on_checkBox_LeaveAutoSave_clicked();
 	updateImageView();
 }
 
-void Widget::loadImagesFormFloder(const QString& floderPath)
+void Widget::on_checkBox_LeaveAutoSave_clicked()
+{
+	//在切换页面的时候弹出保存提示
+	if (cbx_work_autoSave->isChecked()) {
+		on_action_saveFile_triggered();
+	}
+}
+
+bool Widget::loadImagesFormFloder(const QString& floderPath)
 {
 	QDir dir(floderPath);
 	QStringList filters;
 	filters << "*.jpg" << "*.jpeg" << "*.png" << "*.bmp"; // 支持的图片格式
 	QFileInfoList fileInfoList = dir.entryInfoList(filters, QDir::Files, QDir::Name);
+	if (fileInfoList.empty()) {
+		return false;
+	}
 	for (auto& x : fileInfoList) {
 		work_files.push_back(x.absoluteFilePath());
 	}
-	currentIndex = preIndex = 0;
+	work_currentIndex = work_prevIndex = 0;
+	return true;
 }
 
 void Widget::choice_buttonGroupsBtns()
@@ -751,14 +795,14 @@ void Widget::createAction()
 	//重置图片
 	action_restore = new QAction(tr("重置图片"), this);
 	action_restore->setStatusTip(tr("重置此图片，取消所有加工"));
-	action_restore->setIcon(QIcon("../resource/restore.png"));
+	action_restore->setIcon(QIcon("../resource/assert/restore.png"));
 	action_restore->setShortcut(tr("Ctrl+Shift+Z"));
 	connect(action_restore, &QAction::triggered, this, &Widget::on_action_allRestore_triggered);
 
 	//开始制作模式
 	action_begin = new QAction(tr("图片加工"),this);
 	action_begin->setStatusTip(tr("图片加工模式，可以混合修改图片"));
-	action_begin->setIcon(QIcon("../resource/begin.png"));
+	action_begin->setIcon(QIcon("../resource/assert/begin.png"));
 	action_begin->setCheckable(true);
 	connect(action_begin, &QAction::triggered, this, &Widget::on_action_process_triggered);
 
@@ -766,18 +810,18 @@ void Widget::createAction()
 	action_return = new QAction(tr("撤销"), this);
 	action_return->setShortcut(tr("Ctrl+Z"));
 	action_return->setStatusTip(tr("撤销此操作"));
-	action_return->setIcon(QIcon("../resource/return.png"));
+	action_return->setIcon(QIcon("../resource/assert/return.png"));
 	connect(action_return, &QAction::triggered, this, &Widget::on_action_undo_triggered);
 
 	//预览图点击确定
 	action_previewOk = new QAction(tr("确定"),this);
-	action_previewOk->setIcon(QIcon("../resource/previewOk.png"));
+	action_previewOk->setIcon(QIcon("../resource/assert/previewOk.png"));
 	action_previewOk->setStatusTip(tr("确定操作"));
 	connect(action_previewOk, &QAction::triggered, this, &Widget::on_action_previewToNormal_triggered);
 
 	//打开简单绘图板
 	action_draw = new QAction(tr("绘画"), this);
-	action_draw->setIcon(QIcon("../resource/draw.png"));
+	action_draw->setIcon(QIcon("../resource/assert/draw.png"));
 	action_draw->setStatusTip(tr("绘图操作"));
 	connect(action_draw, &QAction::triggered, this,&Widget::on_action_drawBoard_triggered);
 
@@ -827,7 +871,8 @@ void Widget::createAction()
 void Widget::createMenu()
 {
 	//图片上下文菜单
-	context_menu = new QMenu(lab_img);
+	//此处跟随滑动区域，滑动区域在整个窗口中作为主窗口不会消失。
+	context_menu = new QMenu(this); 
 	context_menu->addAction(action_save);
 	context_menu->addAction(action_exit);
 	context_menu->addAction(action_restore);
@@ -890,17 +935,17 @@ void Widget::createToolBox()
 
 	
 	QGridLayout* grid_blur = new QGridLayout;
-	QWidget* a1 = createToolBtnItemWidget("均值模糊", BLUR::Average, "../resource/avg.png");
+	QWidget* a1 = createToolBtnItemWidget("均值模糊", BLUR::Average, "../resource/assert/avg.png");
 	a1->setStatusTip(tr("均值滤波：取周围像素平均值进行滤波，可以帮助消除图像尖锐噪声，实现图像平滑，模糊等功能"));
 	grid_blur->addWidget(a1, 0, 0);
 
-	QWidget* a2 = createToolBtnItemWidget("高斯模糊", BLUR::Gaussian, "../resource/gaussian.png");
+	QWidget* a2 = createToolBtnItemWidget("高斯模糊", BLUR::Gaussian, "../resource/assert/gaussian.png");
 	a2->setStatusTip(tr("高斯滤波：线性平滑滤波，适用于消除高斯噪声，广泛应用于图像处理的减噪过程。"));
 	grid_blur->addWidget(a2,0,1);
-	QWidget* a3 = createToolBtnItemWidget("中值模糊", BLUR::Median, "../resource/zhong.png");
+	QWidget* a3 = createToolBtnItemWidget("中值模糊", BLUR::Median, "../resource/assert/zhong.png");
 	a3->setStatusTip(tr("中值滤波：非线性平滑滤波，它将每一像素点的灰度值设置为该点某邻域窗口内的所有像素点灰度值的中值。"));
 	grid_blur->addWidget(a3,1,0);
-	QWidget* a4 = createToolBtnItemWidget("双边滤波", BLUR::Bilateral, "../resource/shuangbian.png");
+	QWidget* a4 = createToolBtnItemWidget("双边滤波", BLUR::Bilateral, "../resource/assert/shuangbian.png");
 	a4->setStatusTip(tr("双边滤波：有很好的边缘保护效果，即可以在去噪的同时，保护图像的边缘特性。"));
 	grid_blur->addWidget(a4,1,1);
 
@@ -918,23 +963,23 @@ void Widget::createToolBox()
 	connect(btngroup_threshold, &QButtonGroup::buttonClicked, this, &Widget::on_bttuonGroup_threshold_clicked);
 
 	QGridLayout* grid_threshold = new QGridLayout;
-	QWidget* b1 = createToolBtnItemWidget("二进制化", THRESHOLD::Binary, "../resource/2.png");
+	QWidget* b1 = createToolBtnItemWidget("二进制化", THRESHOLD::Binary, "../resource/assert/2.png");
 	b1->setStatusTip(tr("二进制阈值化：大变最大，小变0"));
 	grid_threshold->addWidget(b1, 0, 0);
 
-	QWidget* b2 = createToolBtnItemWidget("反二进制为零", THRESHOLD::Binary_inv, "../resource/f2.png");
+	QWidget* b2 = createToolBtnItemWidget("反二进制为零", THRESHOLD::Binary_inv, "../resource/assert/f2.png");
 	b2->setStatusTip(tr("反二进制阈值化：大变0，小变最大"));
 	grid_threshold->addWidget(b2, 0, 1);
 
-	QWidget* b3 = createToolBtnItemWidget("截断", THRESHOLD::Trunc, "../resource/jieduan.png");
+	QWidget* b3 = createToolBtnItemWidget("截断", THRESHOLD::Trunc, "../resource/assert/jieduan.png");
 	b3->setStatusTip(tr("截断阈值化：大变阈值，小不变"));
 	grid_threshold->addWidget(b3, 1, 0);
 
-	QWidget* b4 = createToolBtnItemWidget("阈值化为零", THRESHOLD::Tozero, "../resource/0.png");
+	QWidget* b4 = createToolBtnItemWidget("阈值化为零", THRESHOLD::Tozero, "../resource/assert/0.png");
 	b4->setStatusTip(tr("阈值化为0：大不变，小变0"));
 	grid_threshold->addWidget(b4, 1, 1);
 
-	QWidget* b5 = createToolBtnItemWidget("反阈值化为零", THRESHOLD::Tozero_inv, "../resource/f0.png");
+	QWidget* b5 = createToolBtnItemWidget("反阈值化为零", THRESHOLD::Tozero_inv, "../resource/assert/f0.png");
 	b5->setStatusTip(tr("反阈值化为0：大变0，小不变"));
 	grid_threshold->addWidget(b5, 2, 0);
 
@@ -952,35 +997,35 @@ void Widget::createToolBox()
 	connect(btngroup_form, &QButtonGroup::buttonClicked, this, &Widget::on_bttuonGroup_morphology_clicked);
 
 	QGridLayout* grid_form = new QGridLayout;
-	QWidget* c1 = createToolBtnItemWidget("膨胀", FORM::Erode, "../resource/pengzhang.png");
+	QWidget* c1 = createToolBtnItemWidget("膨胀", FORM::Erode, "../resource/assert/pengzhang.png");
 	c1->setStatusTip(tr("膨胀：取每个位置领域内最大值，膨胀后输出图像的总体亮度的平均值比起原图会有所升高"));
 	grid_form->addWidget(c1, 0, 0);
 
-	QWidget* c2 = createToolBtnItemWidget("腐蚀", FORM::Dilate, "../resource/fushi.png");
+	QWidget* c2 = createToolBtnItemWidget("腐蚀", FORM::Dilate, "../resource/assert/fushi.png");
 	c2->setStatusTip(tr("腐蚀：取每个位置领域内最小值，腐蚀后输出图像的总体亮度的平均值比起原图会有所降低"));
 	grid_form->addWidget(c2, 0, 1);
 
-	QWidget* c3 = createToolBtnItemWidget("开运算", FORM::Open, "../resource/kai.png");
+	QWidget* c3 = createToolBtnItemWidget("开运算", FORM::Open, "../resource/assert/kai.png");
 	c3->setStatusTip(tr("开运算：先腐蚀再膨胀，可在纤细点出分离物体。有助于消除噪音"));
 	grid_form->addWidget(c3, 1, 0);
 
-	QWidget* c4 = createToolBtnItemWidget("闭运算", FORM::Close, "../resource/bi.png");
+	QWidget* c4 = createToolBtnItemWidget("闭运算", FORM::Close, "../resource/assert/bi.png");
 	c4->setStatusTip(tr("闭运算：先膨胀后腐蚀，可以排除前景对象中的小孔或对象上的小黑点"));
 	grid_form->addWidget(c4, 1, 1);
 
-	QWidget* c5 = createToolBtnItemWidget("梯度", FORM::Gradient, "../resource/tidu.png");
+	QWidget* c5 = createToolBtnItemWidget("梯度", FORM::Gradient, "../resource/assert/tidu.png");
 	c5->setStatusTip(tr("梯度运算：膨胀图与腐蚀图之差，可以用于保留目标物体的边缘轮廓"));
 	grid_form->addWidget(c5, 2, 0);
 
-	QWidget* c6 = createToolBtnItemWidget("顶帽", FORM::Tophat, "../resource/dingmao.png");
+	QWidget* c6 = createToolBtnItemWidget("顶帽", FORM::Tophat, "../resource/assert/dingmao.png");
 	c6->setStatusTip(tr("顶帽运算：	原图与开运算图之差，分离比邻近点亮的斑块，用于突出原图像中比周围亮的区域"));
 	grid_form->addWidget(c6, 2, 1);
 
-	QWidget* c7 = createToolBtnItemWidget("黑帽", FORM::Tophat, "../resource/dingmao.png");
+	QWidget* c7 = createToolBtnItemWidget("黑帽", FORM::Tophat, "../resource/assert/dingmao.png");
 	c7->setStatusTip(tr("黑帽运算：闭运算图与原图差，分离比邻近点暗的斑块，突出原图像中比周围暗的区域"));
 	grid_form->addWidget(c7, 3, 0);
 
-	grid_form->addWidget(createToolBtnItemWidget("随机", FORM::Hitmiss, "../resource/suiji.png"), 3, 1);
+	grid_form->addWidget(createToolBtnItemWidget("随机", FORM::Hitmiss, "../resource/assert/suiji.png"), 3, 1);
 
 	grid_form->setRowStretch(4, 10);
 	grid_form->setColumnStretch(1, 10);
@@ -997,11 +1042,11 @@ void Widget::createToolBox()
 	
 	QGridLayout* gird_connected = new QGridLayout;
 
-	QWidget* d1 = createToolBtnItemWidget(tr("连通区域分析①"), CONNECTED::CONNECTED_TYPE1, "../resource/liantongkuai.png");
+	QWidget* d1 = createToolBtnItemWidget(tr("连通区域分析①"), CONNECTED::CONNECTED_TYPE1, "../resource/assert/liantongkuai.png");
 	d1->setStatusTip(tr("连通区域：找到图片之间的连通块，并且用不同颜色标记。"));
 	gird_connected->addWidget(d1,0,0);
 
-	QWidget* d2 = createToolBtnItemWidget(tr("连通区域分析②"), CONNECTED::CONNECTED_TYPE2, "../resource/liantongkuais.png");
+	QWidget* d2 = createToolBtnItemWidget(tr("连通区域分析②"), CONNECTED::CONNECTED_TYPE2, "../resource/assert/liantongkuais.png");
 	d2->setStatusTip(tr("连通区域：找到图片之间的连通块，并且使用方框进行标记。"));
 	gird_connected->addWidget(d2,1,0);
 	gird_connected->setRowStretch(4, 10);
@@ -1018,7 +1063,7 @@ void Widget::createToolBox()
 
 	QGridLayout* gird_contours = new QGridLayout;
 
-	QWidget* e1 = createToolBtnItemWidget(tr("轮廓绘制操作"), CONTOURS::CONTOURS_TYPE1, "../resource/lunkuo.png");
+	QWidget* e1 = createToolBtnItemWidget(tr("轮廓绘制操作"), CONTOURS::CONTOURS_TYPE1, "../resource/assert/lunkuo.png");
 	e1->setStatusTip(tr("轮廓绘制：绘制图像的轮廓信息"));
 	gird_contours->addWidget(e1, 0, 0);
 
@@ -1036,7 +1081,7 @@ void Widget::createToolBox()
 
 	QGridLayout* gird_effect = new QGridLayout;
 
-	QWidget* f1 = createToolBtnItemWidget(tr("亮度调整"), SHOW::LIGHT, "../resource/light.png");
+	QWidget* f1 = createToolBtnItemWidget(tr("亮度调整"), SHOW::LIGHT, "../resource/assert/light.png");
 	f1->setStatusTip(tr("图像亮度调整：增强图像的亮度"));
 	gird_effect->addWidget(f1, 0, 0);
 
@@ -1054,7 +1099,7 @@ void Widget::createToolBox()
 	toolbox_side->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
 
 	toolbox_side->addItem(widget_blur, "图像模糊操作");
-	//toolbox_side->setItemIcon(0, QIcon(tr("../resource/2.png")));
+	//toolbox_side->setItemIcon(0, QIcon(tr("../resource/assert/2.png")));
 	//toolbox_side->setItemToolTip(0, "");
 	toolbox_side->addItem(widget_threshold, "图像阈值操作");
 	toolbox_side->addItem(widget_from, "图像形态化操作");
@@ -1191,16 +1236,17 @@ QHBoxLayout* Widget::create_Edit_hLayout(const QString& filter, const QString& t
 
 void Widget::updateImageView()
 {
-	if (currentIndex >= 0 && currentIndex < wid_stacked.count()) {
-		//恢复之前的图片，但是修改仍会保存
-		//wid_stacked[preIndex] = lab_img
-		wid_stacked[preIndex] = scrollArea->takeWidget(); 
+	if (work_currentIndex >= 0 && work_currentIndex < wid_stacked.count()) {
+		//不保存前一页修改后的Mat：太复杂了
+		//wid_stacked[work_prevIndex] = (Main_Label*)scrollArea->takeWidget(); 
 
-		root_mt = cv::imread(work_files[currentIndex].toLocal8Bit().data());
+		//切换cv::Mat
+		root_mt = *wid_stacked[work_currentIndex];
 		init_MatResource();
-
-		//重新进行初始化
-		init_Label();
+		//切换当前图片的显示资源
+		lab_img->setPixmap(QPixmap::fromImage(curr_img));
+		sub_lab_img->setPixmap(lab_img->pixmap().scaled(SUB_LAB_IMG_WIDTH, SUB_LAB_IMG_HEIGHT));
+		
 		//重新设置滑动区域
 		scrollArea->setWidget(lab_img);
 

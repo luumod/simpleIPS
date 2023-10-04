@@ -43,12 +43,7 @@ void Connected::handle(cv::Mat& tMt,cv::Mat& tMt2) {
 	tMt2为转换后的阈值图
 	*/
 	cv::Mat _mt;
-	if (get()->mode) {
-		_mt = get()->preview_mt;
-	}
-	else {
-		_mt = get()->inter_mt; 
-	}
+	getMat(_mt);
 	//转换为灰度图
 	cv::cvtColor(_mt, tMt, cv::COLOR_BGR2GRAY);
 	//阈值化

@@ -1,8 +1,8 @@
 ﻿#ifndef COMMON_H_
 #define COMMON_H_
 
-constexpr auto WINDOW_WIDTH = 720;
-constexpr auto WINDOW_HEIGHT = 720;
+constexpr auto WINDOW_WIDTH = 640;
+constexpr auto WINDOW_HEIGHT = 640;
 
 constexpr auto SUB_LAB_IMG_WIDTH = 200;
 constexpr auto SUB_LAB_IMG_HEIGHT = 200;

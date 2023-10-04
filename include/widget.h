@@ -36,6 +36,7 @@ class QMouseEvent;
 class Showeffect;
 class QScrollArea;
 class QPushButton;
+class QCheckBox;
 #endif
 
 struct ExeConfig {
@@ -177,9 +178,12 @@ public slots:
 
 	//工作区：上一页
 	void on_pushButton_prev_clicked();
+
+	//工作区：自动保存
+	void on_checkBox_LeaveAutoSave_clicked();
 public:
 	//打开文件夹保存图片信息
-	void loadImagesFormFloder(const QString& floderPath);
+	bool loadImagesFormFloder(const QString& floderPath);
 
 	//当点击每个操作的时候，判断是否处于加工状态
 	void choice_buttonGroupsBtns();
@@ -338,12 +342,13 @@ private:
 	QScrollArea* scrollArea = nullptr;
 
 	//打开文件夹
-	QList<QWidget*> wid_stacked;
-	QPushButton* next = nullptr;
-	QPushButton* prev = nullptr;
-	QHBoxLayout* buttonLayout;
+	QList<cv::Mat*> wid_stacked;
+	QPushButton* btn_work_next = nullptr;
+	QPushButton* btn_work_prev = nullptr;
+	QCheckBox* cbx_work_autoSave = nullptr;
+	QHBoxLayout* btn_work_layout;
 	QStringList	work_files;
-	int currentIndex = 0, preIndex = 0;
+	int work_currentIndex = 0, work_prevIndex = 0;
 
 };
 

@@ -62,7 +62,7 @@ add_executable(QtPro
     include/other_functions/LabelImg.h 
     include/other_functions/DrawWidget.h 
     include/other_functions/GraphicsScene.h
-  "include/widget_include_files.h")
+    include/widget_include_files.h)
 
  add_executable(QtTest
     QtTest/test1.cpp "include/widget_include_files.h")

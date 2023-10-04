@@ -32,3 +32,13 @@ void Object::update(const cv::Mat& tMt)
 		get()->lab_img->setPixmap(QPixmap::fromImage(get()->curr_img));
 	}
 }
+
+void Object::getMat(cv::Mat& res_mt)
+{
+	if (get()->mode) {
+		res_mt = get()->preview_mt;
+	}
+	else {
+		res_mt = get()->inter_mt;
+	}
+}

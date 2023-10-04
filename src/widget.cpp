@@ -14,7 +14,7 @@ Widget* Widget::getInstance() {
 
 Widget::Widget(QMainWindow* parent)
 	:QMainWindow(parent),
-	root_mt(cv::imread("../resource/testImages/103.png"))
+	root_mt(cv::imread("../resource/testImages/dog.png"))
 {
 	//消除Debug信息
 	cv::utils::logging::setLogLevel(cv::utils::logging::LOG_LEVEL_ERROR);
@@ -73,6 +73,10 @@ Widget::~Widget()
 		undo_sta.pop();
 	}
 
+	if (sub_lab_img) {
+		delete sub_lab_img;
+		sub_lab_img = nullptr;
+	}
 
 }
 
@@ -128,9 +132,9 @@ void Widget::init_Label()
 	//图片上下文菜单
 	connect(lab_img, &QLabel::customContextMenuRequested, this, &Widget::on_label_customContextMenuRequested);
 
-	sub_lab_img = new Sub_Label(lab_img);
+	sub_lab_img = new Sub_Label;
 	sub_lab_img->setObjectName("sub_lab_img");
-	sub_lab_img->setPixmap(lab_img->pixmap().scaled(SUB_LAB_IMG_WIDTH, SUB_LAB_IMG_HEIGHT));
+	sub_lab_img->lab->setPixmap(lab_img->pixmap().scaled(curr_img.size() / 2, Qt::KeepAspectRatio, Qt::SmoothTransformation));
 	sub_lab_img->move(0, 0);
 	sub_lab_img->raise();  //提升：实现依附的关键
 	sub_lab_img->setVisible(false); //隐藏
@@ -221,13 +225,32 @@ void Widget::init_WidgetLayout()
 	//右侧
 	//添加一个QScrollArea用于处理不同尺寸的图片
 	scrollArea = new QScrollArea;
+	scrollArea->setBackgroundRole(QPalette::Dark);
+	scrollArea->setWidgetResizable(true);
 	scrollArea->setFixedSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 	//滚动窗口添加此图片
+
+
 	scrollArea->setWidget(lab_img);
-	
-	check_WhetherAllowScrollArea();
+
+	init_ImageScaled();
+
 
 	this->setCentralWidget(scrollArea);
+}
+
+void Widget::init_ImageScaled()
+{
+	if (!lab_img) {
+		return;
+	}
+	lab_img->setScaledContents(false);
+	////图片尺寸小于，可以进行扩展，则不允许缩小
+	//if (lab_img->pixmap().size().width() < scrollArea->size().width()
+	//	&& lab_img->pixmap().size().height() < scrollArea->size().height()) {
+	//	lab_img->setScaledContents(true);
+	//}
+	scaledDelta = 1.0;
 }
 
 void Widget::init_OpencvFunctions()
@@ -251,6 +274,30 @@ void Widget::moveEvent(QMoveEvent* ev)
 {
 	config.win_location_x = this->pos().x(); //获取坐标
 	config.win_location_y = this->pos().y()	;
+}
+
+void Widget::wheelEvent(QWheelEvent* ev)
+{
+	if (mode) {
+		//加工模式下禁用，因为会产生一个新的预览窗口
+		return;
+	}
+	if (ev->modifiers() & Qt::ControlModifier) { 
+		//鼠标 + 滑轮
+		double angleDelta = ev->angleDelta().y(); // 120
+		if (angleDelta > 0) {
+
+			angleDelta = 1.1; //放大
+		}
+		else {
+			angleDelta = 0.9; //缩小
+		}
+		scaledDelta *= angleDelta;
+		update_wheelCtrlImage();
+
+		qInfo() << scaledDelta;
+	}
+	QMainWindow::wheelEvent(ev);
 }
 
 void Widget::on_label_customContextMenuRequested(const QPoint& pos) {
@@ -362,14 +409,12 @@ void Widget::on_action_openFile_triggered()
 		init_MatResource();
 
 		lab_img->setPixmap(QPixmap::fromImage(curr_img));
-		sub_lab_img->setPixmap(lab_img->pixmap().scaled(SUB_LAB_IMG_WIDTH, SUB_LAB_IMG_HEIGHT));
+		sub_lab_img->lab->setPixmap(lab_img->pixmap().scaled(curr_img.size() / 2, Qt::KeepAspectRatio, Qt::SmoothTransformation));
 
 		scrollArea->takeWidget();
 		scrollArea->setWidget(lab_img);
 
-		//---------------------------------------------------------
-		check_WhetherAllowScrollArea();
-		//---------------------------------------------------------
+		init_ImageScaled();
 
 		//更新数值
 		for (auto& x : Opts) {
@@ -428,13 +473,13 @@ void Widget::on_action_openWorks_triggered()
 	init_MatResource();
 
 	lab_img->setPixmap(QPixmap::fromImage(curr_img));
-	sub_lab_img->setPixmap(lab_img->pixmap().scaled(SUB_LAB_IMG_WIDTH, SUB_LAB_IMG_HEIGHT));
+	sub_lab_img->lab->setPixmap(lab_img->pixmap().scaled(curr_img.size() / 2, Qt::KeepAspectRatio, Qt::SmoothTransformation));
 
 	//重新设置滑动区域的content
 	scrollArea->takeWidget();
 	scrollArea->setWidget(lab_img);
 
-	check_WhetherAllowScrollArea();
+	init_ImageScaled();
 
 	//更新数值
 	for (auto& x : Opts) {
@@ -681,6 +726,7 @@ void Widget::restore_cutOperation()
 	clearAllWidgetValue();
 
 	updateFromIntermediate();
+
 }
 
 void Widget::on_action_process_triggered(){
@@ -699,6 +745,8 @@ void Widget::on_action_process_triggered(){
 	clearAllWidgetValue();
 	//数据清空
 	updateFromIntermediate();
+	lab_img->setPixmap(QPixmap::fromImage(curr_img));
+	sub_lab_img->lab->setPixmap(QPixmap::fromImage(get()->curr_img.scaled(curr_img.size() / 2, Qt::KeepAspectRatio, Qt::SmoothTransformation)));
 }
 
 void Widget::on_action_undo_triggered()
@@ -707,7 +755,7 @@ void Widget::on_action_undo_triggered()
 
 	if (mode) {
 		returnPoint();
-		sub_lab_img->setPixmap(QPixmap::fromImage(curr_img.scaled(SUB_LAB_IMG_WIDTH, SUB_LAB_IMG_HEIGHT)));
+		sub_lab_img->lab->setPixmap(QPixmap::fromImage(curr_img.scaled(curr_img.size() / 2, Qt::KeepAspectRatio, Qt::SmoothTransformation)));
 		lab_img->setPixmap(QPixmap::fromImage(curr_img));
 		//清除滑块的值
 		setIndexPageWidgetValue();
@@ -733,7 +781,7 @@ void Widget::returnPoint()
 		//修改当前显示的mt与图片
 		curr_mt = undo_sta.top();
 		curr_img = Mat2QImage(curr_mt);
-		sub_lab_img->setPixmap(lab_img->pixmap().scaled(SUB_LAB_IMG_WIDTH, SUB_LAB_IMG_HEIGHT));
+		sub_lab_img->lab->setPixmap(lab_img->pixmap().scaled(curr_img.size() / 2, Qt::KeepAspectRatio, Qt::SmoothTransformation));
 		undo_sta.pop();
 	}
 }
@@ -790,7 +838,7 @@ void Widget::updateFromIntermediate()
 	inter_mt.copyTo(preview_mt); //修改快照图片
 	curr_img = Mat2QImage(curr_mt);
 	lab_img->setPixmap(QPixmap::fromImage(curr_img));
-	sub_lab_img->setPixmap(QPixmap::fromImage(get()->curr_img.scaled(SUB_LAB_IMG_WIDTH, SUB_LAB_IMG_HEIGHT)));
+	sub_lab_img->lab->setPixmap(QPixmap::fromImage(get()->curr_img.scaled(SUB_LAB_IMG_WIDTH, SUB_LAB_IMG_HEIGHT)));
 }
 
 void Widget::updateFromRoot()
@@ -1302,13 +1350,13 @@ void Widget::updateImageView()
 		init_MatResource();
 		//切换当前图片的显示资源
 		lab_img->setPixmap(QPixmap::fromImage(curr_img));
-		sub_lab_img->setPixmap(lab_img->pixmap().scaled(SUB_LAB_IMG_WIDTH, SUB_LAB_IMG_HEIGHT));
+		sub_lab_img->lab->setPixmap(lab_img->pixmap().scaled(SUB_LAB_IMG_WIDTH, SUB_LAB_IMG_HEIGHT));
 		
 		//重新设置滑动区域
 		scrollArea->takeWidget();
 		scrollArea->setWidget(lab_img);
 
-		check_WhetherAllowScrollArea();
+		init_ImageScaled();
 
 		//更新数值
 		for (auto& x : Opts) {
@@ -1322,7 +1370,7 @@ void Widget::updateImageView()
 void Widget::check_WhetherAllowScrollArea()
 {
 	scrollArea->setAlignment(Qt::AlignHCenter);
-	//scrollArea->setBackgroundRole(QPalette::Dark);
+	scrollArea->setBackgroundRole(QPalette::Dark);
 	int w = root_mt.cols;
 	int h = root_mt.rows;
 	//超过此区域就出现滚动条
@@ -1331,6 +1379,29 @@ void Widget::check_WhetherAllowScrollArea()
 	}
 	else {
 		scrollArea->setWidgetResizable(false);
+	}
+}
+
+void Widget::update_wheelCtrlImage()
+{
+	//if (lab_img->hasScaledContents() && scaledDelta < 1.0) {
+	//	//如果为true，则说明可以扩展到整个Widget，无法缩小
+	//	scaledDelta = 1.0;
+	//	return;
+	//}
+	if (!lab_img->pixmap().isNull()) {
+		// 缩放图像 lab_img->pixmap()原始图片保持不变，改变的是ScrollArea区域里的内容
+		//1920 * 1080
+		QPixmap t_pixmap = QPixmap::fromImage(curr_img);
+		QPixmap scaledPixmap = t_pixmap.scaled(t_pixmap.size() * scaledDelta, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+
+		//不要设置setScaledContents(true) ！！！
+		lab_img->setPixmap(scaledPixmap); 
+
+		// 检查是否需要启用滚动条
+		bool needScrollbars = scaledPixmap.size().width() > scrollArea->size().width() || scaledPixmap.size().height() > scrollArea->size().height();
+		scrollArea->setHorizontalScrollBarPolicy(needScrollbars ? Qt::ScrollBarAlwaysOn : Qt::ScrollBarAlwaysOff);
+		scrollArea->setVerticalScrollBarPolicy(needScrollbars ? Qt::ScrollBarAlwaysOn : Qt::ScrollBarAlwaysOff);
 	}
 }
 

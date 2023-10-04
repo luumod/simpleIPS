@@ -10,6 +10,7 @@
 class Widget;
 class QMouseEvent;
 class QRubberBand;
+class QPushButton;
 
 class QPoint;
 class LookWidget;
@@ -45,19 +46,21 @@ private:
 */
 
 
-class Sub_Label :public QLabel {
+class Sub_Label :public QWidget {
 	Q_OBJECT
 public:
 	Sub_Label(QWidget* parent = nullptr);
 	~Sub_Label();
+
+	QLabel* lab = nullptr;
 protected:
 	void enterEvent(QEnterEvent* ev)override;
 	void leaveEvent(QEvent* ev)override;
 	void mousePressEvent(QMouseEvent* ev)override;
-private:
-	QPixmap* curr_img = nullptr;
-};
 
+private:
+	QPushButton* btn_ok = nullptr;
+};
 
 
 class LookWidget :public QMainWindow {

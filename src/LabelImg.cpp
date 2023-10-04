@@ -10,6 +10,7 @@
 #include <QPixmap>
 #include <QLabel>
 #include <QRect>
+#include <QPushButton>
 
 
 Widget* get() {
@@ -23,7 +24,7 @@ Main_Label
 Main_Label::Main_Label(QWidget* parent)
 	:QLabel(parent)
 {
-	this->setScaledContents(true);
+	//this->setScaledContents(true);
 	this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 	this->setObjectName("main_lab_img");
 	this->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -93,38 +94,54 @@ void Main_Label::mouseReleaseEvent(QMouseEvent* ev)
 
 
 Sub_Label::Sub_Label(QWidget* parent)
-	:QLabel(parent)
+	:QWidget(parent)
 {
-	
+	this->setWindowTitle(tr("预览图片"));
+
+	btn_ok = new QPushButton("应用到主图片");
+	connect(btn_ok, &QPushButton::clicked, this, [=]() {
+		get()->on_action_previewToNormal_triggered();
+		});
+
+
+	lab = new QLabel;
+	QHBoxLayout* hlayout = new QHBoxLayout;
+	hlayout->addWidget(btn_ok);
+
+	QVBoxLayout* vlayout = new QVBoxLayout;
+	vlayout->addLayout(hlayout);
+	vlayout->addWidget(lab);
+
+	this->setLayout(vlayout);
 }
 
 Sub_Label::~Sub_Label() {
-	if (curr_img) {
+	/*if (curr_img) {
 		delete curr_img;
 		curr_img = nullptr;
-	}
+	}*/
 }
 
 void Sub_Label::enterEvent(QEnterEvent* ev)
 {
-	if (curr_img) {
-		delete curr_img;
-		curr_img = nullptr;
-	}
-	curr_img = new QPixmap(get()->lab_img->pixmap());
-	Widget::getInstance()->lab_img->setPixmap(get()->sub_lab_img->pixmap());
+	//if (curr_img) {
+	//	delete curr_img;
+	//	curr_img = nullptr;
+	//}
+	//curr_img = new QPixmap(get()->lab_img->pixmap());
+	//Widget::getInstance()->lab_img->setPixmap(get()->sub_lab_img->pixmap());
 }
 
 void Sub_Label::leaveEvent(QEvent* ev)
 {
-	if (curr_img) {
-		get()->lab_img->setPixmap(*curr_img);
-	}
+	//if (curr_img) {
+	//	get()->lab_img->setPixmap(*curr_img);
+	//}
 }
 
 void Sub_Label::mousePressEvent(QMouseEvent* ev)
 {
-	get()->on_action_previewToNormal_triggered();
+	//get()->on_action_previewToNormal_triggered();
 }
 
 

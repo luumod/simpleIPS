@@ -42,7 +42,7 @@ void BaseOperate::cvtColor(QAction* action) {
 	get()->inter_mt = ori_mt_res;
 	get()->updateFromIntermediate();
 	//对子图片进行及时修改，防止出现更新不及时
-	get()->sub_lab_img->setPixmap(QPixmap::fromImage(get()->curr_img.scaled(200, 200)));
+	get()->sub_lab_img->lab->setPixmap(QPixmap::fromImage(get()->curr_img.scaled(200, 200)));
 }
 
 void BaseOperate::onTriggered_picture_rotate90() {
@@ -53,7 +53,7 @@ void BaseOperate::onTriggered_picture_rotate90() {
 	cv::rotate(_mt, tMt, cv::RotateFlags::ROTATE_90_CLOCKWISE);
 	get()->inter_mt = tMt;
 	get()->updateFromIntermediate();
-	get()->sub_lab_img->setPixmap(QPixmap::fromImage(get()->curr_img.scaled(200, 200)));
+	get()->sub_lab_img->lab->setPixmap(QPixmap::fromImage(get()->curr_img.scaled(200, 200)));
 }
 
 void BaseOperate::onTriggered_picture_rotate180() {
@@ -63,7 +63,7 @@ void BaseOperate::onTriggered_picture_rotate180() {
 	cv::rotate(_mt, tMt, cv::RotateFlags::ROTATE_180);
 	get()->inter_mt = tMt;
 	get()->updateFromIntermediate();
-	get()->sub_lab_img->setPixmap(QPixmap::fromImage(get()->curr_img.scaled(200, 200)));
+	get()->sub_lab_img->lab->setPixmap(QPixmap::fromImage(get()->curr_img.scaled(200, 200)));
 }
 
 void BaseOperate::onTriggered_picture_rotate270() {
@@ -74,7 +74,7 @@ void BaseOperate::onTriggered_picture_rotate270() {
 	cv::rotate(_mt, tMt, cv::RotateFlags::ROTATE_90_COUNTERCLOCKWISE);
 	get()->inter_mt = tMt;
 	get()->updateFromIntermediate();
-	get()->sub_lab_img->setPixmap(QPixmap::fromImage(get()->curr_img.scaled(200, 200)));
+	get()->sub_lab_img->lab->setPixmap(QPixmap::fromImage(get()->curr_img.scaled(200, 200)));
 }
 
 void BaseOperate::onTriggered_picture_flip(int flag)
@@ -85,7 +85,7 @@ void BaseOperate::onTriggered_picture_flip(int flag)
 	cv::flip(_mt, tMt, flag);
 	get()->inter_mt = tMt;
 	get()->updateFromIntermediate();
-	get()->sub_lab_img->setPixmap(QPixmap::fromImage(get()->curr_img.scaled(200, 200)));
+	get()->sub_lab_img->lab->setPixmap(QPixmap::fromImage(get()->curr_img.scaled(200, 200)));
 }
 
 void BaseOperate::onTriggered_picture_flip0()
@@ -116,5 +116,5 @@ void BaseOperate::onTriggered_picture_mask()
 	cv::filter2D(_mt, tMt, _mt.depth(), kernel);
 	get()->inter_mt = tMt;
 	get()->updateFromIntermediate();
-	get()->sub_lab_img->setPixmap(QPixmap::fromImage(get()->curr_img.scaled(200, 200)));
+	get()->sub_lab_img->lab->setPixmap(QPixmap::fromImage(get()->curr_img.scaled(200, 200)));
 }

@@ -37,6 +37,7 @@ class Showeffect;
 class QScrollArea;
 class QPushButton;
 class QCheckBox;
+class QWheelEvent;
 #endif
 
 struct ExeConfig {
@@ -86,10 +87,18 @@ public:
 	//设置窗口主布局
 	void init_WidgetLayout();
 
+	//当初始化加载或者打开一个图片的时候，首先执行此函数进行能否自动缩放的判断与初始化
+	void init_ImageScaled();
+
+	//ctrl + 滑轮更新图片
+	void update_wheelCtrlImage();
 protected:
 	//鼠标点击时自动关闭对话框Dialog
 	void mousePressEvent(QMouseEvent* ev)override;
+	//移动窗口获取当前左上角坐标
 	void moveEvent(QMoveEvent* ev)override;
+	//Ctrl+滑轮 缩放图片
+	void wheelEvent(QWheelEvent* ev)override;
 public:
 	void createAction();
 	void createMenu();
@@ -107,6 +116,8 @@ public:
 	QHBoxLayout* create_GUIConnected();		//连通块分析
 	QHBoxLayout* create_GUIContours();		//轮廓检测
 	QVBoxLayout* create_GUIShow();			//效果增强
+
+
 
 signals:
 	void modeChanged(); //模式改变 默认->加工->默认
@@ -229,6 +240,8 @@ private FUNCTION_: //辅助函数
 
 	//检查是否允许出现滑动条
 	void check_WhetherAllowScrollArea();
+
+	
 public:
 	//配置文件
 	ExeConfig config;
@@ -241,6 +254,7 @@ public:
 
 	cv::Mat curr_mt; //current当前层：lab_img的实际显示图片
 	QImage  curr_img;
+	QPixmap curr_pixmap;
 
 	//撤销功能
 	std::stack<cv::Mat> undo_sta;
@@ -252,6 +266,9 @@ public:
 
 	int now_operation = -1; //记录当前操作位置，根据button的id。此变量用于在blur中选择
 	int now_dialog = 0;	    //记录当前的操作对话框 默认在第一个页面
+
+	//鼠标滑轮控制
+	double scaledDelta = 1.0;
 private:
 
 	DrawWidget* widget_draw = nullptr; //一个简单的绘图板
@@ -364,6 +381,7 @@ private:
 	QStringList	work_files;
 	int work_currentIndex = 0, work_prevIndex = 0;
 
+	
 };
 
 

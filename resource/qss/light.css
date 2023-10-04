@@ -1,4 +1,4 @@
-*{
+﻿*{
     background-color: rgb(240, 240, 240); /* 全局背景色 */
 }
 
@@ -144,10 +144,7 @@ QPushButton:pressed {
  ---------------------- QScrollBar ----------------------------
 */
 
-/* 设置QScrollBar的滑块样式（thumb） */
-QScrollBar {
-    margin: 3px;
-}
+
 
 /* 设置QScrollBar的滑块样式（thumb） */
 QScrollBar::handle {

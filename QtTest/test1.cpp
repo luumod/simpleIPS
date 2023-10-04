@@ -11,17 +11,19 @@ class ImageViewer : public QMainWindow {
 public:
     ImageViewer(QWidget* parent = nullptr) : QMainWindow(parent) {
         // 创建滚动区域
-        scrollArea = new QScrollArea(this);
+        scrollArea = new QScrollArea;
         scrollArea->setBackgroundRole(QPalette::Dark);
         scrollArea->setWidgetResizable(true);
+        scrollArea->setFixedSize(700, 700);
         setCentralWidget(scrollArea);
 
         // 创建标签用于显示图片
-        image = QPixmap(tr(("../resource/testImages/103.png")));
+        image = QPixmap(tr(("../resource/bigImages/2.png")));
 
         imageLabel = new QLabel;
+        //imageLabel->setScaledContents(true);
         //一开始为空
-        imageLabel->setBackgroundRole(QPalette::Dark);
+        //imageLabel->setBackgroundRole(QPalette::Dark);
         scrollArea->setWidget(imageLabel);
 
         // 连接滚动条变化事件
@@ -30,6 +32,8 @@ public:
 
         // 初始化
         scaleFactor = 1.0;
+        maxScale =qMax( qMax(scrollArea->size().height() / image.size().height(), scrollArea->size().width() / image.size().width()),qMax(image.size().height() / scrollArea->size().height(), image.size().width() / scrollArea->size().width()) );
+        qInfo() << "maxScale:" << maxScale;
     }
 
 protected:
@@ -37,8 +41,12 @@ protected:
         if (event->modifiers() & Qt::ControlModifier) {
             int delta = event->angleDelta().y();
             double scaleAmount = delta > 0 ? 1.1 : 0.9;
-            scaleFactor *= scaleAmount;
-            updateThumbnail();
+            //限制最大缩放
+            if (scaleFactor* scaleAmount < maxScale) {
+                scaleFactor *= scaleAmount;
+                updateThumbnail();
+            }
+            qInfo() << scaleFactor;
         }
         QMainWindow::wheelEvent(event);
     }
@@ -61,6 +69,7 @@ private:
     QLabel* imageLabel;
     QPixmap image;
     double scaleFactor;
+    double maxScale;
 };
 
 int main(int argc, char* argv[]) {

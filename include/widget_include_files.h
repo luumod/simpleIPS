@@ -58,3 +58,4 @@
 #include <QJsonValue>
 #include <QDesktopServices>
 #include <QCheckBox>
+#include <QScrollBar>

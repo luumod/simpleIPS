@@ -11,6 +11,7 @@
 #include "opencv_functions/Contours.h"
 #include "opencv_functions/BaseOperate.h"
 #include "opencv_functions/Showeffect.h"
+#include "other_functions/eventfilterobject.h"
 
 #include "other_functions/LabelImg.h"
 #include "other_functions/DrawWidget.h"

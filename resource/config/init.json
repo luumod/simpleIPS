@@ -1,5 +1,6 @@
 {
-    "win_location_x": 346,
-    "win_location_y": 10,
+    "win_location_x": 197,
+    "win_location_y": 4,
+    "win_theme": "light",
     "win_title": "简易版图像处理程序"
 }

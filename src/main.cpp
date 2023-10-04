@@ -28,6 +28,7 @@ int main(int argc,char* argv[])
         jsonObj["win_title"] = w->config.win_title;
         jsonObj["win_location_x"] = w->config.win_location_x;
         jsonObj["win_location_y"] = w->config.win_location_y;
+        jsonObj["win_theme"] = w->config.win_theme;
 
         // 创建JSON文档
         QJsonDocument jsonDoc(jsonObj);

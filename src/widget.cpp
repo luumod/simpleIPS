@@ -14,7 +14,7 @@ Widget* Widget::getInstance() {
 
 Widget::Widget(QMainWindow* parent)
 	:QMainWindow(parent),
-	root_mt(cv::imread("../resource/testImages/122.png"))
+	root_mt(cv::imread("../resource/testImages/103.png"))
 {
 	//消除Debug信息
 	cv::utils::logging::setLogLevel(cv::utils::logging::LOG_LEVEL_ERROR);
@@ -37,11 +37,13 @@ Widget::Widget(QMainWindow* parent)
 
 	init_WidgetLayout();
 
-	//读取QSS美化
-	//外部加载
-	QFile qssFile("../resource/qss/meihua.css");
-	if (qssFile.open(QFile::OpenModeFlag::ReadOnly)) {
-		this->setStyleSheet(qssFile.readAll());
+	//加载主题
+	if (config.win_theme == "light") {
+
+		on_action_light_triggered();
+	}
+	else if (config.win_theme == "dark") {
+		on_action_dark_triggered();
 	}
 }
 
@@ -97,11 +99,17 @@ void Widget::init_readJson()
 	if (obj1.contains("win_location_x")) {
 		config.win_location_y = obj1.value("win_location_y").toInt();
 	}
+	if (obj1.contains("win_theme")) {
+		config.win_theme = obj1.value("win_theme").toString();
+	}
 }
 
 void Widget::init_WidgetInfo()
 {
 	this->setWindowTitle(config.win_title);
+	// 禁用最大化和最小化按钮
+	this->setWindowFlags(this->windowFlags() & ~Qt::WindowMaximizeButtonHint & ~Qt::WindowMinimizeButtonHint);
+
 }
 
 void Widget::init_MatResource()
@@ -115,11 +123,13 @@ void Widget::init_MatResource()
 void Widget::init_Label()
 {
 	lab_img = new Main_Label;
+	lab_img->setObjectName("lab_img");
 	lab_img->setPixmap(QPixmap::fromImage(curr_img));
 	//图片上下文菜单
 	connect(lab_img, &QLabel::customContextMenuRequested, this, &Widget::on_label_customContextMenuRequested);
 
 	sub_lab_img = new Sub_Label(lab_img);
+	sub_lab_img->setObjectName("sub_lab_img");
 	sub_lab_img->setPixmap(lab_img->pixmap().scaled(SUB_LAB_IMG_WIDTH, SUB_LAB_IMG_HEIGHT));
 	sub_lab_img->move(0, 0);
 	sub_lab_img->raise();  //提升：实现依附的关键
@@ -190,6 +200,9 @@ void Widget::init_WidgetLayout()
 {
 	//左侧是一个DockWidget，其内部是一个QToolBox
 	QDockWidget* dockWidget = new QDockWidget("操作区域", this);
+	QLabel* title_lab = new QLabel("操作管理器", dockWidget);
+	title_lab->setObjectName("dock_title_lab");
+	dockWidget->setTitleBarWidget(title_lab);
 	dockWidget->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
 
 	QHBoxLayout* toolBox_layout = new QHBoxLayout;
@@ -211,15 +224,9 @@ void Widget::init_WidgetLayout()
 	scrollArea->setFixedSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 	//滚动窗口添加此图片
 	scrollArea->setWidget(lab_img);
-	int w = root_mt.cols;
-	int h = root_mt.rows;
-	//超过此区域就出现滚动条
-	if (w > 640 || h > 640) {
-		scrollArea->setWidgetResizable(true);
-	}
-	else {
-		scrollArea->setWidgetResizable(false);
-	}
+	
+	check_WhetherAllowScrollArea();
+
 	this->setCentralWidget(scrollArea);
 }
 
@@ -357,9 +364,12 @@ void Widget::on_action_openFile_triggered()
 		lab_img->setPixmap(QPixmap::fromImage(curr_img));
 		sub_lab_img->setPixmap(lab_img->pixmap().scaled(SUB_LAB_IMG_WIDTH, SUB_LAB_IMG_HEIGHT));
 
-		//删除滚动区域的QLabel，然后重新添加
 		scrollArea->takeWidget();
 		scrollArea->setWidget(lab_img);
+
+		//---------------------------------------------------------
+		check_WhetherAllowScrollArea();
+		//---------------------------------------------------------
 
 		//更新数值
 		for (auto& x : Opts) {
@@ -382,6 +392,11 @@ void Widget::on_action_openWorks_triggered()
 	wid_stacked.clear();
 	work_files.clear();
 	QString FloderPath = QFileDialog::getExistingDirectory(this, "选择文件夹", "../resource/testImages");
+	if (FloderPath.isEmpty()) {
+		//取消
+		return;
+	}
+
 	if (!loadImagesFormFloder(FloderPath)) {//初始化
 		//为空！没有找到图片资源
 		QMessageBox msgBox;
@@ -405,11 +420,10 @@ void Widget::on_action_openWorks_triggered()
 		}
 	}
 	for (const QString& imageFile : work_files) {
-		cv::Mat* mat = new cv::Mat(cv::imread(imageFile.toStdString()));
+		cv::Mat* mat = new cv::Mat(cv::imread(imageFile.toLocal8Bit().data()));
 		wid_stacked.push_back(mat);
 	}
-	//销毁当前root_mt资源，自动销毁？TODO
-
+	//root_mt会自动销毁
 	root_mt = *wid_stacked[work_currentIndex];
 	init_MatResource();
 
@@ -417,7 +431,10 @@ void Widget::on_action_openWorks_triggered()
 	sub_lab_img->setPixmap(lab_img->pixmap().scaled(SUB_LAB_IMG_WIDTH, SUB_LAB_IMG_HEIGHT));
 
 	//重新设置滑动区域的content
+	scrollArea->takeWidget();
 	scrollArea->setWidget(lab_img);
+
+	check_WhetherAllowScrollArea();
 
 	//更新数值
 	for (auto& x : Opts) {
@@ -526,6 +543,22 @@ void Widget::on_actionGroup_flip_triggered(QAction* action)
 	}
 	else if (action == action_flip_1) {
 		img_base->onTriggered_picture_flip_1();
+	}
+}
+
+void Widget::on_action_light_triggered()
+{
+	QFile qssFile("../resource/qss/light.css");
+	if (qssFile.open(QFile::OpenModeFlag::ReadOnly)) {
+		this->setStyleSheet(qssFile.readAll());
+	}
+}
+
+void Widget::on_action_dark_triggered()
+{
+	QFile qssFile("../resource/qss/dark.css");
+	if (qssFile.open(QFile::OpenModeFlag::ReadOnly)) {
+		this->setStyleSheet(qssFile.readAll());
 	}
 }
 
@@ -674,7 +707,7 @@ void Widget::on_action_undo_triggered()
 
 	if (mode) {
 		returnPoint();
-		sub_lab_img->setPixmap(QPixmap::fromImage(curr_img.scaled(200, 200)));
+		sub_lab_img->setPixmap(QPixmap::fromImage(curr_img.scaled(SUB_LAB_IMG_WIDTH, SUB_LAB_IMG_HEIGHT)));
 		lab_img->setPixmap(QPixmap::fromImage(curr_img));
 		//清除滑块的值
 		setIndexPageWidgetValue();
@@ -860,6 +893,19 @@ void Widget::createAction()
 		img_base->onTriggered_picture_mask();
 		});
 
+	//扩展
+	action_light = new QAction(tr("亮色"), this);
+	connect(action_light, &QAction::triggered, this, [=]() {
+		config.win_theme = "light";
+		QMessageBox::information(this, tr("提示"), tr("切换主题成功！请重启程序"));
+		});
+
+	action_dark = new QAction(tr("暗色"), this);
+	connect(action_dark, &QAction::triggered, this, [=]() {
+		config.win_theme = "dark";
+		QMessageBox::information(this, tr("提示"), tr("切换主题成功！请重启程序"));
+		});
+
 	//帮助菜单
 	action_help_group = new QActionGroup(this);
 	action_help_group->addAction(action_help = new QAction(tr("查看帮助"), this));
@@ -909,10 +955,19 @@ void Widget::createMenu()
 	menu_mark = menuBar()->addMenu(tr("掩膜"));
 	menu_mark->addAction(action_mark);
 
+	//扩展
+	menu_tools = menuBar()->addMenu(tr("扩展"));
+	QMenu* menu_theme = new QMenu(tr("主题"),this);
+	menu_theme->addAction(action_light);
+	menu_theme->addAction(action_dark);
+	menu_tools->addMenu(menu_theme);
+
 	//帮助
 	menu_help = menuBar()->addMenu(tr("帮助"));
 	menu_help->addAction(action_help);
 	menu_help->addAction(action_aboutme);
+
+
 }
 
 void Widget::createToolBar()
@@ -1135,7 +1190,9 @@ void Widget::createToolBox()
 void Widget::createStatusBar()
 {
 	auto bar = statusBar();
-	statusBar()->addWidget(statusLab = new QLabel("默认模式"));
+	statusLab = new QLabel("默认模式");
+	statusLab->setObjectName("statusBar_lab");
+	statusBar()->addWidget(statusLab);
 }
 
 
@@ -1177,7 +1234,7 @@ QWidget* Widget::createToolBtnItemWidget(const QString& text, int id, const QStr
 	QGridLayout* grid = new QGridLayout;
 	grid->addWidget(btn, 0, 0, Qt::AlignHCenter);
 	QLabel* textlab = new QLabel(text);
-	textlab->setObjectName("textLab");
+	textlab->setObjectName("function_tbtn_textLab");
 	grid->addWidget(textlab, 1, 0, Qt::AlignHCenter);
 
 	QWidget* wid = new QWidget;
@@ -1248,7 +1305,10 @@ void Widget::updateImageView()
 		sub_lab_img->setPixmap(lab_img->pixmap().scaled(SUB_LAB_IMG_WIDTH, SUB_LAB_IMG_HEIGHT));
 		
 		//重新设置滑动区域
+		scrollArea->takeWidget();
 		scrollArea->setWidget(lab_img);
+
+		check_WhetherAllowScrollArea();
 
 		//更新数值
 		for (auto& x : Opts) {
@@ -1256,6 +1316,21 @@ void Widget::updateImageView()
 		}
 		clearAllWidgetValue();
 		sub_lab_img->setVisible(false);
+	}
+}
+
+void Widget::check_WhetherAllowScrollArea()
+{
+	scrollArea->setAlignment(Qt::AlignHCenter);
+	//scrollArea->setBackgroundRole(QPalette::Dark);
+	int w = root_mt.cols;
+	int h = root_mt.rows;
+	//超过此区域就出现滚动条
+	if (w > MAX_SHOW_PICURE_WIDTH || h > MAX_SHOW_PICURE_HEIGHT) {
+		scrollArea->setWidgetResizable(true);
+	}
+	else {
+		scrollArea->setWidgetResizable(false);
 	}
 }
 

@@ -42,11 +42,13 @@ class QCheckBox;
 struct ExeConfig {
 	QString win_title;
 	int win_location_x, win_location_y;
+	QString win_theme;
 	friend QDebug operator<<(QDebug debug, const ExeConfig& oth) {
 		QDebugStateSaver saver(debug);
 		debug << "win_title: " << oth.win_title << '\n';
 		debug << "win_location_x: " << oth.win_location_x << '\n';
 		debug << "win_location_y: " << oth.win_location_y << '\n';
+		debug << "win_theme: " << oth.win_theme << '\n';
 		return debug;
 	}
 };
@@ -170,6 +172,9 @@ public slots:
 	//图片的翻转
 	void on_actionGroup_flip_triggered(QAction* action);
 	
+	void on_action_light_triggered();
+	void on_action_dark_triggered();
+
 	//查看帮助
 	void on_actionGroup_help_triggered(QAction* action);
 
@@ -221,6 +226,9 @@ private FUNCTION_: //辅助函数
 
 	//工作区：更新图片
 	void updateImageView();
+
+	//检查是否允许出现滑动条
+	void check_WhetherAllowScrollArea();
 public:
 	//配置文件
 	ExeConfig config;
@@ -283,6 +291,11 @@ public:
 	//掩膜
 	QAction* action_mark = nullptr;
 
+	//扩展
+	QAction* action_light = nullptr;
+	QAction* action_dark = nullptr;
+	
+
 	//帮助
 	QAction* action_help = nullptr;
 	QAction* action_aboutme = nullptr;
@@ -298,6 +311,7 @@ private:
 	QMenu* menu_reverse = nullptr;
 	QMenu* menu_flip = nullptr;
 	QMenu* menu_mark = nullptr;
+	QMenu* menu_tools = nullptr;
 	QMenu* menu_help = nullptr;
 	
 

@@ -1,11 +1,15 @@
 ﻿#ifndef COMMON_H_
 #define COMMON_H_
 
-constexpr auto WINDOW_WIDTH = 640;
-constexpr auto WINDOW_HEIGHT = 640;
+constexpr auto WINDOW_WIDTH = 720;
+constexpr auto WINDOW_HEIGHT = 720;
+
+constexpr auto MAX_SHOW_PICURE_WIDTH = 720;
+constexpr auto MAX_SHOW_PICURE_HEIGHT = 720;
 
 constexpr auto SUB_LAB_IMG_WIDTH = 200;
 constexpr auto SUB_LAB_IMG_HEIGHT = 200;
+
 
 #define AVG_BLUR_MIN_SIZE 1
 #define AVG_BLUR_MAX_SIZE 30

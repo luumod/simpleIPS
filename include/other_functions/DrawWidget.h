@@ -7,6 +7,9 @@ class GraphicsScene;
 class QLabel;
 class QButtonGroup;
 class QAbstractButton;
+class QMenu;
+class QAction;
+class QScrollArea;
 
 class DrawWidget :public QMainWindow,public Object {
 	Q_OBJECT
@@ -16,6 +19,8 @@ public:
 	QWidget* createToolBtnItemWidget(const QString& text, int id, const QString& fileName);
 	void initialize()override;
 
+	void createAction();
+	void createMenuBar();
 	QWidget* createChoice();
 	QWidget* createTools();
 public slots:
@@ -23,6 +28,9 @@ public slots:
 private:
 	GraphicsScene* scene = nullptr;
 	QButtonGroup* group = nullptr;
+	
+	QMenu* menu_file = nullptr;
+	QAction* action_save = nullptr;
 };
 
 #endif

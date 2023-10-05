@@ -12,57 +12,40 @@
 #include <QLabel>
 #include <QDebug>
 #include <QGraphicsPixmapItem>
+#include <QAction>
+#include <QMenu>
+#include <QMenuBar>
+#include <QScrollArea>
 
 DrawWidget::DrawWidget(QWidget* parent) : QMainWindow(parent) {
 
+	createAction();
+	createMenuBar();
+
 	//添加场景
 	scene = new GraphicsScene(this);
-	scene->setSceneRect(0, 0, 400, 400);
 
 	QGraphicsPixmapItem* pixItem = new QGraphicsPixmapItem;
 	QPixmap pixmap = QPixmap::fromImage(get()->curr_img);
 	if (!pixmap.isNull()) {
 		// 非空
 		// 获取场景和图像的大小
-		QRectF sceneRect = scene->sceneRect();
-		QSize imageSize = pixmap.size();
+		scene->setSceneRect(pixmap.rect());
 
-		// 计算缩放比例
-		qreal scaleX = sceneRect.width() / imageSize.width();
-		qreal scaleY = sceneRect.height() / imageSize.height();
-		qreal scale = qMin(scaleX, scaleY);
-
-		// 设置缩放后的图像
-		pixItem->setPixmap(pixmap.scaled(imageSize * scale));
+		pixItem->setPixmap(pixmap);
 		scene->addItem(pixItem);
 	}
 
 	QGraphicsView* view = new QGraphicsView(scene);
 	view->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-	view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-	view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+	view->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+	view->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 	view->show();
-
+	
 	//添加布局
 	QVBoxLayout* vlayout = new QVBoxLayout;
-	vlayout->addWidget(createChoice(),1);
-	vlayout->addWidget(view,4);
-	QPushButton* btn_save = new QPushButton("保存");
-	vlayout->addWidget(btn_save, 1);
-	connect(btn_save, &QPushButton::clicked, this, [=]() {
-		/*
-		保存diy后的场景图片
-		*/
-		QString saveName = QFileDialog::getSaveFileName(nullptr, "save image", ".", "Images(*.png *.bmp *.jpg)");	 
-		QImage curr_img(scene->sceneRect().size().toSize(), QImage::Format_ARGB32);
-		curr_img.fill(Qt::white);
-		QPainter painter(&curr_img);
-		scene->render(&painter);
-
-		if (!saveName.isEmpty()) {
-			curr_img.save(saveName);
-		}
-		});
+	vlayout->addWidget(createChoice());
+	vlayout->addWidget(view);
 
 	QWidget* mainWindow = new QWidget;
 	mainWindow->setLayout(vlayout);
@@ -79,7 +62,7 @@ QWidget* DrawWidget::createToolBtnItemWidget(const QString& text, int id, const 
 {
 	//创建每一个选项Widget
 	QToolButton* btn = new QToolButton;
-	group->addButton(btn,id);
+	group->addButton(btn, id);
 	btn->setObjectName("draw_tbtn");
 	btn->resize(48, 48);
 	btn->setCheckable(true);
@@ -102,6 +85,31 @@ QWidget* DrawWidget::createToolBtnItemWidget(const QString& text, int id, const 
 void DrawWidget::initialize()
 {
 	
+}
+
+void DrawWidget::createAction()
+{
+	action_save = new QAction(tr("保存"),this);
+	connect(action_save, &QAction::triggered, this, [=]() {
+		/*
+		保存diy后的场景图片
+		*/
+		QString saveName = QFileDialog::getSaveFileName(nullptr, "save image", ".", "Images(*.png *.bmp *.jpg)");
+		QImage curr_img(scene->sceneRect().size().toSize(), QImage::Format_ARGB32);
+		curr_img.fill(Qt::white);
+		QPainter painter(&curr_img);
+		scene->render(&painter);
+
+		if (!saveName.isEmpty()) {
+			curr_img.save(saveName);
+		}
+		});
+}
+
+void DrawWidget::createMenuBar()
+{
+	menu_file = menuBar()->addMenu("文件");
+	menu_file->addAction(action_save); 
 }
 
 QWidget* DrawWidget::createChoice()

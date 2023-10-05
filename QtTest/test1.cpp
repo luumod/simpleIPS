@@ -33,7 +33,6 @@ public:
         // 初始化
         scaleFactor = 1.0;
         maxScale =qMax( qMax(scrollArea->size().height() / image.size().height(), scrollArea->size().width() / image.size().width()),qMax(image.size().height() / scrollArea->size().height(), image.size().width() / scrollArea->size().width()) );
-        qInfo() << "maxScale:" << maxScale;
     }
 
 protected:
@@ -46,7 +45,6 @@ protected:
                 scaleFactor *= scaleAmount;
                 updateThumbnail();
             }
-            qInfo() << scaleFactor;
         }
         QMainWindow::wheelEvent(event);
     }

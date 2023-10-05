@@ -117,10 +117,12 @@ QLabel#function_tbtn_textLab {
     alignment: center; /* QLabel文本居中 */
 }
 
+QLabel#lab_img{
+    border: 2px solid rgb(157, 232, 186);
+}
 /*
  ---------------------- QPushButton ----------------------------
 */
-
 /* 基本样式 */
 QPushButton {
     background-color: #18231e; /* QPushButton背景颜色 */

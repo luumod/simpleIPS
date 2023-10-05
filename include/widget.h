@@ -13,7 +13,7 @@ class QGridLayout;
 class QToolButton;
 class QToolBox;
 class Main_Label;	//主图片
-class Sub_Label;	//预览图片
+class Sub_widget;	//预览图片
 class QLabel;
 class QAction;
 class QStackedWidget;
@@ -87,16 +87,18 @@ public:
 	//设置窗口主布局
 	void init_WidgetLayout();
 
-	//当初始化加载或者打开一个图片的时候，首先执行此函数进行能否自动缩放的判断与初始化
-	void init_ImageScaled();
+	//更新图片显示到任意的缩放比例，如果为ori_scaledDelta，则为完美比例，否则为自定义缩放比例
+	void update_Image(double scaledDelta);
 
-	//ctrl + 滑轮更新图片
-	void update_wheelCtrlImage();
+	//初始加载时图片必须被完全看见，需要预缩放
+	double init_scaledImageOk();
 protected:
 	//鼠标点击时自动关闭对话框Dialog
 	void mousePressEvent(QMouseEvent* ev)override;
+
 	//移动窗口获取当前左上角坐标
 	void moveEvent(QMoveEvent* ev)override;
+
 	//Ctrl+滑轮 缩放图片
 	void wheelEvent(QWheelEvent* ev)override;
 public:
@@ -116,12 +118,6 @@ public:
 	QHBoxLayout* create_GUIConnected();		//连通块分析
 	QHBoxLayout* create_GUIContours();		//轮廓检测
 	QVBoxLayout* create_GUIShow();			//效果增强
-
-
-
-signals:
-	void modeChanged(); //模式改变 默认->加工->默认
-	
 public slots:
 	//右键图片操作
 	void on_label_customContextMenuRequested(const QPoint& pos);
@@ -166,7 +162,7 @@ public slots:
 	void on_action_drawBoard_triggered();
 
 	//开启图片加工模式
-	void on_action_process_triggered();
+	void on_action_changeMode_triggered();
 
 	//撤销此次操作
 	void on_action_undo_triggered();
@@ -183,7 +179,10 @@ public slots:
 	//图片的翻转
 	void on_actionGroup_flip_triggered(QAction* action);
 	
+	//主题切换：亮色
 	void on_action_light_triggered();
+
+	//主题切换：暗色
 	void on_action_dark_triggered();
 
 	//查看帮助
@@ -221,11 +220,18 @@ public:
 
 	//依照root_mt更新所有图片数据：相当于清除所有操作
 	void updateFromRoot();
+
+	//切换到工作区的布局（多张图片）
+	void layout_changeToWork();
+
+	//切换到普通的布局
+	void layout_changeToNormal();
 private FUNCTION_: //辅助函数
 
 	//获取所有的指定的QSlider 控件并且清除值
 	void setIndexPageWidgetValue(int index = -1);
 
+	//清除所有页面对话框数据
 	void clearAllWidgetValue();
 	
 	//创建ToolBox中的每个ToolButton
@@ -235,13 +241,8 @@ private FUNCTION_: //辅助函数
 	template <typename Type>
 	QHBoxLayout* create_Edit_hLayout(const QString& filter, const QString& text, Type* t);
 
-	//工作区：更新图片
-	void updateImageView();
-
-	//检查是否允许出现滑动条
-	void check_WhetherAllowScrollArea();
-
-	
+	//工作区：切换图片
+	void work_cutImage();
 public:
 	//配置文件
 	ExeConfig config;
@@ -260,7 +261,6 @@ public:
 	std::stack<cv::Mat> undo_sta;
 
 	Main_Label* lab_img = nullptr;
-	Sub_Label* sub_lab_img = nullptr; //自定义预览图片类
 	static Widget* widget;
 	bool mode = false;
 
@@ -268,6 +268,7 @@ public:
 	int now_dialog = 0;	    //记录当前的操作对话框 默认在第一个页面
 
 	//鼠标滑轮控制
+	double ori_scaledDelta = 1.0; //原始完美缩放比例
 	double scaledDelta = 1.0;
 private:
 
@@ -380,7 +381,6 @@ private:
 	QHBoxLayout* btn_work_layout;
 	QStringList	work_files;
 	int work_currentIndex = 0, work_prevIndex = 0;
-
 	
 };
 

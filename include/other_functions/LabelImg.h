@@ -6,6 +6,7 @@
 #include <QEvent>
 #include <QPixmap>
 #include <QMainWindow>
+#include <QDialog>
 
 class Widget;
 class QMouseEvent;
@@ -39,27 +40,6 @@ private:
 	bool isSelecting_ = false;
 	bool isMoving = false;
 	LookWidget* selectedRegionDisplay = nullptr;
-};
-
-/*
-实现对于预览图片的操作
-*/
-
-
-class Sub_Label :public QWidget {
-	Q_OBJECT
-public:
-	Sub_Label(QWidget* parent = nullptr);
-	~Sub_Label();
-
-	QLabel* lab = nullptr;
-protected:
-	void enterEvent(QEnterEvent* ev)override;
-	void leaveEvent(QEvent* ev)override;
-	void mousePressEvent(QMouseEvent* ev)override;
-
-private:
-	QPushButton* btn_ok = nullptr;
 };
 
 

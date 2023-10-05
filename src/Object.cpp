@@ -23,14 +23,8 @@ void Object::update(const cv::Mat& tMt)
 	get()->curr_mt = tMt;
 	get()->curr_img = Mat2QImage(tMt);
 
-	if (get()->mode) {
-		//混合加工模式，首先修改当前预览图片，然后由用户决定是否将其预览作为主图片
-		get()->sub_lab_img->lab->setPixmap(QPixmap::fromImage(get()->curr_img.scaled(get()->curr_img.size()/2,Qt::KeepAspectRatio,Qt::SmoothTransformation)));
-	}
-	else {
-		//不是混合加工，直接修改当前lab_img图片
-		get()->lab_img->setPixmap(QPixmap::fromImage(get()->curr_img));
-	}
+	//根据curr_img显示为完美缩放比例
+	get()->update_Image(get()->ori_scaledDelta);
 }
 
 void Object::getMat(cv::Mat& res_mt)

@@ -1,4 +1,4 @@
-## 简易版图片加工软件
+﻿## 简易版图片加工软件
 
 基于 opencv + Qt6.2.4 来完成的。
 
@@ -43,7 +43,7 @@
 
 * 在create_GUIShow中对滑块设置位置无效，但是setValue值有效，因此引入了两个滑块分别控制亮度升高和降低。
 * 图像的掩膜操作的Kernel的设置。
-* 在打开工作区的时候，QScrollArea的处理有点太过于复杂，包括updateImageView函数。
+* 在打开工作区的时候，QScrollArea的处理有点太过于复杂，包括work_cutImage函数。
 
 ### 联系作者
 

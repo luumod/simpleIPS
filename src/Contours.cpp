@@ -40,7 +40,6 @@ void Contours::handle(cv::Mat& tMt, cv::Mat& tMt2, bool convexHull) {
 		cv::Mat tMMt;
 		cv::blur(tMt, tMMt, cv::Size(7, 7));
 		cv::threshold(tMMt, tMt2, 128, 255, cv::ThresholdTypes::THRESH_BINARY_INV);
-		//cv::adaptiveThreshold(tMt,tMt2,255,cv::AdaptiveThresholdTypes::ADAPTIVE_THRESH_GAUSSIAN_C,cv::ThresholdTypes::THRESH_BINARY_INV,21,2);
 	}
 }
 
@@ -55,7 +54,7 @@ void Contours::findContours()
 void Contours::drawContours()
 {
 	findContours(); //获取points轮廓信息
-	cv::Mat tMt = cv::Mat::zeros(get()->inter_mt.size(), CV_8UC3);
+	cv::Mat tMt = cv::Mat::zeros(get()->curr_mt.size(), CV_8UC3);
 	
 	for (int i = 0; i < points.size();i++) {
 		cv::Scalar scolor = cv::Scalar(color.blue(), color.green(), color.red());

@@ -14,7 +14,7 @@ Widget* Widget::getInstance() {
 
 Widget::Widget(QMainWindow* parent)
 	:QMainWindow(parent),
-	root_mt(cv::imread("../resource/testImages/dog.png"))
+	root_mt(cv::imread("../resource/bigImages/2.png"))
 {
 	//消除Debug信息
 	cv::utils::logging::setLogLevel(cv::utils::logging::LOG_LEVEL_ERROR);
@@ -73,11 +73,6 @@ Widget::~Widget()
 		undo_sta.pop();
 	}
 
-	if (sub_lab_img) {
-		delete sub_lab_img;
-		sub_lab_img = nullptr;
-	}
-
 }
 
 void Widget::init_readJson()
@@ -113,7 +108,6 @@ void Widget::init_WidgetInfo()
 	this->setWindowTitle(config.win_title);
 	// 禁用最大化和最小化按钮
 	this->setWindowFlags(this->windowFlags() & ~Qt::WindowMaximizeButtonHint & ~Qt::WindowMinimizeButtonHint);
-
 }
 
 void Widget::init_MatResource()
@@ -127,17 +121,12 @@ void Widget::init_MatResource()
 void Widget::init_Label()
 {
 	lab_img = new Main_Label;
+	lab_img->setAlignment(Qt::AlignCenter);
 	lab_img->setObjectName("lab_img");
 	lab_img->setPixmap(QPixmap::fromImage(curr_img));
 	//图片上下文菜单
 	connect(lab_img, &QLabel::customContextMenuRequested, this, &Widget::on_label_customContextMenuRequested);
 
-	sub_lab_img = new Sub_Label;
-	sub_lab_img->setObjectName("sub_lab_img");
-	sub_lab_img->lab->setPixmap(lab_img->pixmap().scaled(curr_img.size() / 2, Qt::KeepAspectRatio, Qt::SmoothTransformation));
-	sub_lab_img->move(0, 0);
-	sub_lab_img->raise();  //提升：实现依附的关键
-	sub_lab_img->setVisible(false); //隐藏
 }
 
 void Widget::init_WidgetLocation()
@@ -227,30 +216,15 @@ void Widget::init_WidgetLayout()
 	scrollArea = new QScrollArea;
 	scrollArea->setBackgroundRole(QPalette::Dark);
 	scrollArea->setWidgetResizable(true);
-	scrollArea->setFixedSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+	scrollArea->setContentsMargins(0,0,0,0);
 	//滚动窗口添加此图片
-
-
 	scrollArea->setWidget(lab_img);
 
-	init_ImageScaled();
+	//图片预缩放
+	scaledDelta = ori_scaledDelta  = init_scaledImageOk();
 
+	layout_changeToNormal();
 
-	this->setCentralWidget(scrollArea);
-}
-
-void Widget::init_ImageScaled()
-{
-	if (!lab_img) {
-		return;
-	}
-	lab_img->setScaledContents(false);
-	////图片尺寸小于，可以进行扩展，则不允许缩小
-	//if (lab_img->pixmap().size().width() < scrollArea->size().width()
-	//	&& lab_img->pixmap().size().height() < scrollArea->size().height()) {
-	//	lab_img->setScaledContents(true);
-	//}
-	scaledDelta = 1.0;
 }
 
 void Widget::init_OpencvFunctions()
@@ -278,10 +252,6 @@ void Widget::moveEvent(QMoveEvent* ev)
 
 void Widget::wheelEvent(QWheelEvent* ev)
 {
-	if (mode) {
-		//加工模式下禁用，因为会产生一个新的预览窗口
-		return;
-	}
 	if (ev->modifiers() & Qt::ControlModifier) { 
 		//鼠标 + 滑轮
 		double angleDelta = ev->angleDelta().y(); // 120
@@ -293,9 +263,7 @@ void Widget::wheelEvent(QWheelEvent* ev)
 			angleDelta = 0.9; //缩小
 		}
 		scaledDelta *= angleDelta;
-		update_wheelCtrlImage();
-
-		qInfo() << scaledDelta;
+		update_Image(scaledDelta);
 	}
 	QMainWindow::wheelEvent(ev);
 }
@@ -405,23 +373,23 @@ void Widget::on_action_openFile_triggered()
 {
 	QString fileName = QFileDialog::getOpenFileName(nullptr, "选择文件", ".",	"图像文件(*.png *.jpg)");
 	if (!fileName.isEmpty()) {
+		layout_changeToNormal();
+
 		root_mt = cv::imread(fileName.toLocal8Bit().data());
 		init_MatResource();
 
 		lab_img->setPixmap(QPixmap::fromImage(curr_img));
-		sub_lab_img->lab->setPixmap(lab_img->pixmap().scaled(curr_img.size() / 2, Qt::KeepAspectRatio, Qt::SmoothTransformation));
 
 		scrollArea->takeWidget();
 		scrollArea->setWidget(lab_img);
 
-		init_ImageScaled();
+		scaledDelta  = ori_scaledDelta = init_scaledImageOk();
 
 		//更新数值
 		for (auto& x : Opts) {
 			x->initialize();
 		}
 		clearAllWidgetValue();
-		sub_lab_img->setVisible(false);
 	}
 }
 
@@ -441,7 +409,6 @@ void Widget::on_action_openWorks_triggered()
 		//取消
 		return;
 	}
-
 	if (!loadImagesFormFloder(FloderPath)) {//初始化
 		//为空！没有找到图片资源
 		QMessageBox msgBox;
@@ -473,40 +440,22 @@ void Widget::on_action_openWorks_triggered()
 	init_MatResource();
 
 	lab_img->setPixmap(QPixmap::fromImage(curr_img));
-	sub_lab_img->lab->setPixmap(lab_img->pixmap().scaled(curr_img.size() / 2, Qt::KeepAspectRatio, Qt::SmoothTransformation));
 
 	//重新设置滑动区域的content
 	scrollArea->takeWidget();
 	scrollArea->setWidget(lab_img);
 
-	init_ImageScaled();
+	scaledDelta = ori_scaledDelta  = init_scaledImageOk();
 
 	//更新数值
 	for (auto& x : Opts) {
 		x->initialize();
 	}
 	clearAllWidgetValue();
-	sub_lab_img->setVisible(false);
 
-	//----------------------------------------------------
-	btn_work_next = new QPushButton("下一页");
-	btn_work_prev = new QPushButton("上一页");
-	cbx_work_autoSave = new QCheckBox("离开时自动保存");
-
-	btn_work_layout = new QHBoxLayout;
-	btn_work_layout->addWidget(btn_work_prev);
-	btn_work_layout->addWidget(btn_work_next);
-	btn_work_layout->addWidget(cbx_work_autoSave);
-
-	// 创建主布局
-	QVBoxLayout* mainLayout = new QVBoxLayout;
-	mainLayout->addWidget(scrollArea);
-	mainLayout->addLayout(btn_work_layout);
-
-	// 创建主窗口
-	QWidget* centralWidget = new QWidget(this);
-	centralWidget->setLayout(mainLayout);
-	setCentralWidget(centralWidget);
+	//------------------------------
+	//切换布局
+	layout_changeToWork();
 
 	connect(btn_work_next, &QPushButton::clicked, this, &Widget::on_pushButton_next_clicked);
 	connect(btn_work_prev, &QPushButton::clicked, this, &Widget::on_pushButton_prev_clicked);
@@ -517,7 +466,7 @@ void Widget::on_action_saveFile_triggered()
 	//保存加工后的图片
 	QString FileName = QFileDialog::getSaveFileName(nullptr, "save image", ".", "Images(*.png *.bmp *.jpg)");
 	if (!FileName.isEmpty()) {
-		lab_img->pixmap().save(FileName);
+		curr_img.save(FileName);
 	}
 }
 
@@ -530,7 +479,6 @@ void Widget::on_action_allRestore_triggered()
 	for (auto& x : Opts) {
 		x->initialize();
 	}
-	sub_lab_img->setVisible(false);
 
 	clearAllWidgetValue();
 
@@ -541,9 +489,8 @@ void Widget::on_action_previewToNormal_triggered()
 {
 	//预览图点击确定转换为正常图 lan_img
 	if (mode) {
-		//点击确定，预览图片消失
-		sub_lab_img->setVisible(false);
-		lab_img->setPixmap(QPixmap::fromImage(curr_img));
+		//lab_img->setPixmap(QPixmap::fromImage(curr_img));
+		get()->update_Image(get()->ori_scaledDelta);
 	}
 }
 
@@ -663,7 +610,7 @@ void Widget::on_pushButton_next_clicked()
 		work_prevIndex = wid_stacked.count() - 1;
 	}
 	on_checkBox_LeaveAutoSave_clicked();
-	updateImageView();
+	work_cutImage();
 }
 
 void Widget::on_pushButton_prev_clicked()
@@ -675,7 +622,7 @@ void Widget::on_pushButton_prev_clicked()
 		work_currentIndex = wid_stacked.count() - 1;
 	}
 	on_checkBox_LeaveAutoSave_clicked();
-	updateImageView();
+	work_cutImage();
 }
 
 void Widget::on_checkBox_LeaveAutoSave_clicked()
@@ -705,12 +652,12 @@ bool Widget::loadImagesFormFloder(const QString& floderPath)
 void Widget::choice_buttonGroupsBtns()
 {
 	if (mode) {
-		if (sub_lab_img->isVisible()) {
-			//如果我操作了图片，但是没有将预览的效果应用到主图片上，则说明此次修改无效。
-			//返回上一个保存点
-			returnPoint();
-			sub_lab_img->setVisible(false);
-		}
+		//if (sub_lab_img->isVisible()) {
+		//	//如果我操作了图片，但是没有将预览的效果应用到主图片上，则说明此次修改无效。
+		//	//返回上一个保存点
+		//	sub_lab_img->setVisible(false);
+		//}
+		//returnPoint();
 		//先恢复再保存
 		savePoint();
 		clearAllWidgetValue();
@@ -722,19 +669,16 @@ void Widget::choice_buttonGroupsBtns()
 
 void Widget::restore_cutOperation()
 {
-	sub_lab_img->setVisible(false);
 	clearAllWidgetValue();
 
 	updateFromIntermediate();
 
 }
 
-void Widget::on_action_process_triggered(){
+void Widget::on_action_changeMode_triggered(){
 	//点击此开始创作模式
 	//图片清除，重新开始，所有滑块归零
 	if (!mode) {
-		//开启预览
-		sub_lab_img->setVisible(false);
 		this->mode = true;
 		statusLab->setText(tr("混合加工模式"));
 	}
@@ -745,18 +689,14 @@ void Widget::on_action_process_triggered(){
 	clearAllWidgetValue();
 	//数据清空
 	updateFromIntermediate();
-	lab_img->setPixmap(QPixmap::fromImage(curr_img));
-	sub_lab_img->lab->setPixmap(QPixmap::fromImage(get()->curr_img.scaled(curr_img.size() / 2, Qt::KeepAspectRatio, Qt::SmoothTransformation)));
 }
 
 void Widget::on_action_undo_triggered()
 {
 	//仅仅在创作者模式下生效：触发时会将图片置回到未操作前的位置
-
 	if (mode) {
 		returnPoint();
-		sub_lab_img->lab->setPixmap(QPixmap::fromImage(curr_img.scaled(curr_img.size() / 2, Qt::KeepAspectRatio, Qt::SmoothTransformation)));
-		lab_img->setPixmap(QPixmap::fromImage(curr_img));
+		update_Image(ori_scaledDelta);
 		//清除滑块的值
 		setIndexPageWidgetValue();
 	}
@@ -781,7 +721,6 @@ void Widget::returnPoint()
 		//修改当前显示的mt与图片
 		curr_mt = undo_sta.top();
 		curr_img = Mat2QImage(curr_mt);
-		sub_lab_img->lab->setPixmap(lab_img->pixmap().scaled(curr_img.size() / 2, Qt::KeepAspectRatio, Qt::SmoothTransformation));
 		undo_sta.pop();
 	}
 }
@@ -837,14 +776,47 @@ void Widget::updateFromIntermediate()
 	inter_mt.copyTo(curr_mt);	 //修改当前图片
 	inter_mt.copyTo(preview_mt); //修改快照图片
 	curr_img = Mat2QImage(curr_mt);
-	lab_img->setPixmap(QPixmap::fromImage(curr_img));
-	sub_lab_img->lab->setPixmap(QPixmap::fromImage(get()->curr_img.scaled(SUB_LAB_IMG_WIDTH, SUB_LAB_IMG_HEIGHT)));
+
+	//恢复完美缩放
+	update_Image(ori_scaledDelta);
+
+	//重置缩放比例
+	scaledDelta = ori_scaledDelta;
 }
 
 void Widget::updateFromRoot()
 {
 	root_mt.copyTo(inter_mt); //重置inter_mt
 	updateFromIntermediate();
+}
+
+void Widget::layout_changeToWork()
+{
+	btn_work_next = new QPushButton("下一页");
+	btn_work_prev = new QPushButton("上一页");
+	cbx_work_autoSave = new QCheckBox("离开时自动保存");
+
+	btn_work_layout = new QHBoxLayout;
+	btn_work_layout->addWidget(btn_work_prev);
+	btn_work_layout->addWidget(btn_work_next);
+	btn_work_layout->addWidget(cbx_work_autoSave);
+
+	// 创建主布局
+	QVBoxLayout* mainLayout = new QVBoxLayout;
+	scrollArea->setFixedSize(SCROLLAREA_WIDTH - 50, SCROLLAREA_HEIGHT - 50);
+	mainLayout->addWidget(scrollArea);
+	mainLayout->addLayout(btn_work_layout);
+
+	// 创建主窗口
+	QWidget* centralWidget = new QWidget(this);
+	centralWidget->setLayout(mainLayout);
+	this->setCentralWidget(centralWidget);
+}
+
+void Widget::layout_changeToNormal()
+{
+	scrollArea->setFixedSize(SCROLLAREA_WIDTH, SCROLLAREA_HEIGHT);
+	this->setCentralWidget(scrollArea);
 }
 
 void Widget::createAction()
@@ -885,7 +857,7 @@ void Widget::createAction()
 	action_begin->setStatusTip(tr("图片加工模式，可以混合修改图片"));
 	action_begin->setIcon(QIcon("../resource/assert/begin.png"));
 	action_begin->setCheckable(true);
-	connect(action_begin, &QAction::triggered, this, &Widget::on_action_process_triggered);
+	connect(action_begin, &QAction::triggered, this, &Widget::on_action_changeMode_triggered);
 
 	//撤销
 	action_return = new QAction(tr("撤销"), this);
@@ -1066,11 +1038,11 @@ void Widget::createToolBox()
 	connect(btngroup_threshold, &QButtonGroup::buttonClicked, this, &Widget::on_bttuonGroup_threshold_clicked);
 
 	QGridLayout* grid_threshold = new QGridLayout;
-	QWidget* b1 = createToolBtnItemWidget("二进制化", THRESHOLD::Binary, "../resource/assert/2.png");
+	QWidget* b1 = createToolBtnItemWidget("二进制", THRESHOLD::Binary, "../resource/assert/2.png");
 	b1->setStatusTip(tr("二进制阈值化：大变最大，小变0"));
 	grid_threshold->addWidget(b1, 0, 0);
 
-	QWidget* b2 = createToolBtnItemWidget("反二进制为零", THRESHOLD::Binary_inv, "../resource/assert/f2.png");
+	QWidget* b2 = createToolBtnItemWidget("反二进制", THRESHOLD::Binary_inv, "../resource/assert/f2.png");
 	b2->setStatusTip(tr("反二进制阈值化：大变0，小变最大"));
 	grid_threshold->addWidget(b2, 0, 1);
 
@@ -1086,8 +1058,8 @@ void Widget::createToolBox()
 	b5->setStatusTip(tr("反阈值化为0：大变0，小不变"));
 	grid_threshold->addWidget(b5, 2, 0);
 
-	grid_threshold->setRowStretch(4, 10);
-	grid_threshold->setColumnStretch(2, 10);
+	grid_threshold->setRowStretch(3, 1); // 添加一行拉伸因子
+	grid_threshold->setColumnStretch(2, 1); // 添加一列拉伸因子
 
 	QWidget* widget_threshold = new QWidget;
 	widget_threshold->setLayout(grid_threshold);
@@ -1307,17 +1279,11 @@ QHBoxLayout* Widget::create_Edit_hLayout(const QString& filter, const QString& t
 	QRegularExpressionValidator* validator = new QRegularExpressionValidator(QRegularExpression(filter), edit);
 	edit->setValidator(validator);
 	connect(edit, &QLineEdit::returnPressed, this, [=]() {
-		if (mode) {
-			sub_lab_img->setVisible(true);
-		}
 		QList<QString> lStr = edit->text().split(" ");
 		(*t)->onReturnPressed_Edit(lStr);
 		});
 	QPushButton* ok_btn = new QPushButton("确定");
 	connect(ok_btn, &QPushButton::clicked, this, [=]() {
-		if (mode) {
-			sub_lab_img->setVisible(true);
-		}
 		QString str = edit->text();
 		int pos = 0;
 		auto state = validator->validate(str, pos);
@@ -1339,70 +1305,50 @@ QHBoxLayout* Widget::create_Edit_hLayout(const QString& filter, const QString& t
 	return hLayout;
 }
 
-void Widget::updateImageView()
+void Widget::work_cutImage()
 {
 	if (work_currentIndex >= 0 && work_currentIndex < wid_stacked.count()) {
-		//不保存前一页修改后的Mat：太复杂了
-		//wid_stacked[work_prevIndex] = (Main_Label*)scrollArea->takeWidget(); 
-
-		//切换cv::Mat
 		root_mt = *wid_stacked[work_currentIndex];
 		init_MatResource();
 		//切换当前图片的显示资源
 		lab_img->setPixmap(QPixmap::fromImage(curr_img));
-		sub_lab_img->lab->setPixmap(lab_img->pixmap().scaled(SUB_LAB_IMG_WIDTH, SUB_LAB_IMG_HEIGHT));
 		
 		//重新设置滑动区域
 		scrollArea->takeWidget();
 		scrollArea->setWidget(lab_img);
 
-		init_ImageScaled();
+		scaledDelta = ori_scaledDelta = init_scaledImageOk();
 
 		//更新数值
 		for (auto& x : Opts) {
 			x->initialize();
 		}
 		clearAllWidgetValue();
-		sub_lab_img->setVisible(false);
 	}
 }
 
-void Widget::check_WhetherAllowScrollArea()
+void Widget::update_Image(double f_scaledDelta)
 {
-	scrollArea->setAlignment(Qt::AlignHCenter);
-	scrollArea->setBackgroundRole(QPalette::Dark);
-	int w = root_mt.cols;
-	int h = root_mt.rows;
-	//超过此区域就出现滚动条
-	if (w > MAX_SHOW_PICURE_WIDTH || h > MAX_SHOW_PICURE_HEIGHT) {
-		scrollArea->setWidgetResizable(true);
-	}
-	else {
-		scrollArea->setWidgetResizable(false);
-	}
+	//更新图片显示到完美缩放比例
+	QPixmap t_pixmap = QPixmap::fromImage(curr_img);
+	QPixmap scaledPixmap = t_pixmap.scaled(t_pixmap.size() * f_scaledDelta, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+	lab_img->setPixmap(scaledPixmap);
+
+	//检查是否需要启用滚动条
+	bool needScrollbars = scaledPixmap.size().width() > scrollArea->size().width() || scaledPixmap.size().height() > scrollArea->size().height();
+	scrollArea->setHorizontalScrollBarPolicy(needScrollbars ? Qt::ScrollBarAlwaysOn : Qt::ScrollBarAlwaysOff);
+	scrollArea->setVerticalScrollBarPolicy(needScrollbars ? Qt::ScrollBarAlwaysOn : Qt::ScrollBarAlwaysOff);
 }
 
-void Widget::update_wheelCtrlImage()
-{
-	//if (lab_img->hasScaledContents() && scaledDelta < 1.0) {
-	//	//如果为true，则说明可以扩展到整个Widget，无法缩小
-	//	scaledDelta = 1.0;
-	//	return;
-	//}
-	if (!lab_img->pixmap().isNull()) {
-		// 缩放图像 lab_img->pixmap()原始图片保持不变，改变的是ScrollArea区域里的内容
-		//1920 * 1080
-		QPixmap t_pixmap = QPixmap::fromImage(curr_img);
-		QPixmap scaledPixmap = t_pixmap.scaled(t_pixmap.size() * scaledDelta, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+double Widget::init_scaledImageOk() {
+	//如果图片的宽度和高度大于的大小，则需要缩小，直到两者都小于滑动区域的大小
+	double wDelta = static_cast<double>((double)scrollArea->size().width() / (double)curr_img.size().width());
+	double hDelta = static_cast<double>((double)scrollArea->size().height() / (double)curr_img.size().height());
+	auto t_scaledDelta = qMin(wDelta, hDelta);
 
-		//不要设置setScaledContents(true) ！！！
-		lab_img->setPixmap(scaledPixmap); 
+	update_Image(t_scaledDelta);
 
-		// 检查是否需要启用滚动条
-		bool needScrollbars = scaledPixmap.size().width() > scrollArea->size().width() || scaledPixmap.size().height() > scrollArea->size().height();
-		scrollArea->setHorizontalScrollBarPolicy(needScrollbars ? Qt::ScrollBarAlwaysOn : Qt::ScrollBarAlwaysOff);
-		scrollArea->setVerticalScrollBarPolicy(needScrollbars ? Qt::ScrollBarAlwaysOn : Qt::ScrollBarAlwaysOff);
-	}
+	return t_scaledDelta;
 }
 
 
@@ -1429,9 +1375,6 @@ QHBoxLayout* Widget::create_GUIAvgBlur() //1：均值 2：高斯
 		if (slider2->value() == slider2->minimum() && slider3->value() == slider3->minimum()) {
 			blur->anchorX = blur->anchorY = blur->avg_Ksize / 2;
 		}
-	if (mode) {
-		sub_lab_img->setVisible(true);
-	}
 	blur->onTriggered_slider1_valueChange_avgBlur(value);
 		});
 
@@ -1444,9 +1387,6 @@ QHBoxLayout* Widget::create_GUIAvgBlur() //1：均值 2：高斯
 	hlayout2->addWidget(slider2);
 	//X偏移连接信号
 	connect(slider2, &QSlider::sliderMoved, this, [=](int value) {
-		if (mode) {
-			sub_lab_img->setVisible(true);
-		}
 		blur->onTriggered_slider2_valueChange_avgBlur(value);
 	});
 
@@ -1458,9 +1398,6 @@ QHBoxLayout* Widget::create_GUIAvgBlur() //1：均值 2：高斯
 	hlayout3->addWidget(slider3);
 	//Y偏移连接信号
 	connect(slider3, &QSlider::sliderMoved, this, [=](int value) {
-		if (mode) {
-			sub_lab_img->setVisible(true);
-		}
 		blur->onTriggered_slider3_valueChange_avgBlur(value);
 		});
 
@@ -1505,9 +1442,6 @@ QHBoxLayout* Widget::create_GUIGaussianBlur()
 		if (slider2->value() == slider2->minimum() && slider3->value() == slider3->minimum()) {
 			blur->sigmaX = blur->sigmaY = blur->gas_Ksize / 2;
 		}
-		if (mode) {
-			sub_lab_img->setVisible(true);
-		}
 	blur->onTriggered_slider1_valueChange_gaussianBlur(value);
 		});
 
@@ -1519,9 +1453,6 @@ QHBoxLayout* Widget::create_GUIGaussianBlur()
 	hlayout2->addWidget(slider2);
 	//X偏移连接信号
 	connect(slider2, &QSlider::sliderMoved, this, [=](int value) {
-		if (mode) {
-			sub_lab_img->setVisible(true);
-		}
 		blur->onTriggered_slider2_valueChange_gaussianBlur(value);
 		});
 
@@ -1533,9 +1464,6 @@ QHBoxLayout* Widget::create_GUIGaussianBlur()
 	hlayout3->addWidget(slider3);
 	//Y偏移连接信号
 	connect(slider3, &QSlider::sliderMoved, this, [=](int value) {
-		if (mode) {
-			sub_lab_img->setVisible(true);
-		}
 		blur->onTriggered_slider3_valueChange_gaussianBlur(value);
 		});
 
@@ -1565,9 +1493,6 @@ QHBoxLayout* Widget::create_GUIMedianBlur()
 		if (value % 2 == 0) {
 			value += 1;
 		}
-	if (mode) {
-		sub_lab_img->setVisible(true);
-	}
 		blur->onTriggered_slider_valueChange_medianBlur(value);
 	});
 
@@ -1608,9 +1533,6 @@ QHBoxLayout* Widget::create_GUIBilateralBlur()
 	hlayout1->addSpacing(10);
 	hlayout1->addWidget(slider1);
 	connect(slider1, &QSlider::sliderMoved, this, [=](int value) {
-		if (mode) {
-			sub_lab_img->setVisible(true);
-		}
 		blur->onTriggered_slider1_valueChange_bilateralBlur(value);
 	});
 
@@ -1622,9 +1544,6 @@ QHBoxLayout* Widget::create_GUIBilateralBlur()
 	hlayout2->setSpacing(10);
 	//X偏移连接信号
 	connect(slider2, &QSlider::sliderMoved, this, [=](int value) {
-		if (mode) {
-			sub_lab_img->setVisible(true);
-		}
 		blur->onTriggered_slider2_valueChange_bilateralBlur(value);
 		});
 
@@ -1636,9 +1555,6 @@ QHBoxLayout* Widget::create_GUIBilateralBlur()
 	hlayout3->setSpacing(10);
 	//Y偏移连接信号
 	connect(slider3, &QSlider::sliderMoved, this, [=](int value) {
-		if (mode) {
-			sub_lab_img->setVisible(true);
-		}
 		blur->onTriggered_slider3_valueChange_bilateralBlur(value);
 		});
 
@@ -1674,9 +1590,6 @@ QHBoxLayout* Widget::create_GUIThreshold()
 	hlayout1->addWidget(new QLabel("threshold"));
 	hlayout1->addWidget(slider1);
 	connect(slider1, &QSlider::sliderMoved, this, [=](int value) {
-		if (mode) {
-			sub_lab_img->setVisible(true);
-		}
 		threshold->onTriggered_slider1_valueChanged_thresholdValue(value);
 		});
 
@@ -1687,9 +1600,6 @@ QHBoxLayout* Widget::create_GUIThreshold()
 	hlayout2->addWidget(slider2);
 	//X偏移连接信号
 	connect(slider2, &QSlider::sliderMoved, this, [=](int value) {
-		if (mode) {
-			sub_lab_img->setVisible(true);
-		}
 		threshold->onTriggered_slider2_valueChanged_maxValue(value);
 		});
 
@@ -1736,9 +1646,6 @@ QHBoxLayout* Widget::create_GUIMorphology()
 	hlayout1->addWidget(slider1);
 	hlayout1->setSpacing(10);
 	connect(slider1, &QSlider::sliderMoved, this, [=](int value) {
-		if (mode) {
-			sub_lab_img->setVisible(true);
-		}
 		morphology->onTriggered_slider1_valueChanged_kernel(value);
 		});
 
@@ -1748,9 +1655,6 @@ QHBoxLayout* Widget::create_GUIMorphology()
 	hlayout2->setSpacing(10);
 	//X偏移连接信号
 	connect(slider2, &QSlider::sliderMoved, this, [=](int value) {
-		if (mode) {
-			sub_lab_img->setVisible(true);
-		}
 		morphology->onTriggered_slider2_valueChanged_anchorX(value);
 		});
 
@@ -1760,9 +1664,6 @@ QHBoxLayout* Widget::create_GUIMorphology()
 	hlayout3->setSpacing(10);
 	//Y偏移连接信号
 	connect(slider3, &QSlider::sliderMoved, this, [=](int value) {
-		if (mode) {
-			sub_lab_img->setVisible(true);
-		}
 		morphology->onTriggered_slider3_valueChanged_anchorY(value);
 		});
 
@@ -1794,9 +1695,6 @@ QHBoxLayout* Widget::create_GUIConnected()
 	comb1->addItem(tr("4"));
 	comb1->setEditable(false);
 	connect(comb1, &QComboBox::activated, this, [=](int index) {
-		if (mode) {
-			sub_lab_img->setVisible(true);
-		}
 		connected->onTriggered_Comb1_currentTextChanged_connectivtiy(index);
 	});
 	QComboBox* comb2 = new QComboBox;  //选择算法
@@ -1811,9 +1709,6 @@ QHBoxLayout* Widget::create_GUIConnected()
 	comb2->addItem(tr("CCL_SPAGHETTI"));
 	comb2->setEditable(false);
 	connect(comb2, &QComboBox::activated, this, [=](int index) {
-		if (mode) {
-			sub_lab_img->setVisible(true);
-		}
 		connected->onTriggered_Comb2_currentTextChanged_ccltype(index);
 	});
 
@@ -1849,9 +1744,6 @@ QHBoxLayout* Widget::create_GUIContours()
 	comb1->addItem(tr("RETR_TREE"));
 	comb1->setEditable(false);
 	connect(comb1, &QComboBox::activated, this, [=](int index) {
-		if (mode) {
-			sub_lab_img->setVisible(true);
-		}
 		contours->onTriggered_Comb1_currentTextChanged_contoursMode(index);
 		});
 
@@ -1864,9 +1756,6 @@ QHBoxLayout* Widget::create_GUIContours()
 	comb2->addItem(tr("CHAIN_APPROX_TC89_KCOS"));
 	comb2->setEditable(false);
 	connect(comb2, &QComboBox::activated, this, [=](int index) {
-		if (mode) {
-			sub_lab_img->setVisible(true);
-		}
 		contours->onTriggered_Comb2_currentTextChanged_contoursMethod(index);
 		});
 
@@ -1878,18 +1767,12 @@ QHBoxLayout* Widget::create_GUIContours()
 	}
 
 	connect(comb3, &QComboBox::activated, this, [=](int index) {
-		if (mode) {
-			sub_lab_img->setVisible(true);
-		}
 	contours->onTriggered_Comb3_currentTextChanged_contoursThick(index);
 		});
 
 	QPushButton* btn = new QPushButton;
 	btn->setText("绘制图像凸包");
 	connect(btn, &QPushButton::clicked, this, [=]() {
-		if (mode) {
-			sub_lab_img->setVisible(true);
-		}
 		contours->onClicked_btn_convexHull();
 	});
 
@@ -1903,9 +1786,6 @@ QHBoxLayout* Widget::create_GUIContours()
 		colorDialog->setMaximumSize(653, 498);
 		colorDialog->setGeometry(810, 306, 375, 375);
 		colorDialog->show(); //弹出颜色框
-		if (mode) {
-			sub_lab_img->setVisible(true);
-			}
 		});
 
 	QGridLayout* grid = new QGridLayout;
@@ -1965,9 +1845,6 @@ QVBoxLayout* Widget::create_GUIShow()
 
 	connect(slider1, &QSlider::sliderMoved, this, [=](int value) {
 		slider2->setValue(slider2->minimum());
-	if (mode) {
-		sub_lab_img->setVisible(true);
-	}
 	showeffect->onTriggered_slider_valueChange_brighten(value);
 		});
 
@@ -1975,9 +1852,6 @@ QVBoxLayout* Widget::create_GUIShow()
 	connect(slider2, &QSlider::sliderMoved, this, [=](int value) {
 		value = -value;	
 	slider1->setValue(slider1->minimum());
-		if (mode) {
-			sub_lab_img->setVisible(true);
-		}
 		showeffect->onTriggered_slider_valueChange_brighten(value);
 		});
 

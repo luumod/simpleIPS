@@ -1,8 +1,8 @@
 ﻿#ifndef COMMON_H_
 #define COMMON_H_
 
-constexpr auto WINDOW_WIDTH = 720;
-constexpr auto WINDOW_HEIGHT = 720;
+constexpr auto SCROLLAREA_WIDTH = 720;
+constexpr auto SCROLLAREA_HEIGHT = 720;
 
 constexpr auto MAX_SHOW_PICURE_WIDTH = 720;
 constexpr auto MAX_SHOW_PICURE_HEIGHT = 720;

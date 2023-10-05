@@ -22,6 +22,7 @@ DrawWidget::DrawWidget(QWidget* parent) : QMainWindow(parent) {
 	QGraphicsPixmapItem* pixItem = new QGraphicsPixmapItem;
 	QPixmap pixmap = QPixmap::fromImage(get()->curr_img);
 	if (!pixmap.isNull()) {
+		// 非空
 		// 获取场景和图像的大小
 		QRectF sceneRect = scene->sceneRect();
 		QSize imageSize = pixmap.size();
@@ -46,9 +47,9 @@ DrawWidget::DrawWidget(QWidget* parent) : QMainWindow(parent) {
 	QVBoxLayout* vlayout = new QVBoxLayout;
 	vlayout->addWidget(createChoice(),1);
 	vlayout->addWidget(view,4);
-	QPushButton* save = new QPushButton;
-	vlayout->addWidget(save, 1);
-	connect(save, &QPushButton::clicked, this, [=]() {
+	QPushButton* btn_save = new QPushButton("保存");
+	vlayout->addWidget(btn_save, 1);
+	connect(btn_save, &QPushButton::clicked, this, [=]() {
 		/*
 		保存diy后的场景图片
 		*/

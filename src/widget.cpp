@@ -126,7 +126,9 @@ void Widget::init_Label()
 	lab_img->setPixmap(QPixmap::fromImage(curr_img));
 	//图片上下文菜单
 	connect(lab_img, &QLabel::customContextMenuRequested, this, &Widget::on_label_customContextMenuRequested);
-
+	
+	//截取图片
+	look = new LookWidget(this);
 }
 
 void Widget::init_WidgetLocation()
@@ -554,6 +556,14 @@ void Widget::on_action_dark_triggered()
 	}
 }
 
+void Widget::on_action_jie_triggered()
+{
+	//图片截取
+	//单独的窗口
+	look->lab_img->setPixmap(QPixmap::fromImage(curr_img));
+	look->show();
+}
+
 void Widget::on_actionGroup_help_triggered(QAction* action)
 {
 	if (action == action_help) {
@@ -926,6 +936,10 @@ void Widget::createAction()
 		QMessageBox::information(this, tr("提示"), tr("切换主题成功！请重启程序"));
 		});
 
+	
+	action_jie = new QAction(tr("图片截取"), this);
+	connect(action_jie, &QAction::triggered, this, &Widget::on_action_jie_triggered);
+
 	//帮助菜单
 	action_help_group = new QActionGroup(this);
 	action_help_group->addAction(action_help = new QAction(tr("查看帮助"), this));
@@ -981,6 +995,7 @@ void Widget::createMenu()
 	menu_theme->addAction(action_light);
 	menu_theme->addAction(action_dark);
 	menu_tools->addMenu(menu_theme);
+	menu_tools->addAction(action_jie); //图片截取
 
 	//帮助
 	menu_help = menuBar()->addMenu(tr("帮助"));

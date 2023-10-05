@@ -1,80 +1,99 @@
-﻿#include <QMainWindow>
-#include <QScrollArea>
-#include <QScrollBar>
-#include <QLabel>
-#include <QWidget>
-#include <QWheelEvent>
-#include <QApplication>
-#include <QPixmap>
+﻿#include <QtWidgets>
 
-class ImageViewer : public QMainWindow {
+class ImageCropper : public QMainWindow
+{
+
 public:
-    ImageViewer(QWidget* parent = nullptr) : QMainWindow(parent) {
-        // 创建滚动区域
-        scrollArea = new QScrollArea;
-        scrollArea->setBackgroundRole(QPalette::Dark);
+    ImageCropper(QWidget* parent = nullptr)
+        : QMainWindow(parent)
+    {
+        // 设置主窗口属性
+        setWindowTitle("Image Cropper");
+        centralWidget = new QWidget(this);
+        setCentralWidget(centralWidget);
+
+        // 创建布局
+        QVBoxLayout* layout = new QVBoxLayout(centralWidget);
+        scrollArea = new QScrollArea(centralWidget);
+        label = new QLabel(scrollArea);
+
+        // 设置QScrollArea属性
+        scrollArea->setWidget(label);
         scrollArea->setWidgetResizable(true);
-        scrollArea->setFixedSize(700, 700);
-        setCentralWidget(scrollArea);
+        layout->addWidget(scrollArea);
 
-        // 创建标签用于显示图片
-        image = QPixmap(tr(("../resource/bigImages/2.png")));
+        // 设置QRubberBand
+        rubberBand = new QRubberBand(QRubberBand::Rectangle, label);
+        rubberBand->setGeometry(QRect(0, 0, 0, 0));
 
-        imageLabel = new QLabel;
-        //imageLabel->setScaledContents(true);
-        //一开始为空
-        //imageLabel->setBackgroundRole(QPalette::Dark);
-        scrollArea->setWidget(imageLabel);
+        // 设置图片
+        label->setAlignment(Qt::AlignTop | Qt::AlignLeft);
+        label->setScaledContents(true);
+        label->setPixmap(QPixmap("../resource/bigImages/2.png")); // 替换成你的图片路径
 
-        // 连接滚动条变化事件
-        connect(scrollArea->verticalScrollBar(), &QScrollBar::valueChanged, this, &ImageViewer::updateThumbnail);
-        connect(scrollArea->horizontalScrollBar(), &QScrollBar::valueChanged, this, &ImageViewer::updateThumbnail);
+        // 激活鼠标事件
+        label->setMouseTracking(true);
 
-        // 初始化
-        scaleFactor = 1.0;
-        maxScale =qMax( qMax(scrollArea->size().height() / image.size().height(), scrollArea->size().width() / image.size().width()),qMax(image.size().height() / scrollArea->size().height(), image.size().width() / scrollArea->size().width()) );
-    }
-
-protected:
-    void wheelEvent(QWheelEvent* event) override {
-        if (event->modifiers() & Qt::ControlModifier) {
-            int delta = event->angleDelta().y();
-            double scaleAmount = delta > 0 ? 1.1 : 0.9;
-            //限制最大缩放
-            if (scaleFactor* scaleAmount < maxScale) {
-                scaleFactor *= scaleAmount;
-                updateThumbnail();
-            }
-        }
-        QMainWindow::wheelEvent(event);
+        // 连接信号和槽
+        connect(label, SIGNAL(mousePressEvent(QMouseEvent*)), this, SLOT(startSelection(QMouseEvent*)));
+        connect(label, SIGNAL(mouseMoveEvent(QMouseEvent*)), this, SLOT(updateSelection(QMouseEvent*)));
+        connect(label, SIGNAL(mouseReleaseEvent(QMouseEvent*)), this, SLOT(endSelection(QMouseEvent*)));
     }
 
 private slots:
-    void updateThumbnail() {
-        if (!image.isNull()) {
-            // 缩放图像
-            QPixmap scaledPixmap = image.scaled(image.size() * scaleFactor, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-            imageLabel->setPixmap(scaledPixmap);
-            // 检查是否需要启用滚动条
-            bool needScrollbars = scaledPixmap.size().width() > scrollArea->size().width() || scaledPixmap.size().height() > scrollArea->size().height();
-            scrollArea->setHorizontalScrollBarPolicy(needScrollbars ? Qt::ScrollBarAlwaysOn : Qt::ScrollBarAlwaysOff);
-            scrollArea->setVerticalScrollBarPolicy(needScrollbars ? Qt::ScrollBarAlwaysOn : Qt::ScrollBarAlwaysOff);
-        }
+    void startSelection(QMouseEvent* event)
+    {
+        // 开始选择截取，记录起始坐标
+        selectionStart = event->pos();
+        rubberBand->setGeometry(QRect(selectionStart, QSize()));
+        rubberBand->show();
+    }
+
+    void updateSelection(QMouseEvent* event)
+    {
+        // 更新选择截取区域
+        selectionEnd = event->pos();
+        rubberBand->setGeometry(QRect(selectionStart, selectionEnd).normalized());
+    }
+
+    void endSelection(QMouseEvent* event)
+    {
+        // 完成选择截取
+        selectionEnd = event->pos();
+        rubberBand->setGeometry(QRect(selectionStart, selectionEnd).normalized());
+
+        // 获取选择截取的区域
+        QRect selectedRect = rubberBand->geometry();
+
+        // 获取截取区域的坐标和大小
+        int x = selectedRect.x();
+        int y = selectedRect.y();
+        int width = selectedRect.width();
+        int height = selectedRect.height();
+
+        // 这里可以执行你的截取操作，例如保存截取的部分或进行其他处理
+        // 你可以使用label->pixmap()->copy(selectedRect)来获得选择截取的图像部分
+        QLabel* lab = new QLabel;
+        lab->setPixmap(label->pixmap().copy(selectedRect));
+        lab->show();
+
+        // 隐藏QRubberBand
+        rubberBand->hide();
     }
 
 private:
+    QWidget* centralWidget;
     QScrollArea* scrollArea;
-    QLabel* imageLabel;
-    QPixmap image;
-    double scaleFactor;
-    double maxScale;
+    QLabel* label;
+    QRubberBand* rubberBand;
+    QPoint selectionStart;
+    QPoint selectionEnd;
 };
 
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[])
+{
     QApplication app(argc, argv);
-
-    ImageViewer viewer;
-    viewer.show();
-
+    ImageCropper window;
+    window.show();
     return app.exec();
 }

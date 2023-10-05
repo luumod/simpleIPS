@@ -38,6 +38,7 @@ class QScrollArea;
 class QPushButton;
 class QCheckBox;
 class QWheelEvent;
+class LookWidget;
 #endif
 
 struct ExeConfig {
@@ -185,6 +186,9 @@ public slots:
 	//主题切换：暗色
 	void on_action_dark_triggered();
 
+	//图片截取
+	void on_action_jie_triggered();
+
 	//查看帮助
 	void on_actionGroup_help_triggered(QAction* action);
 
@@ -261,6 +265,7 @@ public:
 	std::stack<cv::Mat> undo_sta;
 
 	Main_Label* lab_img = nullptr;
+	LookWidget* look = nullptr;
 	static Widget* widget;
 	bool mode = false;
 
@@ -312,6 +317,8 @@ public:
 	//扩展
 	QAction* action_light = nullptr;
 	QAction* action_dark = nullptr;
+	QAction* action_jie = nullptr;
+	
 	
 
 	//帮助

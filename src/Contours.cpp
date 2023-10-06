@@ -1,6 +1,7 @@
 ﻿#include "../include/opencv_functions/Contours.h"
 #include "../include/assist/Mat2QImage.h"
 #include "../include/widget.h"
+#include "../include/Res.h"
 #include <QColor>
 #include <QDebug>
 Contours::Contours() :Object() {}
@@ -54,7 +55,7 @@ void Contours::findContours()
 void Contours::drawContours()
 {
 	findContours(); //获取points轮廓信息
-	cv::Mat tMt = cv::Mat::zeros(get()->curr_mt.size(), CV_8UC3);
+	cv::Mat tMt = cv::Mat::zeros(get()->res->curr_mt.size(), CV_8UC3);
 	
 	for (int i = 0; i < points.size();i++) {
 		cv::Scalar scolor = cv::Scalar(color.blue(), color.green(), color.red());

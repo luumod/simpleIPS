@@ -1,13 +1,9 @@
 ﻿#ifndef LABELIMG_H_
 #define LABELIMG_H_
 
-#include <QWidget>
-#include <QLabel>
-#include <QEvent>
-#include <QPixmap>
 #include <QMainWindow>
-#include <QDialog>
-
+#include <QLabel>
+#include <QWidget>
 class Widget;
 class QMouseEvent;
 class QRubberBand;
@@ -20,6 +16,7 @@ class QAction;
 class QMenu;
 class QAction;
 class HandleJieWidget;
+class ShowImgWidget;
 
 Widget* get();
 
@@ -50,7 +47,8 @@ protected:
 	void mouseReleaseEvent(QMouseEvent* ev)override;
 
 public:
-	HandleJieWidget* handle_widget = nullptr;
+	ShowImgWidget* handle_widget = nullptr; //单独显示的截图
+
 	QLabel* lab_img = nullptr;
 	QScrollArea* scrollArea = nullptr;
 	QRubberBand* rubber = nullptr;
@@ -63,21 +61,5 @@ public:
 保存截取图片的窗口
 */
 
-class HandleJieWidget :public QMainWindow {
-	Q_OBJECT
-public:
-	HandleJieWidget(QWidget* parent = nullptr);
-	~HandleJieWidget();
-
-	void createMenuBar();
-	void createAction();
-protected:
-
-public:
-	QAction* action_save = nullptr;
-	QMenu* menu_file = nullptr;
-
-	QLabel* lab_img = nullptr;
-};
 
 #endif // !LABELIMG_H_

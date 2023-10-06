@@ -7,7 +7,12 @@
 
 inline QImage Mat2QImage(const cv::Mat& mat)
 {
-    // Check if the input OpenCV matrix is empty
+    QImage image;
+    if (mat.type() == CV_8UC1) {
+        image = QImage(mat.data, mat.cols, mat.rows, static_cast<int>(mat.step), QImage::Format_Grayscale8);
+        return image;
+    }
+
     if (mat.empty()) {
         return QImage();
     }
@@ -17,7 +22,7 @@ inline QImage Mat2QImage(const cv::Mat& mat)
     cv::cvtColor(mat, rgbMat, cv::COLOR_BGR2RGB);
 
     //返回结果
-    QImage image(rgbMat.cols, rgbMat.rows, QImage::Format_RGB888);
+    image = QImage(rgbMat.cols, rgbMat.rows, QImage::Format_RGB888);
 
     uchar* imagePtr = image.bits();
     int imageBytesPerLine = image.bytesPerLine();
@@ -32,7 +37,6 @@ inline QImage Mat2QImage(const cv::Mat& mat)
 
     return image;
 }
-
 
 #endif // MAT2QIMAGE_H
 

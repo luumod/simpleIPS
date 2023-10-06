@@ -1,5 +1,6 @@
 ﻿#include "widget.h"
 #include "Common.h"
+#include "Res.h"
 #include "assist/belongsToEnum.h"
 #include "assist/Mat2QImage.h"
 #include "assist/QImage2Mat.h"

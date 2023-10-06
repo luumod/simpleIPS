@@ -1,99 +1,87 @@
-﻿#include <QtWidgets>
+﻿#include <opencv2/opencv.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+using namespace cv;
 
-class ImageCropper : public QMainWindow
-{
-
+class HistImage {
 public:
-    ImageCropper(QWidget* parent = nullptr)
-        : QMainWindow(parent)
-    {
-        // 设置主窗口属性
-        setWindowTitle("Image Cropper");
-        centralWidget = new QWidget(this);
-        setCentralWidget(centralWidget);
-
-        // 创建布局
-        QVBoxLayout* layout = new QVBoxLayout(centralWidget);
-        scrollArea = new QScrollArea(centralWidget);
-        label = new QLabel(scrollArea);
-
-        // 设置QScrollArea属性
-        scrollArea->setWidget(label);
-        scrollArea->setWidgetResizable(true);
-        layout->addWidget(scrollArea);
-
-        // 设置QRubberBand
-        rubberBand = new QRubberBand(QRubberBand::Rectangle, label);
-        rubberBand->setGeometry(QRect(0, 0, 0, 0));
-
-        // 设置图片
-        label->setAlignment(Qt::AlignTop | Qt::AlignLeft);
-        label->setScaledContents(true);
-        label->setPixmap(QPixmap("../resource/bigImages/2.png")); // 替换成你的图片路径
-
-        // 激活鼠标事件
-        label->setMouseTracking(true);
-
-        // 连接信号和槽
-        connect(label, SIGNAL(mousePressEvent(QMouseEvent*)), this, SLOT(startSelection(QMouseEvent*)));
-        connect(label, SIGNAL(mouseMoveEvent(QMouseEvent*)), this, SLOT(updateSelection(QMouseEvent*)));
-        connect(label, SIGNAL(mouseReleaseEvent(QMouseEvent*)), this, SLOT(endSelection(QMouseEvent*)));
+    HistImage():ori_mt(cv::imread("../resource/bigImages/2.png",cv::ImreadModes::IMREAD_GRAYSCALE)) {
+        cv::imshow("ori_mt", ori_mt);
     }
+    HistImage(cv::Mat mt) :ori_mt(mt) {}
+    cv::Mat getHist(cv::Mat mt) {
+        channel = mt.channels();
+        histSize = 256;
+        float r[2] = {0,256};
+        const float* range = { r };
+        cv::Mat hist;
 
-private slots:
-    void startSelection(QMouseEvent* event)
-    {
-        // 开始选择截取，记录起始坐标
-        selectionStart = event->pos();
-        rubberBand->setGeometry(QRect(selectionStart, QSize()));
-        rubberBand->show();
+        cv::calcHist(&mt, 1, 0, cv::Mat(), hist, 1, &histSize, &range);
+        return hist;
     }
+    void drawGrayHist(const std::string& title, cv::Mat mt = cv::Mat()) {
+        cv::Mat hist;
+        if (mt.empty()) {
+            hist = getHist(this->ori_mt);
+        }
+        else {
+            hist = getHist(mt);
+        }
 
-    void updateSelection(QMouseEvent* event)
-    {
-        // 更新选择截取区域
-        selectionEnd = event->pos();
-        rubberBand->setGeometry(QRect(selectionStart, selectionEnd).normalized());
+        auto histHeight = 400;
+        auto histWidth = 512;
+        //创建直方图
+        cv::Mat histogram(histHeight, histWidth, CV_8UC3, cv::Scalar(255, 255, 255));
+
+        auto x_oneWidth = cvRound((double)histWidth / histSize);
+
+        //归一化直方图
+        cv::normalize(hist, hist, 0, histHeight,cv::NORM_MINMAX);
+        //[0,255]
+        for (int i = 0; i < histSize; i++) {
+            auto x_oneHeight = cvRound(hist.at<float>(i));
+            cv::rectangle(histogram, cv::Point(i * x_oneWidth, histHeight),cv::Point(i*x_oneWidth + x_oneWidth -1,histHeight-x_oneHeight),cv::Scalar(0,0,0));
+        }
+        cv::imshow(title, histogram);
     }
+    void equalizeHist() {
+        cv::Mat tMt;
+        cv::equalizeHist(ori_mt, tMt);
+        cv::imshow("equalize_gray_mt",tMt);
+        // 创建一个三通道图像，将均衡化后的灰度图像复制到每个通道
+        cv::Mat ori = cv::imread("../resource/bigImages/2.png");
 
-    void endSelection(QMouseEvent* event)
-    {
-        // 完成选择截取
-        selectionEnd = event->pos();
-        rubberBand->setGeometry(QRect(selectionStart, selectionEnd).normalized());
+        cv::imshow("ori Image", ori);
 
-        // 获取选择截取的区域
-        QRect selectedRect = rubberBand->geometry();
+        // 合并均衡化后的灰度图像与原始彩色图像的颜色通道
+        std::vector<cv::Mat> channels;
+        cv::split(ori, channels);
+        //channels[1] = tMt; // 使用均衡化后的灰度图像替换蓝色通道
 
-        // 获取截取区域的坐标和大小
-        int x = selectedRect.x();
-        int y = selectedRect.y();
-        int width = selectedRect.width();
-        int height = selectedRect.height();
+        for (int i = 0; i < 3; i++)
+        {
+            channels[i] = tMt.clone(); // 使用均衡化后的灰度图像替换每个通道
+        }
 
-        // 这里可以执行你的截取操作，例如保存截取的部分或进行其他处理
-        // 你可以使用label->pixmap()->copy(selectedRect)来获得选择截取的图像部分
-        QLabel* lab = new QLabel;
-        lab->setPixmap(label->pixmap().copy(selectedRect));
-        lab->show();
+        cv::merge(channels, ori);
 
-        // 隐藏QRubberBand
-        rubberBand->hide();
+        cv::imshow("Colorized Image", ori);
     }
-
 private:
-    QWidget* centralWidget;
-    QScrollArea* scrollArea;
-    QLabel* label;
-    QRubberBand* rubberBand;
-    QPoint selectionStart;
-    QPoint selectionEnd;
+    cv::Mat ori_mt;
+    int channel = 0;
+    int dims = 0;
+    int histSize = 0;
 };
 
-int main(int argc, char* argv[])
+int main()
 {
-    QApplication app(argc, argv);
-    ImageCropper window;
-    window.show();
-    return app.exec();
+    // 读取图像
+    HistImage hist;
+    hist.drawGrayHist("origin");
+    hist.equalizeHist();
+    cv::waitKey(0);
+
+
+    return 0;
 }

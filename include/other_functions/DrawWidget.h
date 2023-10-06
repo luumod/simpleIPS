@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include "../opencv_functions/Object.h"
+//#include "../assist/ShowImgWidget.h"
 class GraphicsScene;
 class QLabel;
 class QButtonGroup;

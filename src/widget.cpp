@@ -13,15 +13,15 @@ Widget* Widget::getInstance() {
 }
 
 Widget::Widget(QMainWindow* parent)
-	:QMainWindow(parent),
-	root_mt(cv::imread("../resource/bigImages/2.png"))
+	:QMainWindow(parent)
+	, res(new Res("../resource/bigImages/2.png",this))
 {
 	//消除Debug信息
 	cv::utils::logging::setLogLevel(cv::utils::logging::LOG_LEVEL_ERROR);
 	init_readJson(); //读取配置文件
 
 	init_WidgetInfo();
-	init_MatResource();
+	
 	init_WidgetLocation();
 
 	init_Label();
@@ -72,7 +72,8 @@ Widget::~Widget()
 	while (!undo_sta.empty()) {
 		undo_sta.pop();
 	}
-
+	delete res;
+	res = nullptr;
 }
 
 void Widget::init_readJson()
@@ -110,20 +111,13 @@ void Widget::init_WidgetInfo()
 	this->setWindowFlags(this->windowFlags() & ~Qt::WindowMaximizeButtonHint & ~Qt::WindowMinimizeButtonHint);
 }
 
-void Widget::init_MatResource()
-{
-	inter_mt = root_mt.clone();
-	preview_mt = root_mt.clone();
-	curr_mt = root_mt.clone();
-	curr_img = Mat2QImage(curr_mt);
-}
 
 void Widget::init_Label()
 {
 	lab_img = new Main_Label;
 	lab_img->setAlignment(Qt::AlignCenter);
 	lab_img->setObjectName("lab_img");
-	lab_img->setPixmap(QPixmap::fromImage(curr_img));
+	lab_img->setPixmap(QPixmap::fromImage(res->curr_img));
 	//图片上下文菜单
 	connect(lab_img, &QLabel::customContextMenuRequested, this, &Widget::on_label_customContextMenuRequested);
 	
@@ -278,8 +272,7 @@ void Widget::on_label_customContextMenuRequested(const QPoint& pos) {
 void Widget::on_bttuonGroup_blur_clicked(QAbstractButton* btn) 
 {
 	int id = btngroup_blur->id(btn); //获取按下的按钮的id
-	now_operation = id;  //一定首先获取当前位置
-	now_dialog = 0;
+	blur->now_operation = id; //选择blur的当前操作方式
 
 	choice_buttonGroupsBtns();
 
@@ -290,8 +283,6 @@ void Widget::on_bttuonGroup_blur_clicked(QAbstractButton* btn)
 void Widget::on_bttuonGroup_threshold_clicked(QAbstractButton* btn)
 {
 	int id = btngroup_threshold->id(btn); //获取按下的按钮的id
-	now_operation = id;  //获取当前位置
-	now_dialog = 1;
 
 	int type = cv::ThresholdTypes(id - THRESHOLD::Binary);
 
@@ -307,15 +298,12 @@ void Widget::on_bttuonGroup_threshold_clicked(QAbstractButton* btn)
 void Widget::on_bttuonGroup_morphology_clicked(QAbstractButton* btn)
 {
 	int id = btngroup_form->id(btn);
-	now_operation = id;  //获取当前位置
-	now_dialog = 2;
-	
 
 	choice_buttonGroupsBtns();
 
 	int type = cv::MorphTypes(id - FORM::Erode);
 	if (type == cv::MorphTypes::MORPH_HITMISS) {
-		if (curr_mt.type() != CV_8UC1) {
+		if (res->curr_mt.type() != CV_8UC1) {
 			//只有CV_8UC1可以使用MORPH_HITMISS
 			type = 0;
 		}
@@ -330,9 +318,7 @@ void Widget::on_bttuonGroup_morphology_clicked(QAbstractButton* btn)
 void Widget::on_bttuonGroup_connected_clicked(QAbstractButton* btn)
 {
 	int id = btngroup_connected->id(btn);
-	now_operation = id;  //获取当前位置
-	now_dialog = 3;
-	
+
 	//选择当前连通性分析操作模式
 	connected->current_choice = id - CONNECTED::CONNECTED_TYPE1; // 0 1
 
@@ -345,8 +331,6 @@ void Widget::on_bttuonGroup_connected_clicked(QAbstractButton* btn)
 void Widget::on_bttuonGroup_contours_clicked(QAbstractButton* btn)
 {
 	int id = btngroup_contours->id(btn);
-	now_operation = id;  //获取当前位置
-	now_dialog = 4;
 
 	choice_buttonGroupsBtns();
 
@@ -357,8 +341,6 @@ void Widget::on_bttuonGroup_contours_clicked(QAbstractButton* btn)
 void Widget::on_bttuonGroup_show_clicked(QAbstractButton* btn)
 {
 	int id = btngroup_show->id(btn);
-	now_operation = id;  //获取当前位置
-	now_dialog = 5;
 
 	choice_buttonGroupsBtns();
 
@@ -377,10 +359,9 @@ void Widget::on_action_openFile_triggered()
 	if (!fileName.isEmpty()) {
 		layout_changeToNormal();
 
-		root_mt = cv::imread(fileName.toLocal8Bit().data());
-		init_MatResource();
+		res->reset(fileName.toLocal8Bit().data());
 
-		lab_img->setPixmap(QPixmap::fromImage(curr_img));
+		lab_img->setPixmap(QPixmap::fromImage(res->curr_img));
 
 		scrollArea->takeWidget();
 		scrollArea->setWidget(lab_img);
@@ -438,10 +419,10 @@ void Widget::on_action_openWorks_triggered()
 		wid_stacked.push_back(mat);
 	}
 	//root_mt会自动销毁
-	root_mt = *wid_stacked[work_currentIndex];
-	init_MatResource();
 
-	lab_img->setPixmap(QPixmap::fromImage(curr_img));
+	res->reset(*wid_stacked[work_currentIndex]);
+
+	lab_img->setPixmap(QPixmap::fromImage(res->curr_img));
 
 	//重新设置滑动区域的content
 	scrollArea->takeWidget();
@@ -468,7 +449,7 @@ void Widget::on_action_saveFile_triggered()
 	//保存加工后的图片
 	QString FileName = QFileDialog::getSaveFileName(nullptr, "save image", ".", "Images(*.png *.bmp *.jpg)");
 	if (!FileName.isEmpty()) {
-		curr_img.save(FileName);
+		res->curr_img.save(FileName);
 	}
 }
 
@@ -560,7 +541,7 @@ void Widget::on_action_jie_triggered()
 {
 	//图片截取
 	//单独的窗口
-	look->lab_img->setPixmap(QPixmap::fromImage(curr_img));
+	look->lab_img->setPixmap(QPixmap::fromImage(res->curr_img));
 	look->show();
 }
 
@@ -719,8 +700,8 @@ void Widget::on_action_undo_triggered()
 void Widget::savePoint()
 {
 	//每次切换操作时自动保存当前图片作为保存点
-	curr_mt.copyTo(preview_mt);
-	undo_sta.push(curr_mt);
+	res->preview_mt = res->curr_mt.clone();
+	undo_sta.push(res->curr_mt);
 }
 
 void Widget::returnPoint()
@@ -729,8 +710,8 @@ void Widget::returnPoint()
 	//获取当前栈顶的mat
 	if (!undo_sta.empty()) {
 		//修改当前显示的mt与图片
-		curr_mt = undo_sta.top();
-		curr_img = Mat2QImage(curr_mt);
+		res->curr_mt = undo_sta.top();
+		res->curr_img = Mat2QImage(res->curr_mt);
 		undo_sta.pop();
 	}
 }
@@ -783,9 +764,9 @@ void Widget::clearAllWidgetValue()
 
 void Widget::updateFromIntermediate()
 {
-	inter_mt.copyTo(curr_mt);	 //修改当前图片
-	inter_mt.copyTo(preview_mt); //修改快照图片
-	curr_img = Mat2QImage(curr_mt);
+	res->curr_mt = res->inter_mt.clone();
+	res->preview_mt = res->inter_mt.clone();
+	res->curr_img = Mat2QImage(res->curr_mt);
 
 	//恢复完美缩放
 	update_Image(ori_scaledDelta);
@@ -796,7 +777,7 @@ void Widget::updateFromIntermediate()
 
 void Widget::updateFromRoot()
 {
-	root_mt.copyTo(inter_mt); //重置inter_mt
+	res->inter_mt = res->root_mt.clone();
 	updateFromIntermediate();
 }
 
@@ -923,6 +904,18 @@ void Widget::createAction()
 		img_base->onTriggered_picture_mask();
 		});
 
+	//灰度直方图
+	action_hist = new QAction(tr("计算灰度直方图"), this);
+	connect(action_hist, &QAction::triggered, this, [=]() {
+		img_base->drawGrayHist("image histogram");
+		});
+
+	//得到均衡化图片
+	action_get_equ = new QAction(tr("计算均衡化灰度图"), this);
+	connect(action_get_equ, &QAction::triggered, this, [=]() {
+		img_base->showEqualizedImage();
+		});
+
 	//扩展
 	action_light = new QAction(tr("亮色"), this);
 	connect(action_light, &QAction::triggered, this, [=]() {
@@ -988,6 +981,10 @@ void Widget::createMenu()
 	//对比度
 	menu_mark = menuBar()->addMenu(tr("掩膜"));
 	menu_mark->addAction(action_mark);
+
+	menu_func = menuBar()->addMenu(tr("功能"));
+	menu_func->addAction(action_hist);
+	menu_func->addAction(action_get_equ);
 
 	//扩展
 	menu_tools = menuBar()->addMenu(tr("扩展"));
@@ -1323,10 +1320,10 @@ QHBoxLayout* Widget::create_Edit_hLayout(const QString& filter, const QString& t
 void Widget::work_cutImage()
 {
 	if (work_currentIndex >= 0 && work_currentIndex < wid_stacked.count()) {
-		root_mt = *wid_stacked[work_currentIndex];
-		init_MatResource();
+		
+		res->reset(*wid_stacked[work_currentIndex]);
 		//切换当前图片的显示资源
-		lab_img->setPixmap(QPixmap::fromImage(curr_img));
+		lab_img->setPixmap(QPixmap::fromImage(res->curr_img));
 		
 		//重新设置滑动区域
 		scrollArea->takeWidget();
@@ -1345,7 +1342,7 @@ void Widget::work_cutImage()
 void Widget::update_Image(double f_scaledDelta)
 {
 	//更新图片显示到完美缩放比例
-	QPixmap t_pixmap = QPixmap::fromImage(curr_img);
+	QPixmap t_pixmap = QPixmap::fromImage(res->curr_img);
 	QPixmap scaledPixmap = t_pixmap.scaled(t_pixmap.size() * f_scaledDelta, Qt::KeepAspectRatio, Qt::SmoothTransformation);
 	lab_img->setPixmap(scaledPixmap);
 
@@ -1357,8 +1354,8 @@ void Widget::update_Image(double f_scaledDelta)
 
 double Widget::init_scaledImageOk() {
 	//如果图片的宽度和高度大于的大小，则需要缩小，直到两者都小于滑动区域的大小
-	double wDelta = static_cast<double>((double)scrollArea->size().width() / (double)curr_img.size().width());
-	double hDelta = static_cast<double>((double)scrollArea->size().height() / (double)curr_img.size().height());
+	double wDelta = static_cast<double>((double)scrollArea->size().width() / (double)res->curr_img.size().width());
+	double hDelta = static_cast<double>((double)scrollArea->size().height() / (double)res->curr_img.size().height());
 	auto t_scaledDelta = qMin(wDelta, hDelta);
 
 	update_Image(t_scaledDelta);

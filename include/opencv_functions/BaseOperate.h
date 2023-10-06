@@ -11,6 +11,7 @@
 #include <QWidget>
 #include <opencv2/opencv.hpp>
 class QImage;
+class ShowImgWidget;
 
 class BaseOperate :public Object {
 public:
@@ -33,8 +34,17 @@ public slots:
 
 	//对比度提高
 	void onTriggered_picture_mask();
+
+	//显示灰度直方图
+	void drawGrayHist(const std::string& title, cv::Mat mt = cv::Mat());
+
+	//显示均衡化后的图像
+	void showEqualizedImage();
+private:
+	cv::Mat getHist(cv::Mat mt);
+	void new_showWidget();
 public:
-	
+	ShowImgWidget* show_wid = nullptr;
 };
 
 

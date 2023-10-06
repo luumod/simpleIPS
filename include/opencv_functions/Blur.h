@@ -43,6 +43,8 @@ public slots:
 
 	void onReturnPressed_Edit(QList<QString> strs);
 public:
+	int now_operation = -1; //记录当前操作位置，根据button的id。此变量用于在blur中选择
+
 	//均值滤波
 	int avg_Ksize = 1, anchorX = -1, anchorY = -1;
 	//高斯滤波

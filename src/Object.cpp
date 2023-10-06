@@ -4,6 +4,7 @@
 #include "../include/other_functions/LabelImg.h"
 #include <QDebug>
 #include "../include/Common.h"
+#include "../include/Res.h"
 
 Object::Object()
 {
@@ -20,8 +21,8 @@ Widget* Object::get() {
 void Object::update(const cv::Mat& tMt)
 {
 	//修改当前Mat与其对应的Image
-	get()->curr_mt = tMt;
-	get()->curr_img = Mat2QImage(tMt);
+	get()->res->curr_mt = tMt;
+	get()->res->curr_img = Mat2QImage(tMt);
 
 	//根据curr_img显示为完美缩放比例
 	get()->update_Image(get()->ori_scaledDelta);
@@ -30,9 +31,9 @@ void Object::update(const cv::Mat& tMt)
 void Object::getMat(cv::Mat& res_mt)
 {
 	if (get()->mode) {
-		res_mt = get()->preview_mt;
+		res_mt = get()->res->preview_mt;
 	}
 	else {
-		res_mt = get()->inter_mt;
+		res_mt = get()->res->inter_mt;
 	}
 }

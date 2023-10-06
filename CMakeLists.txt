@@ -37,6 +37,7 @@ add_executable(QtPro
     src/Object.cpp
     src/LabelImg.cpp
     src/Contours.cpp
+    src/Res.cpp
     
     src/DrawWidget.cpp
     src/GraphicsScene.cpp
@@ -65,10 +66,10 @@ add_executable(QtPro
     include/other_functions/GraphicsScene.h
     include/widget_include_files.h
     include/other_functions/eventfilterobject.h
-)
+    include/Res.h  "include/assist/ShowImgWidget.h" "src/ShowImgWidget.cpp")
 
  add_executable(QtTest
-    QtTest/test1.cpp)
+    QtTest/test1.cpp "include/Res.h" "src/Res.cpp" "include/assist/ShowImgWidget.h" "src/ShowImgWidget.cpp")
 
 
 

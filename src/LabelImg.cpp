@@ -1,4 +1,5 @@
 ﻿#include "../include/other_functions/LabelImg.h"
+#include "../include/assist/ShowImgWidget.h"
 #include "../include/widget.h"
 #include "../include/Common.h"
 
@@ -31,8 +32,6 @@ Main_Label::Main_Label(QWidget* parent)
 	:QLabel(parent)
 {
 	this->setContextMenuPolicy(Qt::CustomContextMenu);
-
-	
 }
 
 Main_Label::~Main_Label()
@@ -120,49 +119,11 @@ void LookWidget::mouseReleaseEvent(QMouseEvent* ev)
 
 		//新产生一个窗口
 		if (!handle_widget) {
-			handle_widget = new HandleJieWidget(this);
+			handle_widget = new ShowImgWidget(this);
+			
 		}
 		handle_widget->lab_img->setPixmap(select_pixmap);
 		handle_widget->show();
 	}
 	QWidget::mouseReleaseEvent(ev);
-}
-
-
-/*
-处理截图
-*/
-
-HandleJieWidget::HandleJieWidget(QWidget* parent)
-	:QMainWindow(parent)
-{
-	this->setWindowTitle("截取的图片");
-	lab_img = new QLabel(this);
-
-	createAction();
-	createMenuBar();
-
-	this->setCentralWidget(lab_img);
-}
-
-HandleJieWidget::~HandleJieWidget()
-{
-	
-}
-
-void HandleJieWidget::createMenuBar()
-{
-	menu_file = menuBar()->addMenu(tr("文件"));
-	menu_file->addAction(action_save);
-}
-
-void HandleJieWidget::createAction()
-{
-	 action_save = new QAction("保存",this);
-	 connect(action_save, &QAction::triggered, this, [=]() {
-		 QString FileName = QFileDialog::getSaveFileName(nullptr, "save image", ".", "Images(*.png *.bmp *.jpg)");
-		 if (!FileName.isEmpty()) {
-			 lab_img->pixmap().save(FileName);
-		 }
-	});
 }

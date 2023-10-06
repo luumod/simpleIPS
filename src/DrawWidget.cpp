@@ -2,6 +2,7 @@
 #include "../include/assist/Enums.h"
 #include "../include/other_functions/GraphicsScene.h"
 #include "../include/widget.h"
+#include "../include/Res.h"
 #include <QButtonGroup>
 #include <QPushButton>
 #include <QGraphicsView>
@@ -26,7 +27,7 @@ DrawWidget::DrawWidget(QWidget* parent) : QMainWindow(parent) {
 	scene = new GraphicsScene(this);
 
 	QGraphicsPixmapItem* pixItem = new QGraphicsPixmapItem;
-	QPixmap pixmap = QPixmap::fromImage(get()->curr_img);
+	QPixmap pixmap = QPixmap::fromImage(get()->res->curr_img);
 	if (!pixmap.isNull()) {
 		// 非空
 		// 获取场景和图像的大小
@@ -139,19 +140,4 @@ QWidget* DrawWidget::createTools()
 
 void DrawWidget::onClicked_choiceShape(QAbstractButton* btn) {
 	scene->type = SHAPE(group->id(btn));
-	/*switch (scene->type)
-	{
-	case SHAPE::Line:
-		scene->line = new QGraphicsLineItem;
-		break;
-	case SHAPE::Eillipse:
-		scene->eill = new QGraphicsEllipseItem;
-		break;
-	case SHAPE::Rect:
-		scene->rectItem = new QGraphicsRectItem;
-		break;
-	case SHAPE::Path:
-		scene->pathItem = new QGraphicsPathItem;
-		break;
-	}*/
 }

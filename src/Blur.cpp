@@ -9,6 +9,7 @@ Blur::~Blur() {}
 
 void Blur::initialize()
 {
+	now_operation = -1;
 	//均值滤波
 	avg_Ksize = 1, anchorX = -1, anchorY = -1;
 	//高斯滤波
@@ -146,16 +147,16 @@ void Blur::onTriggered_slider3_valueChange_bilateralBlur(int value)
 
 
 void Blur::onReturnPressed_Edit(QList<QString> strs) {
-	if (get()->now_operation == BLUR::Average) {
+	if (now_operation == BLUR::Average) {
 		onReturnPressed_AvgBlur_Edit(strs);
 	}
-	else if (get()->now_operation == BLUR::Gaussian) {
+	else if (now_operation == BLUR::Gaussian) {
 		onReturnPressed_Gaussian_Edit(strs);
 	}
-	else if (get()->now_operation == BLUR::Median) {
+	else if (now_operation == BLUR::Median) {
 		onReturnPressed_Median_Edit(strs);
 	}
-	else if (get()->now_operation == BLUR::Bilateral) {
+	else if (now_operation == BLUR::Bilateral) {
 		onReturnPressed_Bilateral_Edit(strs);
 	}
 }

@@ -39,6 +39,7 @@ class QPushButton;
 class QCheckBox;
 class QWheelEvent;
 class LookWidget;
+class Res;
 #endif
 
 struct ExeConfig {
@@ -55,9 +56,12 @@ struct ExeConfig {
 	}
 };
 
+
+
 class Widget :public QMainWindow {
 	Q_OBJECT
 private:
+	static Widget* widget;
 	//单例设计模式
 	Widget(QMainWindow* parent = nullptr);
 public:	
@@ -71,7 +75,7 @@ public:
 	void init_readJson();
 
 	//根据root_mt进行图片资源的加载，首先需要保证root_mt已经完成更新
-	void init_MatResource();
+	//void init_MatResource();
 
 	//构造函数中初始化两个Label，注意：这个函数只是为了封装，只会调用一次
 	void init_Label();
@@ -250,35 +254,26 @@ private FUNCTION_: //辅助函数
 public:
 	//配置文件
 	ExeConfig config;
+	//图片资源
+	Res* res = nullptr;
 
-	cv::Mat	root_mt; //root根层：保存原始的加载的图片
-
-	cv::Mat inter_mt; //intermediate中间层：普通模式下对此图片进行操作
-
-	cv::Mat preview_mt; //preview预览层：加工模式下对此图片进行预操作
-
-	cv::Mat curr_mt; //current当前层：lab_img的实际显示图片
-	QImage  curr_img;
-	QPixmap curr_pixmap;
-
-	//撤销功能
-	std::stack<cv::Mat> undo_sta;
-
+	//主图片
 	Main_Label* lab_img = nullptr;
-	LookWidget* look = nullptr;
-	static Widget* widget;
-	bool mode = false;
 
-	int now_operation = -1; //记录当前操作位置，根据button的id。此变量用于在blur中选择
-	int now_dialog = 0;	    //记录当前的操作对话框 默认在第一个页面
+	//图像截取的预览图片
+	LookWidget* look = nullptr;
+
+	//混合加工模式
+	bool mode = false;
 
 	//鼠标滑轮控制
 	double ori_scaledDelta = 1.0; //原始完美缩放比例
 	double scaledDelta = 1.0;
 private:
+	//撤销栈
+	std::stack<cv::Mat> undo_sta;
 
 	DrawWidget* widget_draw = nullptr; //一个简单的绘图板
-
 
 	QAction* action_exit = nullptr;
 	QAction* action_open = nullptr;
@@ -314,13 +309,15 @@ public:
 	//掩膜
 	QAction* action_mark = nullptr;
 
+	//直方图
+	QAction* action_hist = nullptr;
+	QAction* action_get_equ = nullptr;
+
 	//扩展
 	QAction* action_light = nullptr;
 	QAction* action_dark = nullptr;
 	QAction* action_jie = nullptr;
 	
-	
-
 	//帮助
 	QAction* action_help = nullptr;
 	QAction* action_aboutme = nullptr;
@@ -336,6 +333,7 @@ private:
 	QMenu* menu_reverse = nullptr;
 	QMenu* menu_flip = nullptr;
 	QMenu* menu_mark = nullptr;
+	QMenu* menu_func = nullptr;
 	QMenu* menu_tools = nullptr;
 	QMenu* menu_help = nullptr;
 	
@@ -388,7 +386,6 @@ private:
 	QHBoxLayout* btn_work_layout;
 	QStringList	work_files;
 	int work_currentIndex = 0, work_prevIndex = 0;
-	
 };
 
 

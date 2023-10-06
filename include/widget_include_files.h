@@ -1,9 +1,8 @@
 ﻿#include "widget.h"
-#include "Common.h"
-#include "Res.h"
+#include "assist/Common.h"
+#include "assist/Res.h"
 #include "assist/belongsToEnum.h"
 #include "assist/Mat2QImage.h"
-#include "assist/QImage2Mat.h"
 
 #include "opencv_functions/Blur.h"
 #include "opencv_functions/Threshold.h"
@@ -14,8 +13,8 @@
 #include "opencv_functions/Showeffect.h"
 #include "other_functions/eventfilterobject.h"
 
-#include "other_functions/LabelImg.h"
-#include "other_functions/DrawWidget.h"
+#include "Widget/LabelImg.h"
+#include "Widget/DrawWidget.h"
 #include <QDebug>
 #include <QBoxLayout>
 #include <QGridLayout>

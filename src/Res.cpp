@@ -1,4 +1,4 @@
-﻿#include "../include/Res.h"
+﻿#include "../include/assist/Res.h"
 #include "../include/assist/Mat2QImage.h"
 #include <QDebug>
 #include <QFileInfo>

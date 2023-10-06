@@ -1,13 +1,15 @@
 ﻿#include "../include/widget_include_files.h"
 #include "opencv2/core/utils/logger.hpp"
 
-
 //单例对象
 Widget* Widget::widget = nullptr;
 
 //获取单例对象
 Widget* Widget::getInstance() {
 	if (widget == nullptr) {
+		//消除Debug信息
+		cv::utils::logging::setLogLevel(cv::utils::logging::LOG_LEVEL_ERROR);
+
 		widget = new Widget;
 	}
 	return widget;
@@ -15,36 +17,27 @@ Widget* Widget::getInstance() {
 
 Widget::Widget(QMainWindow* parent)
 	:QMainWindow(parent)
-	, res(new Res("../resource/bigImages/b.png",this))
+	, res(new Res("../resource/bigImages/2.png",this))
 {
-	//消除Debug信息
-	cv::utils::logging::setLogLevel(cv::utils::logging::LOG_LEVEL_ERROR);
-	init_readJson(); //读取配置文件
-
-	init_WidgetInfo();
 	
-	init_WidgetLocation();
-
-	init_Label();
-
-	init_OpencvFunctions();
-	createAction();
-	createMenu();
-	createToolBar();
-	createToolBox();
-	createStatusBar();
-
-	init_Optsdialog();
-
-	init_WidgetLayout();
+	init_readJson();		//读取配置文件
+	init_WidgetInfo();		//设置窗口信息
+	init_Label();			//预处理图片显示
+	init_OpencvFunctions();	//初始化opencv操作函数
+	createAction();			//创建行为
+	createMenu();			//创建菜单
+	createToolBar();		//创建工具栏
+	createToolBox();		//创建左侧操作区域
+	createStatusBar();		//创建状态栏
+	init_Optsdialog();		//创建opencv操作函数数值调整框
+	init_WidgetLayout();	//设置主窗口布局
 
 	//加载主题
 	if (config.win_theme == "light") {
-
-		on_action_light_triggered();
+		on_action_theme_triggered(0);
 	}
 	else if (config.win_theme == "dark") {
-		on_action_dark_triggered();
+		on_action_theme_triggered(1);
 	}
 }
 
@@ -110,6 +103,9 @@ void Widget::init_WidgetInfo()
 	this->setWindowTitle(config.win_title);
 	// 禁用最大化和最小化按钮
 	this->setWindowFlags(this->windowFlags() & ~Qt::WindowMaximizeButtonHint & ~Qt::WindowMinimizeButtonHint);
+
+	QScreen* windowScreen = QApplication::primaryScreen();
+	this->move(config.win_location_x, config.win_location_y);
 }
 
 
@@ -124,12 +120,6 @@ void Widget::init_Label()
 	
 	//截取图片
 	look = new LookWidget(this);
-}
-
-void Widget::init_WidgetLocation()
-{
-	QScreen* windowScreen = QApplication::primaryScreen();
-	this->move(config.win_location_x, config.win_location_y); 
 }
 
 void Widget::init_Optsdialog()
@@ -522,20 +512,18 @@ void Widget::on_actionGroup_flip_triggered(QAction* action)
 	}
 }
 
-void Widget::on_action_light_triggered()
+void Widget::on_action_theme_triggered(int type)
 {
-	QFile qssFile("../resource/qss/light.css");
+	QFile qssFile;
+	if (type == 0) {
+		qssFile.setFileName("../resource/qss/light.css");
+	}
+	else if ( type == 1){
+		qssFile.setFileName("../resource/qss/dark.css");
+	}
 	if (qssFile.open(QFile::OpenModeFlag::ReadOnly)) {
 		this->setStyleSheet(qssFile.readAll());
-	}
-}
-
-void Widget::on_action_dark_triggered()
-{
-	QFile qssFile("../resource/qss/dark.css");
-	if (qssFile.open(QFile::OpenModeFlag::ReadOnly)) {
-		this->setStyleSheet(qssFile.readAll());
-	}
+	}	
 }
 
 void Widget::on_action_jie_triggered()

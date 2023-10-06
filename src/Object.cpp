@@ -1,10 +1,10 @@
 ﻿#include "../include/opencv_functions/Object.h"
 #include "../include/widget.h"
 #include "../include/assist/Mat2QImage.h"
-#include "../include/other_functions/LabelImg.h"
+#include "../include/Widget/LabelImg.h"
 #include <QDebug>
-#include "../include/Common.h"
-#include "../include/Res.h"
+#include "../include/assist/Common.h"
+#include "../include/assist/Res.h"
 
 Object::Object()
 {

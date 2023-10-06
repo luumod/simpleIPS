@@ -21,7 +21,7 @@ class ShowImgWidget;
 Widget* get();
 
 /*
-对主图片的操作
+主图片Label
 */
 
 class Main_Label :public QLabel {
@@ -34,6 +34,9 @@ protected:
 private:
 };
 
+/*
+截取图片的Widget
+*/
 
 class LookWidget :public QMainWindow {
 	Q_OBJECT
@@ -56,10 +59,5 @@ public:
 	bool isSelecting_ = false;
 	bool isMoving = false;
 };
-
-/*
-保存截取图片的窗口
-*/
-
 
 #endif // !LABELIMG_H_

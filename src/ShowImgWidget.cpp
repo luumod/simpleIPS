@@ -1,4 +1,4 @@
-﻿#include "../include/assist/ShowImgWidget.h"
+﻿#include "../include/Widget/ShowImgWidget.h"
 #include <QMenu>
 #include <QAction>
 #include <QLabel>

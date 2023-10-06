@@ -38,19 +38,19 @@ add_executable(QtPro
     src/LabelImg.cpp
     src/Contours.cpp
     src/Res.cpp
-    
+
     src/DrawWidget.cpp
     src/GraphicsScene.cpp
     src/BaseOperate.cpp
     src/Showeffect.cpp
     src/eventfilterobject.cpp
+    src/ShowImgWidget.cpp
 
-    include/widget.h
-    include/Common.h
+    include/assist/Common.h
     include/assist/belongsToEnum.h 
     include/assist/Mat2QImage.h
     include/assist/Enums.h 
-    include/assist/QImage2Mat.h 
+    include/assist/Res.h 
 
     include/opencv_functions/Blur.h
     include/opencv_functions/Threshold.h 
@@ -61,15 +61,19 @@ add_executable(QtPro
     include/opencv_functions/BaseOperate.h
     include/opencv_functions/Showeffect.h
 
-    include/other_functions/LabelImg.h 
-    include/other_functions/DrawWidget.h 
     include/other_functions/GraphicsScene.h
-    include/widget_include_files.h
     include/other_functions/eventfilterobject.h
-    include/Res.h  "include/assist/ShowImgWidget.h" "src/ShowImgWidget.cpp")
 
+    include/Widget/LabelImg.h 
+    include/Widget/DrawWidget.h 
+    include/Widget/ShowImgWidget.h
+
+    include/widget_include_files.h
+    include/widget.h
+)
  add_executable(QtTest
-    QtTest/test1.cpp "include/Res.h" "src/Res.cpp" "include/assist/ShowImgWidget.h" "src/ShowImgWidget.cpp")
+    QtTest/test1.cpp 
+ )
 
 
 

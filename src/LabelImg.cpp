@@ -1,7 +1,7 @@
-﻿#include "../include/other_functions/LabelImg.h"
-#include "../include/assist/ShowImgWidget.h"
+﻿#include "../include/Widget/LabelImg.h"
+#include "../include/Widget/ShowImgWidget.h"
+#include "../include/assist/Common.h"
 #include "../include/widget.h"
-#include "../include/Common.h"
 
 #include <QMouseEvent>
 #include <QHBoxLayout>

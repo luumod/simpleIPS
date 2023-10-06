@@ -1,9 +1,9 @@
 ﻿#include "../include/widget.h"
-#include "../include/Res.h"
+#include "../include/assist/Res.h"
 #include "../include/opencv_functions/BaseOperate.h"
 #include "../include/assist/Mat2QImage.h"
-#include "../include/other_functions/LabelImg.h"
-#include "../include/assist/ShowImgWidget.h"
+#include "../include/Widget/LabelImg.h"
+#include "../include/Widget/ShowImgWidget.h"
 #include <QLabel>
 
 BaseOperate::BaseOperate()

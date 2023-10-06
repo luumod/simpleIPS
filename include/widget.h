@@ -74,14 +74,8 @@ public:
 	//解析json配置文件
 	void init_readJson();
 
-	//根据root_mt进行图片资源的加载，首先需要保证root_mt已经完成更新
-	//void init_MatResource();
-
 	//构造函数中初始化两个Label，注意：这个函数只是为了封装，只会调用一次
 	void init_Label();
-
-	//设置窗口的尺寸和大小位置
-	void init_WidgetLocation();
 
 	//设置每个操作的具体选项数值
 	void init_Optsdialog();
@@ -184,11 +178,8 @@ public slots:
 	//图片的翻转
 	void on_actionGroup_flip_triggered(QAction* action);
 	
-	//主题切换：亮色
-	void on_action_light_triggered();
-
-	//主题切换：暗色
-	void on_action_dark_triggered();
+	//主题切换
+	void on_action_theme_triggered(int type);
 
 	//图片截取
 	void on_action_jie_triggered();
@@ -238,7 +229,6 @@ public:
 	//切换到普通的布局
 	void layout_changeToNormal();
 private FUNCTION_: //辅助函数
-
 	//获取所有的指定的QSlider 控件并且清除值
 	void setIndexPageWidgetValue(int index = -1);
 
@@ -286,7 +276,6 @@ private:
 	QAction* action_begin = nullptr;
 	QAction* action_return = nullptr;
 	QAction* action_previewOk = nullptr;
-
 public:
 
 	QAction* action_ori = nullptr;

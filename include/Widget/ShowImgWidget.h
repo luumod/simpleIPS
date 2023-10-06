@@ -7,7 +7,7 @@ class QMenu;
 class QLabel;
 
 /*
-只显示一个Label的独立窗口
+只显示一个图片的独立Widget
 */
 
 class ShowImgWidget :public QMainWindow {

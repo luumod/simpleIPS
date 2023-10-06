@@ -12,7 +12,11 @@ class QMenu;
 class QAction;
 class QScrollArea;
 
-class DrawWidget :public QMainWindow,public Object {
+/*
+绘图板Widget
+*/
+
+class DrawWidget :public QMainWindow, public Object {
 	Q_OBJECT
 public:
 	DrawWidget(QWidget* parent = nullptr);

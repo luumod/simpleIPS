@@ -193,6 +193,9 @@ public slots:
 	//图片截取
 	void on_action_jie_triggered();
 
+	//获取图片信息
+	void on_action_fileInfo_triggered();
+
 	//查看帮助
 	void on_actionGroup_help_triggered(QAction* action);
 
@@ -309,9 +312,10 @@ public:
 	//掩膜
 	QAction* action_mark = nullptr;
 
-	//直方图
+	//功能
 	QAction* action_hist = nullptr;
 	QAction* action_get_equ = nullptr;
+	QAction* action_fileInfo = nullptr;
 
 	//扩展
 	QAction* action_light = nullptr;
@@ -384,6 +388,7 @@ private:
 	QPushButton* btn_work_prev = nullptr;
 	QCheckBox* cbx_work_autoSave = nullptr;
 	QHBoxLayout* btn_work_layout;
+public:
 	QStringList	work_files;
 	int work_currentIndex = 0, work_prevIndex = 0;
 };

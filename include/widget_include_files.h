@@ -60,3 +60,4 @@
 #include <QDesktopServices>
 #include <QCheckBox>
 #include <QScrollBar>
+#include <QFormLayout>

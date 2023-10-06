@@ -5,7 +5,7 @@
 #include <QJsonDocument>
 #include <QFile>
 //未安装vld的话可以直接删除
-//#include <vld.h>
+#include <vld.h>
 
 class Widget;
 

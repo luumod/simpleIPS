@@ -1,6 +1,7 @@
 ﻿#include "../include/widget_include_files.h"
 #include "opencv2/core/utils/logger.hpp"
 
+
 //单例对象
 Widget* Widget::widget = nullptr;
 
@@ -14,7 +15,7 @@ Widget* Widget::getInstance() {
 
 Widget::Widget(QMainWindow* parent)
 	:QMainWindow(parent)
-	, res(new Res("../resource/bigImages/2.png",this))
+	, res(new Res("../resource/bigImages/b.png",this))
 {
 	//消除Debug信息
 	cv::utils::logging::setLogLevel(cv::utils::logging::LOG_LEVEL_ERROR);
@@ -419,9 +420,9 @@ void Widget::on_action_openWorks_triggered()
 		wid_stacked.push_back(mat);
 	}
 	//root_mt会自动销毁
-
+	
 	res->reset(*wid_stacked[work_currentIndex]);
-
+	
 	lab_img->setPixmap(QPixmap::fromImage(res->curr_img));
 
 	//重新设置滑动区域的content
@@ -543,6 +544,66 @@ void Widget::on_action_jie_triggered()
 	//单独的窗口
 	look->lab_img->setPixmap(QPixmap::fromImage(res->curr_img));
 	look->show();
+}
+
+void Widget::on_action_fileInfo_triggered()
+{
+	//文件名称
+	QDialog* dia = new QDialog;
+
+	QFormLayout* form_name = new QFormLayout;
+	auto edit_name = new QLineEdit(res->fileInfo.fileName());
+	form_name->addRow(new QLabel("文件名称："), edit_name);
+	connect(edit_name, &QLineEdit::editingFinished, this, [=]() {
+		//修改文件名字
+		QString oldPathName = res->fileInfo.absoluteFilePath();
+		QString newPathName = res->fileInfo.absolutePath() + "/" + edit_name->text();
+		QFile::rename(oldPathName, newPathName);
+		});
+
+	//文件路径
+	QFormLayout* form_path = new QFormLayout;
+	auto edit_path = new QLabel(res->fileInfo.absoluteFilePath());
+	form_path->addRow(new QLabel("文件名称："), edit_path);
+
+	//文件大小
+	QFormLayout* form_size = new QFormLayout;
+	auto B = res->fileInfo.size() / 1024;
+	auto edit_size = new QLabel(QString::number(B) + " Bytes");
+	form_size->addRow(new QLabel("文件大小："), edit_size);
+
+	//图像尺寸
+	QFormLayout* form_rect = new QFormLayout;
+	auto edit_rect = new QLabel(QString::number(res->root_mt.cols) + " * " + QString::number(res->root_mt.rows));
+	form_rect->addRow(new QLabel("图像尺寸："), edit_rect);
+
+	//图像色彩模式
+	QFormLayout* form_mode = new QFormLayout;
+	auto edit_mode = new QLabel(QVariant(res->curr_img.format()).toString());
+	form_mode->addRow(new QLabel("图像色彩模式："), edit_mode);
+
+	//图像通道数
+	QFormLayout* form_channels = new QFormLayout;
+	auto edit_channels = new QLabel(QString::number(res->root_mt.channels()));
+	form_channels->addRow(new QLabel("图像通道数："), edit_channels);
+
+	//图像文件格式
+	QFormLayout* form_geshi = new QFormLayout;
+	auto edit_geshi = new QLabel(QString(res->fileInfo.suffix().toLower()));
+	form_geshi->addRow(new QLabel("文件格式:"), edit_geshi);
+
+	QVBoxLayout* v = new QVBoxLayout;
+	v->addLayout(form_name);
+	v->addLayout(form_path);
+	v->addLayout(form_size);
+	v->addLayout(form_rect);
+	v->addLayout(form_mode);
+	v->addLayout(form_channels);
+	v->addLayout(form_geshi);
+
+	dia->setLayout(v);
+	dia->open();
+	dia->setAttribute(Qt::WA_DeleteOnClose);
 }
 
 void Widget::on_actionGroup_help_triggered(QAction* action)
@@ -916,6 +977,9 @@ void Widget::createAction()
 		img_base->showEqualizedImage();
 		});
 
+	action_fileInfo = new QAction(tr("图片属性"), this);
+	connect(action_fileInfo, &QAction::triggered,this,&Widget::on_action_fileInfo_triggered);
+
 	//扩展
 	action_light = new QAction(tr("亮色"), this);
 	connect(action_light, &QAction::triggered, this, [=]() {
@@ -949,6 +1013,7 @@ void Widget::createMenu()
 	context_menu->addAction(action_save);
 	context_menu->addAction(action_exit);
 	context_menu->addAction(action_restore);
+	context_menu->addAction(action_fileInfo);
 
 	//菜单栏
 	menu_file = menuBar()->addMenu(tr("&文件"));
@@ -985,6 +1050,8 @@ void Widget::createMenu()
 	menu_func = menuBar()->addMenu(tr("功能"));
 	menu_func->addAction(action_hist);
 	menu_func->addAction(action_get_equ);
+	menu_func->addSeparator();
+	menu_func->addAction(action_fileInfo); //图片属性信息
 
 	//扩展
 	menu_tools = menuBar()->addMenu(tr("扩展"));

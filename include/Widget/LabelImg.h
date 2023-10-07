@@ -41,9 +41,11 @@ private:
 class LookWidget :public QMainWindow {
 	Q_OBJECT
 public:
+	//带菜单栏的独立Widget
 	LookWidget(QWidget* parent = nullptr);
 	~LookWidget();
 
+	void reset(const QPixmap& pixmap);
 protected:
 	void mousePressEvent(QMouseEvent* ev)override;
 	void mouseMoveEvent(QMouseEvent* ev)override;
@@ -52,7 +54,7 @@ protected:
 public:
 	ShowImgWidget* handle_widget = nullptr; //单独显示的截图
 
-	QLabel* lab_img = nullptr;
+	QLabel* lab_img = nullptr; 
 	QScrollArea* scrollArea = nullptr;
 	QRubberBand* rubber = nullptr;
 	QPoint origin;

@@ -3,6 +3,12 @@
 #include <QDebug>
 #include <QFileInfo>
 
+
+Widget* Res::get()
+{
+	return Widget::getInstance();
+}
+
 void Res::init()
 {
 	inter_mt = root_mt.clone();
@@ -30,17 +36,23 @@ void Res::reset(const std::string& filePath)
 	fileInfo = QFileInfo(QString::fromStdString(filePath));
 }
 
-Res::Res(cv::Mat& mat, QObject* parent)
+Res::Res(const cv::Mat& mat, QObject* parent)
 	:root_mt(mat) 
 	, QObject(parent)
 {
 	init();
-	fileInfo = QFileInfo(Widget::getInstance()->work_files[Widget::getInstance()->work_currentIndex]);
+	if (get()->work_files.isEmpty()) {
+		return;
+	}
+	fileInfo = QFileInfo(get()->work_files[get()->work_currentIndex]);
 }
 
-void Res::reset(cv::Mat& mat)
+void Res::reset(const cv::Mat& mat)
 {
 	root_mt = mat;
 	init();
-	fileInfo = QFileInfo(Widget::getInstance()->work_files[Widget::getInstance()->work_currentIndex]);
+	if (get()->work_files.isEmpty()) {
+		return;
+	}
+	fileInfo = QFileInfo(get()->work_files[get()->work_currentIndex]);
 }

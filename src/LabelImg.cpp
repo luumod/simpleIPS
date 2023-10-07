@@ -2,7 +2,7 @@
 #include "../include/Widget/ShowImgWidget.h"
 #include "../include/assist/Common.h"
 #include "../include/widget.h"
-
+#include "../include/Widget/ShowImgWidget.h"
 #include <QMouseEvent>
 #include <QHBoxLayout>
 #include <QRubberBand>
@@ -59,12 +59,17 @@ LookWidget::LookWidget(QWidget* parent)
 }
 
 
-
 LookWidget::~LookWidget() {
 	if (handle_widget) {
 		delete handle_widget;
 		handle_widget = nullptr;
 	}
+}
+
+void LookWidget::reset(const QPixmap& pixmap)
+{
+	this->resize(pixmap.size());
+	lab_img->setPixmap(pixmap);
 }
 
 void LookWidget::mousePressEvent(QMouseEvent* ev)
@@ -82,8 +87,8 @@ void LookWidget::mouseMoveEvent(QMouseEvent* ev)
 {
 	if (isSelecting_) {
 		isMoving = true;
-		QPoint currentPos = ev->pos();
-		
+		QPoint currentPos;
+		currentPos = ev->pos();
 		rubber->setGeometry(QRect(origin, currentPos).normalized());
 	}
 	QWidget::mouseMoveEvent(ev);
@@ -92,11 +97,11 @@ void LookWidget::mouseMoveEvent(QMouseEvent* ev)
 void LookWidget::mouseReleaseEvent(QMouseEvent* ev)
 {
 	if (ev->button() == Qt::LeftButton && isSelecting_ && isMoving) {
+
 		isSelecting_ = false;
 		isMoving = false;
 		QRect rubber_area = rubber->geometry();
 		rubber->hide();
-
 
 		// 获取截取区域
 		QScrollBar* horizontalScrollBar = scrollArea->horizontalScrollBar();
@@ -109,18 +114,15 @@ void LookWidget::mouseReleaseEvent(QMouseEvent* ev)
 		// 调整截取区域坐标
 		QRect adjustedRect(rubber_area.x() + horizontalOffset, rubber_area.y() + verticalOffset, rubber_area.width(), rubber_area.height());
 
-#if DEBUG
-		qInfo() << "偏移: " << horizontalOffset << verticalOffset;
-		qInfo() << "原始: " << rubber_area;
-		qInfo() << "修正: " << adjustedRect;
-#endif
 		// 产生图片
 		QPixmap select_pixmap = ((QLabel*)scrollArea->widget())->pixmap().copy(adjustedRect);
 
 		//新产生一个窗口
 		if (!handle_widget) {
 			handle_widget = new ShowImgWidget(this);
-			
+			connect(handle_widget, &ShowImgWidget::signal_file_reload, this, [=]() {
+				this->hide();
+				});
 		}
 		handle_widget->lab_img->setPixmap(select_pixmap);
 		handle_widget->show();

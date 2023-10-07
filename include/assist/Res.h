@@ -14,11 +14,13 @@
 
 class Res:public QObject {
 public:
+	static Widget* get();
+
 	Res(const std::string& filePath,QObject* parent = nullptr);
-	Res(cv::Mat& mat, QObject* parent = nullptr);
+	Res(const cv::Mat& mat, QObject* parent = nullptr);
 	~Res();
 	void reset(const std::string& filePath);
-	void reset(cv::Mat& mat);
+	void reset(const cv::Mat& mat);
 
 	void init();
 public:

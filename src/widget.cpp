@@ -19,7 +19,7 @@ Widget::Widget(QMainWindow* parent)
 	:QMainWindow(parent)
 	, res(new Res("../resource/bigImages/2.png",this))
 {
-	
+
 	init_readJson();		//读取配置文件
 	init_WidgetInfo();		//设置窗口信息
 	init_Label();			//预处理图片显示
@@ -63,6 +63,11 @@ Widget::~Widget()
 	}
 	wid_stacked.clear();
 
+	if (all_screen) {
+		delete all_screen;
+		all_screen = nullptr;
+	}
+
 	while (!undo_sta.empty()) {
 		undo_sta.pop();
 	}
@@ -96,10 +101,15 @@ void Widget::init_readJson()
 	if (obj1.contains("win_theme")) {
 		config.win_theme = obj1.value("win_theme").toString();
 	}
+	if (obj1.contains("win_screen_scale")) {
+		config.win_screen_scale = obj1.value("win_screen_scale").toDouble();
+	}
 }
 
 void Widget::init_WidgetInfo()
 {
+	installEventFilter(this);
+
 	this->setWindowTitle(config.win_title);
 	// 禁用最大化和最小化按钮
 	this->setWindowFlags(this->windowFlags() & ~Qt::WindowMaximizeButtonHint & ~Qt::WindowMinimizeButtonHint);
@@ -249,11 +259,20 @@ void Widget::wheelEvent(QWheelEvent* ev)
 		else {
 			angleDelta = 0.9; //缩小
 		}
+		//QPointF pos = ev->position();
+		////相对于图片左上角的距离
+		//QPointF imgPos = pos - lab_img->pos();
+		//// 计算缩放后的新位置
+		//QPointF newImgPos(imgPos.x() * angleDelta, imgPos.y() * angleDelta);
+		//// 计算lab_img的新位置，以便保持鼠标位置不变
+		//QPointF newLabImgPos = pos - newImgPos;
+
 		scaledDelta *= angleDelta;
 		update_Image(scaledDelta);
 	}
 	QMainWindow::wheelEvent(ev);
 }
+
 
 void Widget::on_label_customContextMenuRequested(const QPoint& pos) {
 	context_menu->exec(QCursor::pos());
@@ -348,22 +367,7 @@ void Widget::on_action_openFile_triggered()
 {
 	QString fileName = QFileDialog::getOpenFileName(nullptr, "选择文件", ".",	"图像文件(*.png *.jpg)");
 	if (!fileName.isEmpty()) {
-		layout_changeToNormal();
-
-		res->reset(fileName.toLocal8Bit().data());
-
-		lab_img->setPixmap(QPixmap::fromImage(res->curr_img));
-
-		scrollArea->takeWidget();
-		scrollArea->setWidget(lab_img);
-
-		scaledDelta  = ori_scaledDelta = init_scaledImageOk();
-
-		//更新数值
-		for (auto& x : Opts) {
-			x->initialize();
-		}
-		clearAllWidgetValue();
+		reload_Resources_ScrollArea(fileName);		
 	}
 }
 
@@ -410,23 +414,7 @@ void Widget::on_action_openWorks_triggered()
 		wid_stacked.push_back(mat);
 	}
 	//root_mt会自动销毁
-	
-	res->reset(*wid_stacked[work_currentIndex]);
-	
-	lab_img->setPixmap(QPixmap::fromImage(res->curr_img));
-
-	//重新设置滑动区域的content
-	scrollArea->takeWidget();
-	scrollArea->setWidget(lab_img);
-
-	scaledDelta = ori_scaledDelta  = init_scaledImageOk();
-
-	//更新数值
-	for (auto& x : Opts) {
-		x->initialize();
-	}
-	clearAllWidgetValue();
-
+	reload_Resources_ScrollArea(*wid_stacked[work_currentIndex]);
 	//------------------------------
 	//切换布局
 	layout_changeToWork();
@@ -528,10 +516,27 @@ void Widget::on_action_theme_triggered(int type)
 
 void Widget::on_action_jie_triggered()
 {
-	//图片截取
-	//单独的窗口
-	look->lab_img->setPixmap(QPixmap::fromImage(res->curr_img));
+	//图片截取Widget
+	look->reset(QPixmap::fromImage(res->curr_img));
 	look->show();
+}
+
+void Widget::on_action_capture_triggered()
+{
+	QScreen* screen = QApplication::primaryScreen();
+	QPixmap screen_lab = screen->grabWindow(0);
+
+	//获取缩放比例
+	config.win_screen_scale = screen->devicePixelRatio();
+
+	if (!all_screen) {
+		//需要单独释放
+		all_screen = new CaptureWidget;
+	}
+	all_screen->scale = config.win_screen_scale;
+	all_screen->lab_img->setPixmap(screen_lab);
+	all_screen->showFullScreen();
+	all_screen->show();
 }
 
 void Widget::on_action_fileInfo_triggered()
@@ -663,6 +668,44 @@ void Widget::on_pushButton_prev_clicked()
 	}
 	on_checkBox_LeaveAutoSave_clicked();
 	work_cutImage();
+}
+
+void Widget::reload_Resources_ScrollArea(const QString& fileName)
+{
+	layout_changeToNormal();
+	res->reset(fileName.toLocal8Bit().data());
+
+	lab_img->setPixmap(QPixmap::fromImage(res->curr_img));
+
+	scrollArea->takeWidget();
+	scrollArea->setWidget(lab_img);
+
+	scaledDelta = ori_scaledDelta = init_scaledImageOk();
+
+	//更新数值
+	for (auto& x : Opts) {
+		x->initialize();
+	}
+	clearAllWidgetValue();
+}
+
+void Widget::reload_Resources_ScrollArea(const cv::Mat& mat)
+{
+	res->reset(mat);
+
+	lab_img->setPixmap(QPixmap::fromImage(res->curr_img));
+
+	//重新设置滑动区域的content
+	scrollArea->takeWidget();
+	scrollArea->setWidget(lab_img);
+
+	scaledDelta = ori_scaledDelta = init_scaledImageOk();
+
+	//更新数值
+	for (auto& x : Opts) {
+		x->initialize();
+	}
+	clearAllWidgetValue();
 }
 
 void Widget::on_checkBox_LeaveAutoSave_clicked()
@@ -982,8 +1025,12 @@ void Widget::createAction()
 		});
 
 	
-	action_jie = new QAction(tr("图片截取"), this);
+	action_jie = new QAction(tr("工作图片截取"), this);
 	connect(action_jie, &QAction::triggered, this, &Widget::on_action_jie_triggered);
+
+	action_capture = new QAction(tr("屏幕截图"), this);
+	action_capture->setShortcut(tr("Ctrl+Alt+A"));
+	connect(action_capture, &QAction::triggered, this, &Widget::on_action_capture_triggered);
 
 	//帮助菜单
 	action_help_group = new QActionGroup(this);
@@ -1048,6 +1095,7 @@ void Widget::createMenu()
 	menu_theme->addAction(action_dark);
 	menu_tools->addMenu(menu_theme);
 	menu_tools->addAction(action_jie); //图片截取
+	menu_tools->addAction(action_capture); //屏幕截图
 
 	//帮助
 	menu_help = menuBar()->addMenu(tr("帮助"));
@@ -1375,30 +1423,16 @@ QHBoxLayout* Widget::create_Edit_hLayout(const QString& filter, const QString& t
 void Widget::work_cutImage()
 {
 	if (work_currentIndex >= 0 && work_currentIndex < wid_stacked.count()) {
-		
-		res->reset(*wid_stacked[work_currentIndex]);
-		//切换当前图片的显示资源
-		lab_img->setPixmap(QPixmap::fromImage(res->curr_img));
-		
-		//重新设置滑动区域
-		scrollArea->takeWidget();
-		scrollArea->setWidget(lab_img);
-
-		scaledDelta = ori_scaledDelta = init_scaledImageOk();
-
-		//更新数值
-		for (auto& x : Opts) {
-			x->initialize();
-		}
-		clearAllWidgetValue();
+		reload_Resources_ScrollArea(*wid_stacked[work_currentIndex]);
 	}
 }
 
-void Widget::update_Image(double f_scaledDelta)
+void Widget::update_Image(double f_scaledDelta, const QPointF& imgPos)
 {
 	//更新图片显示到完美缩放比例
 	QPixmap t_pixmap = QPixmap::fromImage(res->curr_img);
 	QPixmap scaledPixmap = t_pixmap.scaled(t_pixmap.size() * f_scaledDelta, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+
 	lab_img->setPixmap(scaledPixmap);
 
 	//检查是否需要启用滚动条

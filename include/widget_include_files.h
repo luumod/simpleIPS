@@ -3,6 +3,7 @@
 #include "assist/Res.h"
 #include "assist/belongsToEnum.h"
 #include "assist/Mat2QImage.h"
+#include "assist/NativeEventFilter.h"
 
 #include "opencv_functions/Blur.h"
 #include "opencv_functions/Threshold.h"
@@ -12,6 +13,8 @@
 #include "opencv_functions/BaseOperate.h"
 #include "opencv_functions/Showeffect.h"
 #include "other_functions/eventfilterobject.h"
+#include "Widget/ShowImgWidget.h"
+#include "Widget/CaptureWidget.h"
 
 #include "Widget/LabelImg.h"
 #include "Widget/DrawWidget.h"
@@ -60,3 +63,5 @@
 #include <QCheckBox>
 #include <QScrollBar>
 #include <QFormLayout>
+#include <QShortcut>
+#include <Windows.h>

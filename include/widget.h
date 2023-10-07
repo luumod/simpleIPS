@@ -1,6 +1,7 @@
 ﻿#ifndef WIDGET_H_
 #define WIDGET_H_
 #define FUNCTION_
+#include "assist/config.h"
 #include <QMainWindow>
 #include <iostream>
 #include <opencv2/opencv.hpp>
@@ -40,23 +41,8 @@ class QCheckBox;
 class QWheelEvent;
 class LookWidget;
 class Res;
+class CaptureWidget;
 #endif
-
-struct ExeConfig {
-	QString win_title;
-	int win_location_x, win_location_y;
-	QString win_theme;
-	friend QDebug operator<<(QDebug debug, const ExeConfig& oth) {
-		QDebugStateSaver saver(debug);
-		debug << "win_title: " << oth.win_title << '\n';
-		debug << "win_location_x: " << oth.win_location_x << '\n';
-		debug << "win_location_y: " << oth.win_location_y << '\n';
-		debug << "win_theme: " << oth.win_theme << '\n';
-		return debug;
-	}
-};
-
-
 
 class Widget :public QMainWindow {
 	Q_OBJECT
@@ -87,7 +73,7 @@ public:
 	void init_WidgetLayout();
 
 	//更新图片显示到任意的缩放比例，如果为ori_scaledDelta，则为完美比例，否则为自定义缩放比例
-	void update_Image(double scaledDelta);
+	void update_Image(double scaledDelta, const QPointF& pf = QPointF());
 
 	//初始加载时图片必须被完全看见，需要预缩放
 	double init_scaledImageOk();
@@ -184,6 +170,9 @@ public slots:
 	//图片截取
 	void on_action_jie_triggered();
 
+	//桌面截图
+	void on_action_capture_triggered();
+
 	//获取图片信息
 	void on_action_fileInfo_triggered();
 
@@ -199,6 +188,11 @@ public slots:
 	//工作区：自动保存
 	void on_checkBox_LeaveAutoSave_clicked();
 public:
+	//重新加载图片资源并且重置场景
+	void reload_Resources_ScrollArea(const QString& fileName);
+	void reload_Resources_ScrollArea(const cv::Mat& mat);
+
+
 	//打开文件夹保存图片信息
 	bool loadImagesFormFloder(const QString& floderPath);
 
@@ -244,6 +238,7 @@ private FUNCTION_: //辅助函数
 
 	//工作区：切换图片
 	void work_cutImage();
+	
 public:
 	//配置文件
 	ExeConfig config;
@@ -310,12 +305,16 @@ public:
 	QAction* action_light = nullptr;
 	QAction* action_dark = nullptr;
 	QAction* action_jie = nullptr;
+	QAction* action_capture = nullptr;
 	
 	//帮助
 	QAction* action_help = nullptr;
 	QAction* action_aboutme = nullptr;
 	QActionGroup* action_help_group = nullptr;
 
+
+	//----------------滚动页面--------------
+	QScrollArea* scrollArea = nullptr;
 private:
 	//上下文菜单
 	QMenu* context_menu = nullptr;
@@ -367,16 +366,16 @@ private:
 	BaseOperate* img_base = nullptr; //图像基础操作
 	QList<Object*> Opts;
 
-
-	//----------------滚动页面--------------
-	QScrollArea* scrollArea = nullptr;
-
 	//打开文件夹
 	QList<cv::Mat*> wid_stacked;
 	QPushButton* btn_work_next = nullptr;
 	QPushButton* btn_work_prev = nullptr;
 	QCheckBox* cbx_work_autoSave = nullptr;
 	QHBoxLayout* btn_work_layout;
+	
+
+	//桌面截图
+	CaptureWidget* all_screen = nullptr;
 public:
 	QStringList	work_files;
 	int work_currentIndex = 0, work_prevIndex = 0;

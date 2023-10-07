@@ -1,6 +1,7 @@
 {
-    "win_location_x": 209,
-    "win_location_y": 53,
-    "win_theme": "dark",
+    "win_location_x": 41,
+    "win_location_y": 12,
+    "win_screen_scale": 1.25,
+    "win_theme": "light",
     "win_title": "简易版图像处理程序"
 }

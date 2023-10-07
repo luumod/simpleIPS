@@ -1,9 +1,11 @@
 ﻿#include "../include/widget.h"
+#include "../include/assist/NativeEventFilter.h"
 #include <QApplication>
 #include <QJsonObject>
 #include <QJsonValue>
 #include <QJsonDocument>
 #include <QFile>
+#include <Windows.h>
 //未安装vld的话可以直接删除
 //#include <vld.h>
 
@@ -15,6 +17,11 @@ class Widget;
 int main(int argc,char* argv[])
 {
 	QApplication a(argc, argv);
+
+    NativeEventFilter filter(MOD_ALT, 'W');
+    a.installNativeEventFilter(&filter);
+    ShortcutTest test;
+    test.registerShortcut(filter);
 
 	Widget* w = Widget::getInstance();
 	w->show();
@@ -29,6 +36,8 @@ int main(int argc,char* argv[])
         jsonObj["win_location_x"] = w->config.win_location_x;
         jsonObj["win_location_y"] = w->config.win_location_y;
         jsonObj["win_theme"] = w->config.win_theme;
+        jsonObj["win_screen_scale"] = w->config.win_screen_scale;
+
 
         // 创建JSON文档
         QJsonDocument jsonDoc(jsonObj);

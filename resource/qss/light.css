@@ -249,3 +249,8 @@ QCheckBox{
 
 
 QMessageBox QLabel { color: black; }
+
+
+QMainWindow#CaptureWidget {
+    border: 3px solid red;
+}

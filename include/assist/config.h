@@ -5,10 +5,10 @@
 #include <QDebug>
 
 struct ExeConfig {
-	QString win_title;
-	int win_location_x, win_location_y;
-	QString win_theme;
-	double win_screen_scale;
+	QString win_title = "简易图片处理软件";
+	int win_location_x = 50, win_location_y = 50;
+	QString win_theme = "light";
+	double win_screen_scale = 1.0;
 	friend QDebug operator<<(QDebug debug, const ExeConfig& oth) {
 		QDebugStateSaver saver(debug);
 		debug << "win_title: " << oth.win_title << '\n';

@@ -18,14 +18,13 @@ int main(int argc,char* argv[])
 {
 	QApplication a(argc, argv);
 
+    Widget* w = Widget::getInstance();
+    w->show();
+
     NativeEventFilter filter(MOD_ALT, 'W');
     a.installNativeEventFilter(&filter);
     ShortcutTest test;
     test.registerShortcut(filter);
-
-	Widget* w = Widget::getInstance();
-	w->show();
-	w->init_OpencvFunctions();
 
 	//释放单例对象
 	QObject::connect(&a, &QApplication::aboutToQuit, [=]() {
@@ -43,7 +42,7 @@ int main(int argc,char* argv[])
         QJsonDocument jsonDoc(jsonObj);
 
         // 将JSON文档写入文件
-        QFile file("../resource/config/init.json");
+        QFile file("config.json");
         if (file.open(QFile::WriteOnly | QFile::Text)) {
             QTextStream out(&file);
             out << jsonDoc.toJson();

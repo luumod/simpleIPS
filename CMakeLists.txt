@@ -46,12 +46,16 @@ add_executable(QtPro
     src/eventfilterobject.cpp
     src/ShowImgWidget.cpp
     src/CaptureWidget.cpp
+    src/NativeEventFilter.cpp
+
 
     include/assist/Common.h
     include/assist/belongsToEnum.h 
     include/assist/Mat2QImage.h
     include/assist/Enums.h 
     include/assist/Res.h 
+    include/assist/config.h
+    include/assist/QImage2Mat.h
 
     include/opencv_functions/Blur.h
     include/opencv_functions/Threshold.h 
@@ -72,7 +76,7 @@ add_executable(QtPro
 
     include/widget_include_files.h
     include/widget.h
- "src/NativeEventFilter.cpp" "include/assist/config.h"  "include/assist/QImage2Mat.h")
+ )
  add_executable(QtTest
     QtTest/test1.cpp 
  )

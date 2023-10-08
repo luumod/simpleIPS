@@ -13,16 +13,19 @@
 */
 
 class Res:public QObject {
+	Q_OBJECT
 public:
 	static Widget* get();
-
-	Res(const std::string& filePath,QObject* parent = nullptr);
+	Res(QObject* parent = nullptr);
+	Res(const std::string& filePath="", QObject* parent = nullptr);
 	Res(const cv::Mat& mat, QObject* parent = nullptr);
 	~Res();
 	void reset(const std::string& filePath);
 	void reset(const cv::Mat& mat);
 
 	void init();
+signals:
+	void image_isNull();
 public:
 	cv::Mat	root_mt; //root根层：保存原始的加载的图片
 	cv::Mat inter_mt; //intermediate中间层：普通模式下对此图片进行操作

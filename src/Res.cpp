@@ -2,7 +2,8 @@
 #include "../include/assist/Mat2QImage.h"
 #include <QDebug>
 #include <QFileInfo>
-
+#include <QFileDialog>
+#include <QStandardPaths>
 
 Widget* Res::get()
 {
@@ -15,16 +16,31 @@ void Res::init()
 	preview_mt = root_mt.clone();
 	curr_mt = root_mt.clone();
 	curr_img = Mat2QImage(curr_mt);
+
+	if (curr_img.isNull()) {
+		emit image_isNull();
+	}
 }
 
 Res::~Res()
 {
 }
 
+Res::Res(QObject* parent)
+	:QObject(parent) {
+	QString fileName = QFileDialog::getOpenFileName(nullptr, "选择文件", ".", "图像文件(*.png *.jpg)");
+	if (!fileName.isEmpty()) {
+		root_mt = cv::imread(fileName.toLocal8Bit().data());
+		init();
+		fileInfo = QFileInfo(fileName);
+	}
+}
+
 Res::Res(const std::string& filePath,QObject* parent)
 	:root_mt(cv::imread(filePath))
 	,QObject(parent)
 {
+	if (filePath == "")return;
 	init();
 	fileInfo = QFileInfo(QString::fromStdString(filePath));
 }

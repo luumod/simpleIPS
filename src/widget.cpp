@@ -15,11 +15,10 @@ Widget* Widget::getInstance() {
 	return widget;
 }
 
-Widget::Widget(QMainWindow* parent)
+Widget::Widget(QWidget* parent)
 	:QMainWindow(parent)
-	, res(new Res("../resource/bigImages/2.png",this))
+	,res(new Res(this))
 {
-
 	init_readJson();		//读取配置文件
 	init_WidgetInfo();		//设置窗口信息
 	init_Label();			//预处理图片显示
@@ -78,32 +77,52 @@ Widget::~Widget()
 void Widget::init_readJson()
 {
 	//读取json文件
-	QFile jsonFile("../resource/config/init.json");
+	QFile jsonFile("config.json");
 	if (!jsonFile.open(QIODevice::ReadOnly)) {
-		qWarning() << "json文件打开失败";
-		return;
+		//没有这个json配置文件，则创建一个
+		QJsonObject jsonObj;
+		jsonObj["win_title"] = config.win_title;
+		jsonObj["win_location_x"] = config.win_location_x;
+		jsonObj["win_location_y"] = config.win_location_y;
+		jsonObj["win_theme"] = config.win_theme;
+		jsonObj["win_screen_scale"] = config.win_screen_scale;
+		// 创建JSON文档
+		QJsonDocument jsonDoc(jsonObj);
+		// 将JSON文档写入文件
+		QFile file("config.json");
+		if (file.open(QFile::WriteOnly | QFile::Text)) {
+			QTextStream out(&file);
+			out << jsonDoc.toJson();
+			file.close();
+		}
+		else {
+			qWarning() << "打开json文件写入失败!" << file.errorString();
+		}
 	}
-	QJsonDocument json = QJsonDocument::fromJson(jsonFile.readAll());
-	if (json.isNull()) {
-		qWarning() << "json文件为Null";
-		return;
+	else {
+		QJsonDocument json = QJsonDocument::fromJson(jsonFile.readAll());
+		if (json.isNull()) {
+			qWarning() << "json文件为Null";
+			return;
+		}
+		QJsonObject obj1 = json.object();
+		if (obj1.contains("win_title")) {
+			config.win_title = obj1.value("win_title").toString();
+		}
+		if (obj1.contains("win_location_x")) {
+			config.win_location_x = obj1.value("win_location_x").toInt();
+		}
+		if (obj1.contains("win_location_x")) {
+			config.win_location_y = obj1.value("win_location_y").toInt();
+		}
+		if (obj1.contains("win_theme")) {
+			config.win_theme = obj1.value("win_theme").toString();
+		}
+		if (obj1.contains("win_screen_scale")) {
+			config.win_screen_scale = obj1.value("win_screen_scale").toDouble();
+		}
 	}
-	QJsonObject obj1 = json.object();
-	if (obj1.contains("win_title")) {
-		config.win_title = obj1.value("win_title").toString();
-	}
-	if (obj1.contains("win_location_x")) {
-		config.win_location_x = obj1.value("win_location_x").toInt();
-	}
-	if (obj1.contains("win_location_x")) {
-		config.win_location_y = obj1.value("win_location_y").toInt();
-	}
-	if (obj1.contains("win_theme")) {
-		config.win_theme = obj1.value("win_theme").toString();
-	}
-	if (obj1.contains("win_screen_scale")) {
-		config.win_screen_scale = obj1.value("win_screen_scale").toDouble();
-	}
+	
 }
 
 void Widget::init_WidgetInfo()
@@ -124,7 +143,9 @@ void Widget::init_Label()
 	lab_img = new Main_Label;
 	lab_img->setAlignment(Qt::AlignCenter);
 	lab_img->setObjectName("lab_img");
-	lab_img->setPixmap(QPixmap::fromImage(res->curr_img));
+	if (res) {
+		lab_img->setPixmap(QPixmap::fromImage(res->curr_img));
+	}
 	//图片上下文菜单
 	connect(lab_img, &QLabel::customContextMenuRequested, this, &Widget::on_label_customContextMenuRequested);
 	
@@ -898,6 +919,9 @@ void Widget::layout_changeToWork()
 
 void Widget::layout_changeToNormal()
 {
+	if (!scrollArea) {
+		return;
+	}
 	scrollArea->setFixedSize(SCROLLAREA_WIDTH, SCROLLAREA_HEIGHT);
 	this->setCentralWidget(scrollArea);
 }
@@ -1443,6 +1467,9 @@ void Widget::update_Image(double f_scaledDelta, const QPointF& imgPos)
 
 double Widget::init_scaledImageOk() {
 	//如果图片的宽度和高度大于的大小，则需要缩小，直到两者都小于滑动区域的大小
+	if (!res){
+		return 1.0;
+	}
 	double wDelta = static_cast<double>((double)scrollArea->size().width() / (double)res->curr_img.size().width());
 	double hDelta = static_cast<double>((double)scrollArea->size().height() / (double)res->curr_img.size().height());
 	auto t_scaledDelta = qMin(wDelta, hDelta);

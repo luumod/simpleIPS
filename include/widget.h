@@ -49,7 +49,7 @@ class Widget :public QMainWindow {
 private:
 	static Widget* widget;
 	//单例设计模式
-	Widget(QMainWindow* parent = nullptr);
+	Widget(QWidget* parent = nullptr);
 public:	
 	//返回实例
 	static Widget* getInstance();

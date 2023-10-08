@@ -65,3 +65,4 @@
 #include <QFormLayout>
 #include <QShortcut>
 #include <Windows.h>
+#include <QStandardPaths>

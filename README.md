@@ -25,6 +25,13 @@
 
 [使用opencv+Qt 自制的简易版图片处理软件](https://www.bilibili.com/video/BV1qN411t7jK/#reply188969413872)
 
+### 使用方法
+1. 配置好Qt6的环境变量。![image](https://github.com/luumod/myPhotoshopApp/assets/93420580/80b572f9-1e47-452b-b0dd-3ea942643346)
+2. 配置好OpenCV的环境变量。![image](https://github.com/luumod/myPhotoshopApp/assets/93420580/3098a71c-c7eb-41cd-8657-b3c5fb1cf5c0)
+4. CMakeLists文件中，设置你的OpenCV的安装路径。
+5. 删除CMakeLists的倒数后六行（如果你没有安装的话）
+6. 重新配置CMakeLists文件
+
 ### 待解决bug
 
 * 在create_GUIShow中对滑块设置位置无效，但是setValue值有效，因此引入了两个滑块分别控制亮度升高和降低。

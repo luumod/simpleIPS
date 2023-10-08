@@ -17,18 +17,18 @@ Widget* Widget::getInstance() {
 
 Widget::Widget(QWidget* parent)
 	:QMainWindow(parent)
-	,res(new Res(this))
+	, res(new Res(this))
 {
 	init_readJson();		//读取配置文件
-	init_WidgetInfo();		//设置窗口信息
-	init_Label();			//预处理图片显示
+	init_WidgetInfo();		//设置主窗口信息	
 	init_OpencvFunctions();	//初始化opencv操作函数
-	createAction();			//创建行为
-	createMenu();			//创建菜单
-	createToolBar();		//创建工具栏
-	createToolBox();		//创建左侧操作区域
-	createStatusBar();		//创建状态栏
 	init_Optsdialog();		//创建opencv操作函数数值调整框
+	createAction();			//创建行为
+	createToolBar();		//创建工具栏
+	createMenu();			//创建菜单
+	createToolBox();		//创建左侧操作区域与GUI界面
+	createStatusBar();		//创建状态栏
+	init_Label();			//预处理图片显示
 	init_WidgetLayout();	//设置主窗口布局
 
 	//加载主题
@@ -135,6 +135,7 @@ void Widget::init_WidgetInfo()
 
 	QScreen* windowScreen = QApplication::primaryScreen();
 	this->move(config.win_location_x, config.win_location_y);
+
 }
 
 

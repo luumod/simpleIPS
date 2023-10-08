@@ -77,6 +77,7 @@ public:
 
 	//初始加载时图片必须被完全看见，需要预缩放
 	double init_scaledImageOk();
+
 protected:
 	//鼠标点击时自动关闭对话框Dialog
 	void mousePressEvent(QMouseEvent* ev)override;
@@ -188,8 +189,9 @@ public slots:
 	//工作区：自动保存
 	void on_checkBox_LeaveAutoSave_clicked();
 public:
-	//重新加载图片资源并且重置场景
+	//加载/重新加载图片资源并且重置场景
 	void reload_Resources_ScrollArea(const QString& fileName);
+	//加载/重新加载图片资源并且重置场景
 	void reload_Resources_ScrollArea(const cv::Mat& mat);
 
 

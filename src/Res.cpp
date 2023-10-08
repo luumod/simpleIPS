@@ -16,10 +16,6 @@ void Res::init()
 	preview_mt = root_mt.clone();
 	curr_mt = root_mt.clone();
 	curr_img = Mat2QImage(curr_mt);
-
-	if (curr_img.isNull()) {
-		emit image_isNull();
-	}
 }
 
 Res::~Res()
@@ -33,6 +29,9 @@ Res::Res(QObject* parent)
 		root_mt = cv::imread(fileName.toLocal8Bit().data());
 		init();
 		fileInfo = QFileInfo(fileName);
+	}
+	else {
+		exit(0);
 	}
 }
 

@@ -31,7 +31,7 @@ void Object::update(const cv::Mat& tMt)
 void Object::getMat(cv::Mat& res_mt)
 {
 	if (get()->mode) {
-		res_mt = get()->res->preview_mt;
+		res_mt = get()->res->flash_mt;
 	}
 	else {
 		res_mt = get()->res->inter_mt;

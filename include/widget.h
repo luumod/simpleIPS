@@ -190,10 +190,9 @@ public slots:
 	void on_checkBox_LeaveAutoSave_clicked();
 public:
 	//加载/重新加载图片资源并且重置场景
-	void reload_Resources_ScrollArea(const QString& fileName);
-	//加载/重新加载图片资源并且重置场景
-	void reload_Resources_ScrollArea(const cv::Mat& mat);
-
+	//mode=0：加载单个图片
+	//mode!=0：加载工作区
+	void reload_Resources_ScrollArea(const QString& fileName, int mode = 0);
 
 	//打开文件夹保存图片信息
 	bool loadImagesFormFloder(const QString& floderPath);
@@ -240,7 +239,6 @@ private FUNCTION_: //辅助函数
 
 	//工作区：切换图片
 	void work_cutImage();
-	
 public:
 	//配置文件
 	ExeConfig config;
@@ -369,17 +367,15 @@ private:
 	QList<Object*> Opts;
 
 	//打开文件夹
-	QList<cv::Mat*> wid_stacked;
 	QPushButton* btn_work_next = nullptr;
 	QPushButton* btn_work_prev = nullptr;
 	QCheckBox* cbx_work_autoSave = nullptr;
 	QHBoxLayout* btn_work_layout;
 	
-
 	//桌面截图
 	CaptureWidget* all_screen = nullptr;
 public:
-	QStringList	work_files;
+	QStringList	work_files; //打开工作区的图片名称组
 	int work_currentIndex = 0, work_prevIndex = 0;
 };
 

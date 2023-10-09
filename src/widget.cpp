@@ -17,7 +17,7 @@ Widget* Widget::getInstance() {
 
 Widget::Widget(QWidget* parent)
 	:QMainWindow(parent)
-	, res(new Res(this))
+	, res(new Res("dog.png", this))
 {
 	init_readJson();		//读取配置文件
 	init_WidgetInfo();		//设置主窗口信息	
@@ -55,12 +55,6 @@ Widget::~Widget()
 		x = nullptr;
 	}
 	Opts.clear();
-
-	for (auto& x : wid_stacked) {
-		delete x;
-		x = nullptr;
-	}
-	wid_stacked.clear();
 
 	if (all_screen) {
 		delete all_screen;
@@ -396,13 +390,6 @@ void Widget::on_action_openFile_triggered()
 void Widget::on_action_openWorks_triggered()
 {
 	//清除原始内容
-	for (auto& x : wid_stacked) {
-		if (x) {
-			delete x;
-			x = nullptr;
-		}
-	}
-	wid_stacked.clear();
 	work_files.clear();
 	QString FloderPath = QFileDialog::getExistingDirectory(this, "选择文件夹", "../resource/testImages");
 	if (FloderPath.isEmpty()) {
@@ -431,12 +418,9 @@ void Widget::on_action_openWorks_triggered()
 			return; //取消选择
 		}
 	}
-	for (const QString& imageFile : work_files) {
-		cv::Mat* mat = new cv::Mat(cv::imread(imageFile.toLocal8Bit().data()));
-		wid_stacked.push_back(mat);
-	}
-	//root_mt会自动销毁
-	reload_Resources_ScrollArea(*wid_stacked[work_currentIndex]);
+	// 即时加载图片
+	reload_Resources_ScrollArea(work_files[work_currentIndex], 1);
+	
 	//------------------------------
 	//切换布局
 	layout_changeToWork();
@@ -672,9 +656,9 @@ void Widget::on_pushButton_next_clicked()
 {
 	work_prevIndex = work_currentIndex;
 	work_currentIndex++;
-	if (work_currentIndex >= wid_stacked.count()) {
+	if (work_currentIndex >= work_files.count()) {
 		work_currentIndex = 0;
-		work_prevIndex = wid_stacked.count() - 1;
+		work_prevIndex = work_files.count() - 1;
 	}
 	on_checkBox_LeaveAutoSave_clicked();
 	work_cutImage();
@@ -686,15 +670,17 @@ void Widget::on_pushButton_prev_clicked()
 	work_currentIndex--;
 	if (work_currentIndex < 0) {
 		work_prevIndex = 0;
-		work_currentIndex = wid_stacked.count() - 1;
+		work_currentIndex = work_files.count() - 1;
 	}
 	on_checkBox_LeaveAutoSave_clicked();
 	work_cutImage();
 }
 
-void Widget::reload_Resources_ScrollArea(const QString& fileName)
+void Widget::reload_Resources_ScrollArea(const QString& fileName, int mode)
 {
-	layout_changeToNormal();
+	if (!mode) {
+		layout_changeToNormal();
+	}
 	res->reset(fileName.toLocal8Bit().data());
 
 	lab_img->setPixmap(QPixmap::fromImage(res->curr_img));
@@ -702,6 +688,7 @@ void Widget::reload_Resources_ScrollArea(const QString& fileName)
 	scrollArea->takeWidget();
 	scrollArea->setWidget(lab_img);
 
+	//图片尺寸预调整
 	scaledDelta = ori_scaledDelta = init_scaledImageOk();
 
 	//更新数值
@@ -709,25 +696,14 @@ void Widget::reload_Resources_ScrollArea(const QString& fileName)
 		x->initialize();
 	}
 	clearAllWidgetValue();
-}
-
-void Widget::reload_Resources_ScrollArea(const cv::Mat& mat)
-{
-	res->reset(mat);
-
-	lab_img->setPixmap(QPixmap::fromImage(res->curr_img));
-
-	//重新设置滑动区域的content
-	scrollArea->takeWidget();
-	scrollArea->setWidget(lab_img);
-
-	scaledDelta = ori_scaledDelta = init_scaledImageOk();
-
-	//更新数值
-	for (auto& x : Opts) {
-		x->initialize();
+	//所有按钮置为未选中状态
+	for (auto& btnGps : btngroups) {
+		btnGps->setExclusive(false);
+		for (auto& x : btnGps->buttons()) {
+			x->setChecked(false);
+		}
+		btnGps->setExclusive(true);
 	}
-	clearAllWidgetValue();
 }
 
 void Widget::on_checkBox_LeaveAutoSave_clicked()
@@ -748,7 +724,9 @@ bool Widget::loadImagesFormFloder(const QString& floderPath)
 		return false;
 	}
 	for (auto& x : fileInfoList) {
-		work_files.push_back(x.absoluteFilePath());
+		if (x.exists()) {
+			work_files.push_back(x.absoluteFilePath());
+		}
 	}
 	work_currentIndex = work_prevIndex = 0;
 	return true;
@@ -814,7 +792,7 @@ void Widget::on_action_undo_triggered()
 void Widget::savePoint()
 {
 	//每次切换操作时自动保存当前图片作为保存点
-	res->preview_mt = res->curr_mt.clone();
+	res->flash_mt = res->curr_mt.clone();
 	undo_sta.push(res->curr_mt);
 }
 
@@ -879,7 +857,7 @@ void Widget::clearAllWidgetValue()
 void Widget::updateFromIntermediate()
 {
 	res->curr_mt = res->inter_mt.clone();
-	res->preview_mt = res->inter_mt.clone();
+	res->flash_mt = res->inter_mt.clone();
 	res->curr_img = Mat2QImage(res->curr_mt);
 
 	//恢复完美缩放
@@ -1447,8 +1425,8 @@ QHBoxLayout* Widget::create_Edit_hLayout(const QString& filter, const QString& t
 
 void Widget::work_cutImage()
 {
-	if (work_currentIndex >= 0 && work_currentIndex < wid_stacked.count()) {
-		reload_Resources_ScrollArea(*wid_stacked[work_currentIndex]);
+	if (work_currentIndex >= 0 && work_currentIndex < work_files.count()) {
+		reload_Resources_ScrollArea(work_files[work_currentIndex], 1);
 	}
 }
 

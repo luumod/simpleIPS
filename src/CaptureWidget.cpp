@@ -4,22 +4,10 @@
 #include <QApplication>
 #include <QClipboard>
 #include <QMouseEvent>
-#include <QHBoxLayout>
-#include <QPainter>
 #include <QTimer>
 #include <QRubberBand>
-#include <QMenuBar>
-#include <QMenu>
 #include <QAction>
 #include <QFileDialog>
-#include <QPixmap>
-#include <QLabel>
-#include <QRect>
-#include <QScrollArea>
-#include <QPushButton>
-#include <QRect>
-#include <QMainWindow>
-#include <QScrollBar>
 #include <QMessageBox>
 
 CaptureWidget::CaptureWidget(QWidget* parent)

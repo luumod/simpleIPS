@@ -1,11 +1,9 @@
 ﻿#ifndef BASEOPERATE_H_
 #define BASEOPERATE_H_
 
-/// <summary>
-/// 图像基础操作
-/// author: Yuleo
-/// </summary>
-/// 
+/*
+ 图像基础操作
+*/
 
 #include "Object.h"
 #include <QWidget>

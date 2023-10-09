@@ -97,12 +97,6 @@ public:
 	void createStatusBar();
 
 	//GUI创建
-	QHBoxLayout* create_GUIAvgBlur();		//均值滤波
-	QHBoxLayout* create_GUIGaussianBlur();	//高斯滤波
-	QHBoxLayout* create_GUIMedianBlur();	//中值滤波
-	QHBoxLayout* create_GUIBilateralBlur(); //双边滤波
-	QHBoxLayout* create_GUIThreshold();		//阈值化
-	QHBoxLayout* create_GUIMorphology();	//形态学
 	QHBoxLayout* create_GUIConnected();		//连通块分析
 	QHBoxLayout* create_GUIContours();		//轮廓检测
 	QVBoxLayout* create_GUIAdvancedLight();			//效果增强
@@ -229,9 +223,18 @@ private FUNCTION_: //辅助函数
 	//工作区：切换图片
 	void work_cutImage();
 
-	//只含一个滑块的GUI模板
-	template <typename T>
-	QBoxLayout* create_GUI_template_1(QSlider*& slider, T low,T high,T step,const QString& objectName, const QString& lab_name,std::function<void(int)> slotFunction);
+	//Dialog: 创建n个滑块和输入框
+	template <typename T, typename Type>
+	QBoxLayout* create_nDialog_GUItemplate(
+		QList<QSlider*>& ls_slider,
+		QList<T> low, QList<T> high, QList<T> step,
+		QList< QString> objectName,
+		QList< QString> lab_name,
+		QList<std::function<void(int)>> slotFunction,
+		bool edit = false,
+		const QString& filter = "",
+		const QString& text = "",
+		Type* t = nullptr);
 public:
 	//配置文件
 	ExeConfig config;
@@ -368,7 +371,19 @@ private:
 	CaptureWidget* all_screen = nullptr;
 
 	//gamma
-	QSlider* slider_gamma = nullptr;
+	QList<QSlider*> ls_slider_blur;
+	QList<QSlider*> ls_slider_gaussian;
+	QList<QSlider*> ls_slider_median;
+	QList<QSlider*> ls_slider_bilateral;
+
+	QList<QSlider*> ls_slider_threshold;
+	QList<QSlider*> ls_slider_morphology;
+
+	QList<QSlider*> ls_slider_connected;
+	QList<QSlider*> ls_slider_contours;
+
+	QList<QSlider*> ls_slider_light;
+	QList<QSlider*> ls_slider_gamma;
 public:
 	QStringList	work_files; //打开工作区的图片名称组
 	int work_currentIndex = 0, work_prevIndex = 0;

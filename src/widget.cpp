@@ -151,35 +151,187 @@ void Widget::init_Label()
 void Widget::init_Optsdialog()
 {
 	//很多的调整框 
+
+	//----------------------------------------------------------
+	ls_slider_blur.resize(3);
+	std::function<void(int)> funAvgBlur_slider1 = [=](int value) {
+		if (ls_slider_blur[1]->value() == ls_slider_blur[1]->minimum() && ls_slider_blur[2]->value() == ls_slider_blur[2]->minimum()) {
+			blur->anchorX = blur->anchorY = blur->avg_Ksize / 2;
+		}
+		blur->onTriggered_slider1_valueChange_avgBlur(value);
+	};
+
+	std::function<void(int)> funAvgBlur_slider2 = [=](int value) {
+		blur->onTriggered_slider2_valueChange_avgBlur(value);
+	};
+
+	std::function<void(int)> funAvgBlur_slider3 = [=](int value) {
+		blur->onTriggered_slider3_valueChange_avgBlur(value);
+	};
+
 	all_dlg.push_back(new QDialog);
 	auto dlg_avgBlur = all_dlg.back();
 	dlg_avgBlur->setWindowTitle(tr("均值滤波"));
-	all_dlg.back()->setLayout(create_GUIAvgBlur());
+	all_dlg.back()->setLayout(
+		create_nDialog_GUItemplate<int, Blur*>(
+			ls_slider_blur,
+			QList<int>() << AVG_BLUR_MIN_SIZE<< AVG_BLUR_MIN_SIZE << AVG_BLUR_MIN_SIZE,
+			QList<int>() << AVG_BLUR_MAX_SIZE << AVG_BLUR_MAX_SIZE<< AVG_BLUR_MAX_SIZE,
+			QList<int>() << 1 << 1 << 1,
+			QList<QString>() << "avgKernel_slider" << "x_slider" << "y_slider",
+			QList<QString>() << "kernel" << "sigmaX" << "sigmaY",
+			QList< std::function<void(int)>>() << funAvgBlur_slider1 << funAvgBlur_slider2 << funAvgBlur_slider3,
+			true, "\\d+\\s\\d+\\s\\d+", "KSize X Y", &blur)
+	);
+
+
+	//----------------------------------------------------------
+	//高斯滤波
+	ls_slider_gaussian.resize(3);
+	std::function<void(int)> funGaussian_slider1 = [=](int value) {
+		if (value % 2 == 0) {
+			value += 1;
+		}
+		if (ls_slider_gaussian[1]->value() == ls_slider_gaussian[1]->minimum() && ls_slider_gaussian[2]->value() == ls_slider_gaussian[2]->minimum()) {
+			blur->sigmaX = blur->sigmaY = blur->gas_Ksize / 2;
+		}
+		blur->onTriggered_slider1_valueChange_gaussianBlur(value);
+	};
+
+	std::function<void(int)> funGaussian_slider2 = [=](int value) {
+		blur->onTriggered_slider2_valueChange_gaussianBlur(value);
+	};
+
+	std::function<void(int)> funGaussian_slider3 = [=](int value) {
+		blur->onTriggered_slider3_valueChange_gaussianBlur(value);
+	};
 
 	all_dlg.push_back(new QDialog);
 	auto dlg_gaussBlur = all_dlg.back();
 	dlg_gaussBlur->setWindowTitle(tr("高斯滤波"));
-	all_dlg.back()->setLayout(create_GUIGaussianBlur());
+	all_dlg.back()->setLayout(
+		create_nDialog_GUItemplate<int, Blur*>(
+			ls_slider_gaussian,
+			QList<int>() << 1 << 1 << 1,
+			QList<int>() << GAUSSIAN_BLUR_MAX_SIZE << GAUSSIAN_BLUR_SIGMAX << GAUSSIAN_BLUR_SIGMAY,
+			QList<int>() << 1 << 1 << 1,
+			QList<QString>() << "avgKernel_slider" << "x_slider" << "y_slider",
+			QList<QString>() << "kernel" << "sigmaX" << "sigmaY",
+			QList< std::function<void(int)>>() << funGaussian_slider1 << funGaussian_slider2 << funGaussian_slider3,
+			true, "\\d+\\s\\d+\\s\\d+", "KSize X Y", &blur)
+	);
+
+
+
+	//----------------------------------------------------------
+	//中值滤波
+	ls_slider_median.resize(1);
+	std::function<void(int)> funMedian = [=](int value) {
+		if (value % 2 == 0)
+			value += 1;
+		blur->onTriggered_slider_valueChange_medianBlur(value); };
 
 	all_dlg.push_back(new QDialog);
 	auto dlg_MedianBlur = all_dlg.back();
 	dlg_MedianBlur->setWindowTitle(tr("中值滤波"));
-	all_dlg.back()->setLayout(create_GUIMedianBlur());
+	dlg_MedianBlur->setLayout(
+		create_nDialog_GUItemplate<int, Blur*>(
+			ls_slider_median,
+		QList<int>() << 1,
+		QList<int>() << MEDIAN_BLUR_MAX,
+		QList<int>() << 2,
+		QList<QString>() << "median_slider",
+		QList<QString>()<<"中值滤波",
+		QList< std::function<void(int)>>()<< funMedian,
+		true, "\\d+", "KSize", &blur)
+	);
 
+	//----------------------------------------------------------
+	//双边滤波
+	ls_slider_bilateral.resize(3);
+	std::function<void(int)> funBilateral_slider1 = [=](int value) {
+		blur->onTriggered_slider1_valueChange_bilateralBlur(value);
+	};
+
+	std::function<void(int)> funBilateral_slider2 = [=](int value) {
+		blur->onTriggered_slider2_valueChange_bilateralBlur(value);
+	};
+
+	std::function<void(int)> funBilateral_slider3 = [=](int value) {
+		blur->onTriggered_slider3_valueChange_bilateralBlur(value);
+	};
 	all_dlg.push_back(new QDialog);
 	auto dlg_BilaterBlur = all_dlg.back();
 	dlg_BilaterBlur->setWindowTitle(tr("双边滤波"));
-	all_dlg.back()->setLayout(create_GUIBilateralBlur());
+	all_dlg.back()->setLayout(
+		create_nDialog_GUItemplate<int, Blur*>(
+			ls_slider_bilateral,
+			QList<int>() << 1 << 0 << 0,
+			QList<int>() << BILATERAL_BLUR_MAX_SIZE << BILATERAL_BLUR_MAX_COLOR << BILATERAL_BLUR_MAX_SPACE,
+			QList<int>() << 1 << 1 << 1,
+			QList<QString>() << "bilateral_slider1" << "bilateral_slider2"<< "bilateral_slider3",
+			QList<QString>() << "ksize" << "sigmaX" << "sigmaY",
+			QList< std::function<void(int)>>() << funBilateral_slider1 << funBilateral_slider2 << funBilateral_slider3,
+			true,"\\d+\\s\\d+\\s\\d+", "bin_d sigmaColor sigmaSpace", &blur)
+	);
+
+
+	//----------------------------------------------------------
+	//阈值化
+	ls_slider_threshold.resize(2);
+	std::function<void(int)> funThreshold_slider1 = [=](int value) {
+		threshold->onTriggered_slider1_valueChanged_thresholdValue(value);
+	};
+
+	std::function<void(int)> funThreshold_slider2 = [=](int value) {
+		threshold->onTriggered_slider2_valueChanged_maxValue(value);
+	};
 
 	all_dlg.push_back(new QDialog);
 	auto dlg_Threshold = all_dlg.back();
 	dlg_Threshold->setWindowTitle(tr("图像的阈值化"));
-	all_dlg.back()->setLayout(create_GUIThreshold());
+	all_dlg.back()->setLayout(
+		create_nDialog_GUItemplate<int, Threshold*>(
+			ls_slider_threshold,
+			QList<int>() << 0 << 0,
+			QList<int>() << 255 << 255,
+			QList<int>() << 1 << 1,
+			QList<QString>() << "threshold_value"<<"maxValue",
+			QList<QString>() << "threshold" << "maxval",
+			QList< std::function<void(int)>>() << funThreshold_slider1 << funThreshold_slider2,
+			true, "\\d+\\s\\d+", "threshold_value maxVal", &threshold)
+	);
+
+	//----------------------------------------------------------
+	//形态学
+	ls_slider_morphology.resize(3);
+	std::function<void(int)> funMorphology_slider1 = [=](int value) {
+		morphology->onTriggered_slider1_valueChanged_kernel(value);
+	};
+
+	std::function<void(int)> funMorphology_slider2 = [=](int value) {
+		morphology->onTriggered_slider2_valueChanged_anchorX(value);
+	};
+
+	std::function<void(int)> funMorphology_slider3 = [=](int value) {
+		morphology->onTriggered_slider3_valueChanged_anchorY(value);
+	};
 
 	all_dlg.push_back(new QDialog);
 	auto dlg_Morphology = all_dlg.back();
 	dlg_Morphology->setWindowTitle(tr("图像的形态学操作"));
-	all_dlg.back()->setLayout(create_GUIMorphology());
+	//
+	all_dlg.back()->setLayout(
+		create_nDialog_GUItemplate<int, Morphology*>(
+			ls_slider_morphology,
+			QList<int>() << 1 << 1 << 1,
+			QList<int>() << 50 << 20 <<20,
+			QList<int>() << 1 << 1 << 1,
+			QList<QString>() << "Kernal_mor" << "X_mor"<< "Y_mor",
+			QList<QString>() << "Kernel" << "anchorX" << "anchorY",
+			QList< std::function<void(int)>>() << funMorphology_slider1 << funMorphology_slider2 << funMorphology_slider3,
+			true, "\\d+\\s\\d+\\s\\d+\\s\\d+", "Kernel X Y iters", &morphology)
+	);
 
 	all_dlg.push_back(new QDialog);
 	auto dlg_connected = all_dlg.back();
@@ -191,19 +343,59 @@ void Widget::init_Optsdialog()
 	dlg_contours->setWindowTitle(tr("图像的轮廓检测操作"));
 	all_dlg.back()->setLayout(create_GUIContours());
 
+
+	//-----------------------------------------------------
+	//亮度调整
+	ls_slider_light.resize(2);
+	std::function<void(int)> funcLight = [=](int value) {
+		ls_slider_light[1]->setValue(ls_slider_light[1]->minimum());
+		showeffect->onTriggered_slider_valueChange_brighten(value);
+	};
+	std::function<void(int)> funcDark = [=](int value) {
+		value = -value;
+		ls_slider_light[0]->setValue(ls_slider_light[0]->minimum());
+		showeffect->onTriggered_slider_valueChange_brighten(value);
+	};
+
+
 	all_dlg.push_back(new QDialog);
 	auto dlg_light = all_dlg.back();
 	dlg_light->setWindowTitle(tr("图像亮度调整"));
-	all_dlg.back()->setLayout(create_GUIAdvancedLight());
+	dlg_light->setLayout(
+		create_nDialog_GUItemplate<int, Blur*>(
+			ls_slider_light,
+			QList<int>() << 1<< 1,
+			QList<int>() << 100 <<100,
+			QList<int>() << 1<< 1,
+			QList<QString>() <<"bright_light_value" << "bright_dark_value",
+			QList<QString>() << "亮度增加"<<"亮度降低",
+			QList< std::function<void(int)>>() << funcLight << funcDark)
+	);
+
+
+	//-----------------------------------------------------
+	//gamma矫正
+	ls_slider_gamma.resize(1);
+	std::function<void(int)> funcGamma = [=](int value) {
+		//将int映射为double
+		double d_val = value * 1.0 / 10.0;
+		showeffect->onTriggered_slider_valueChange_gamma(d_val);
+	};
 
 	all_dlg.push_back(new QDialog);
 	auto dlg_gamma = all_dlg.back();
 	dlg_gamma->setWindowTitle(tr("图像γ矫正"));
-	all_dlg.back()->setLayout(create_GUI_template_1<int>(slider_gamma, 1, 50, 1, "gamma_slider", "γ矫正", [=](int value) {
-		//将int映射为double
-		double d_val = value * 1.0 / 10.0;
-		showeffect->onTriggered_slider_valueChange_gamma(d_val);
-		}));
+	all_dlg.back()->setLayout(
+		create_nDialog_GUItemplate<int, Blur*>(
+			ls_slider_gamma,
+			QList<int>() << 1,
+			QList<int>() << 50,
+			QList<int>() << 1,
+			QList<QString>() << "gamma_slider",
+			QList<QString>() << "γ矫正",
+			QList< std::function<void(int)>>() << funcGamma,
+			true)
+	);
 
 	for (auto& x : all_dlg) {
 		x->setGeometry(this->rect().x() + this->width(), this->rect().y() + 100, 200, 200);
@@ -1220,7 +1412,7 @@ void Widget::createToolBox()
 	f1->setStatusTip(tr("图像亮度调整：增强图像的亮度"));
 	gird_effect->addWidget(f1, 0, 0);
 
-	QWidget* f2 = createToolBtnItemWidget(tr("γ矫正"),SHOW::GAMMA,"");
+	QWidget* f2 = createToolBtnItemWidget(tr("γ矫正"),SHOW::GAMMA, "../resource/assert/gamma.png");
 	f2->setStatusTip(tr("γ矫正"));
 	gird_effect->addWidget(f2, 0, 1);
 
@@ -1325,12 +1517,6 @@ QWidget* Widget::createToolBtnItemWidget(const QString& text, int id, const QStr
 template <typename Type>
 QHBoxLayout* Widget::create_Edit_hLayout(const QString& filter, const QString& text, Type* t)
 {
-	/*
-	在C++模板函数中，当使用类型模板参数时，传递给模板函数的参数会根据其类型进行实例化。在您的例子中，模板参数 Type 是一个类型参数，而不是一个变量参数。
-	当您传递 blur 变量给模板函数时，实际上是根据 blur 的类型进行模板实例化，并生成相应的函数代码。在模板函数内部，t 参数是根据实例化的类型来创建的，而不是直接引用传递。
-	这意味着 t 的内存地址与 blur 的内存地址可能不同，因为它们是不同的对象。尽管在语义上它们可能表示相同的值，但它们是不同的实例。
-	如果您希望 t 和 blur 具有相同的内存地址，可以将 blur 作为指针参数传递给模板函数，并在函数内部使用指针进行操作
-	*/
 	QLineEdit* edit = new QLineEdit;
 	edit->setPlaceholderText(text);
 	edit->setFixedWidth(edit->fontMetrics().boundingRect(edit->placeholderText()).width()+20);
@@ -1385,30 +1571,47 @@ void Widget::update_Image(double f_scaledDelta, const QPointF& imgPos)
 	scrollArea->setVerticalScrollBarPolicy(needScrollbars ? Qt::ScrollBarAlwaysOn : Qt::ScrollBarAlwaysOff);
 }
 
-template <typename T>
-QBoxLayout* Widget::create_GUI_template_1(QSlider*& slider ,T low, T high, T step, const QString& objectName, const QString& lab_name, std::function<void(int)> slotFunction)
-{
-	if (slider)
-		return nullptr;
-	slider = new QSlider(Qt::Horizontal);
-	slider->setRange(low, high);
-	slider->setSingleStep(step);
-	slider->setObjectName(objectName);
-	slider->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
-	//传递一个槽函数
-	connect(slider, &QSlider::sliderMoved, this,slotFunction);
-
-	QHBoxLayout* hlayout1 = new QHBoxLayout;
-	hlayout1->addWidget(new QLabel(lab_name));
-	hlayout1->addWidget(slider);
-
+template<typename T, typename Type>
+QBoxLayout* Widget::create_nDialog_GUItemplate(
+	QList<QSlider*>& ls_slider,
+	QList<T> low,
+	QList<T> high,
+	QList<T> step,
+	QList< QString> objectName,
+	QList< QString> lab_name,
+	QList<std::function<void(int)>> slotFunction,
+	bool edit,
+	const QString& filter,
+	const QString& text,
+	Type* t
+){
 	QVBoxLayout* vlayout = new QVBoxLayout;
-	vlayout->addLayout(hlayout1);
+	for (int i = 0; i < ls_slider.size(); i++) {
+		ls_slider[i] = new QSlider(Qt::Horizontal);
+		ls_slider[i]->setRange(low[i], high[i]);
+		ls_slider[i]->setSingleStep(step[i]);
+		ls_slider[i]->setObjectName(objectName[i]);
+		ls_slider[i]->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
+		//传递一个槽函数
+		connect(ls_slider[i], &QSlider::sliderMoved, this, slotFunction[i]);
+
+		vlayout->addWidget(new QLabel(lab_name[i]));
+		vlayout->addWidget(ls_slider[i]);
+	}	
+	//----------------------------
+	//具有可输入功能，添加一个输入框
+	if (edit) {
+		vlayout->addSpacing(10);
+		vlayout->addLayout(create_Edit_hLayout(filter, text, t));
+	}
 	return vlayout;
 }
 
+/*
+-----------------------------------------------------------
+*/
 double Widget::init_scaledImageOk() {
 	//如果图片的宽度和高度大于的大小，则需要缩小，直到两者都小于滑动区域的大小
 	if (!res){
@@ -1422,340 +1625,6 @@ double Widget::init_scaledImageOk() {
 
 	return t_scaledDelta;
 }
-
-
-//-----------------均值Dialog GUI----------------------------
-QHBoxLayout* Widget::create_GUIAvgBlur() //1：均值 2：高斯
-{
-	QSlider* slider1 = new QSlider(Qt::Horizontal);
-	slider1->setRange(AVG_BLUR_MIN_SIZE, AVG_BLUR_MAX_SIZE);
-	slider1->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-	QSlider* slider2 = new QSlider(Qt::Horizontal);
-	slider2->setRange(AVG_BLUR_MIN_SIZE, AVG_BLUR_MAX_SIZE);
-	slider2->setSizePolicy(QSizePolicy::Expanding,  QSizePolicy::Fixed);
-	QSlider* slider3 = new QSlider(Qt::Horizontal);
-	slider3->setRange(AVG_BLUR_MIN_SIZE, AVG_BLUR_MAX_SIZE);
-	slider3->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-
-	//水平布局管理两个控件：label和滑块
-	QHBoxLayout* hlayout1 = new QHBoxLayout;
-	hlayout1->addWidget(new QLabel("kernel"));
-	hlayout1->setSpacing(10);
-	hlayout1->addWidget(slider1);
-	
-	connect(slider1, &QSlider::sliderMoved, this, [=](int value) {
-		if (slider2->value() == slider2->minimum() && slider3->value() == slider3->minimum()) {
-			blur->anchorX = blur->anchorY = blur->avg_Ksize / 2;
-		}
-	blur->onTriggered_slider1_valueChange_avgBlur(value);
-		});
-
-	
-	//--------------------------------
-
-	QHBoxLayout* hlayout2 = new QHBoxLayout;
-	hlayout2->addWidget(new QLabel("sigmaX"));
-	hlayout2->setSpacing(10);
-	hlayout2->addWidget(slider2);
-	//X偏移连接信号
-	connect(slider2, &QSlider::sliderMoved, this, [=](int value) {
-		blur->onTriggered_slider2_valueChange_avgBlur(value);
-	});
-
-	//--------------------------------
-
-	QHBoxLayout* hlayout3 = new QHBoxLayout;
-	hlayout3->addWidget(new QLabel("sigmaY"));
-	hlayout3->setSpacing(10);
-	hlayout3->addWidget(slider3);
-	//Y偏移连接信号
-	connect(slider3, &QSlider::sliderMoved, this, [=](int value) {
-		blur->onTriggered_slider3_valueChange_avgBlur(value);
-		});
-
-	//将三个QWidget添加到一个垂直布局
-	QVBoxLayout* vLayout = new QVBoxLayout;
-	vLayout->addLayout(hlayout1);
-	vLayout->addLayout(hlayout2);
-	vLayout->addLayout(hlayout3);
-	vLayout->addLayout(create_Edit_hLayout("\\d+\\s\\d+\\s\\d+", "KSize X Y", &blur));
-	vLayout->setSpacing(10);
-
-	QHBoxLayout* hboxl = new QHBoxLayout;
-	hboxl->addLayout(vLayout);
-
-	return hboxl;
-}
-
-//-----------------高斯GUI----------------------------
-QHBoxLayout* Widget::create_GUIGaussianBlur()
-{
-	QSlider* slider1 = new QSlider(Qt::Horizontal);
-	slider1->setRange(GAUSSIAN_BLUR_MIN_SIZE, GAUSSIAN_BLUR_MAX_SIZE);
-	slider1->setSingleStep(2);
-	slider1->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-	QSlider* slider2 = new QSlider(Qt::Horizontal);
-	slider2->setRange(1, GAUSSIAN_BLUR_SIGMAX);
-	slider2->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-	QSlider* slider3 = new QSlider(Qt::Horizontal);
-	slider3->setRange(1, GAUSSIAN_BLUR_SIGMAY);
-	slider3->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-
-	//水平布局管理两个控件：label和滑块
-	QHBoxLayout* hlayout1 = new QHBoxLayout;
-	hlayout1->addWidget(new QLabel("ksize"));
-	hlayout1->setSpacing(10);
-	hlayout1->addWidget(slider1);
-	connect(slider1, &QSlider::sliderMoved, this, [=](int value) {
-
-		if (value % 2 == 0) {
-			value += 1;
-		}
-		if (slider2->value() == slider2->minimum() && slider3->value() == slider3->minimum()) {
-			blur->sigmaX = blur->sigmaY = blur->gas_Ksize / 2;
-		}
-	blur->onTriggered_slider1_valueChange_gaussianBlur(value);
-		});
-
-	//--------------------------------
-
-	QHBoxLayout* hlayout2 = new QHBoxLayout;
-	hlayout2->addWidget(new QLabel("sigmaX"));
-	hlayout2->setSpacing(10);
-	hlayout2->addWidget(slider2);
-	//X偏移连接信号
-	connect(slider2, &QSlider::sliderMoved, this, [=](int value) {
-		blur->onTriggered_slider2_valueChange_gaussianBlur(value);
-		});
-
-	//--------------------------------
-
-	QHBoxLayout* hlayout3 = new QHBoxLayout;
-	hlayout3->addWidget(new QLabel("sigmaY"));
-	hlayout3->setSpacing(10);
-	hlayout3->addWidget(slider3);
-	//Y偏移连接信号
-	connect(slider3, &QSlider::sliderMoved, this, [=](int value) {
-		blur->onTriggered_slider3_valueChange_gaussianBlur(value);
-		});
-
-	//将三个QWidget添加到一个垂直布局
-	QVBoxLayout* vLayout = new QVBoxLayout;
-	vLayout->addLayout(hlayout1);
-	vLayout->addLayout(hlayout2);
-	vLayout->addLayout(hlayout3);
-	vLayout->addLayout(create_Edit_hLayout("\\d+\\s\\d+\\s\\d+", "KSize X Y",&blur));
-	vLayout->setSpacing(10);
-
-	QHBoxLayout* hboxl = new QHBoxLayout;
-	hboxl->addLayout(vLayout);
-
-	return hboxl;
-}
-
-
-//----------------中值GUI----------------------------
-QHBoxLayout* Widget::create_GUIMedianBlur()
-{
-	QSlider* slider = new QSlider(Qt::Horizontal);
-	slider->setRange(1, MEDIAN_BLUR_MAX);
-	slider->setSingleStep(2);
-
-	connect(slider, &QSlider::sliderMoved, this, [=](int value) {
-		if (value % 2 == 0) {
-			value += 1;
-		}
-		blur->onTriggered_slider_valueChange_medianBlur(value);
-	});
-
-	QHBoxLayout* hLayout2 = new QHBoxLayout;
-	hLayout2->addWidget(new QLabel("ksize"));
-	hLayout2->setSpacing(10);
-	hLayout2->addWidget(slider);
-
-	QVBoxLayout* vLayout_2 = new QVBoxLayout;
-	vLayout_2->addLayout(hLayout2);
-	vLayout_2->addSpacing(10);
-	vLayout_2->addLayout(create_Edit_hLayout("\\d+", "KSize",&blur));
-
-	QHBoxLayout* hboxl = new QHBoxLayout;
-	hboxl->addLayout(vLayout_2);
-
-	return hboxl;
-}
-
-
-
-//----------------双边GUI----------------------------
-QHBoxLayout* Widget::create_GUIBilateralBlur()
-{
-	QSlider* slider1 = new QSlider(Qt::Horizontal);
-	slider1->setRange(1, BILATERAL_BLUR_MAX_SIZE);
-	slider1->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-	QSlider* slider2 = new QSlider(Qt::Horizontal);
-	slider2->setRange(0, BILATERAL_BLUR_MAX_COLOR);
-	slider2->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-	QSlider* slider3 = new QSlider(Qt::Horizontal);
-	slider3->setRange(0, BILATERAL_BLUR_MAX_SPACE);
-	slider3->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-
-	//水平布局管理两个控件：label和滑块
-	QHBoxLayout* hlayout1 = new QHBoxLayout;
-	hlayout1->addWidget(new QLabel("ksize"));
-	hlayout1->addSpacing(10);
-	hlayout1->addWidget(slider1);
-	connect(slider1, &QSlider::sliderMoved, this, [=](int value) {
-		blur->onTriggered_slider1_valueChange_bilateralBlur(value);
-	});
-
-	//--------------------------------
-
-	QHBoxLayout* hlayout2 = new QHBoxLayout;
-	hlayout2->addWidget(new QLabel("sigmaX"));
-	hlayout2->addWidget(slider2);
-	hlayout2->setSpacing(10);
-	//X偏移连接信号
-	connect(slider2, &QSlider::sliderMoved, this, [=](int value) {
-		blur->onTriggered_slider2_valueChange_bilateralBlur(value);
-		});
-
-	//--------------------------------
-
-	QHBoxLayout* hlayout3 = new QHBoxLayout;
-	hlayout3->addWidget(new QLabel("sigmaY"));
-	hlayout3->addWidget(slider3);
-	hlayout3->setSpacing(10);
-	//Y偏移连接信号
-	connect(slider3, &QSlider::sliderMoved, this, [=](int value) {
-		blur->onTriggered_slider3_valueChange_bilateralBlur(value);
-		});
-
-	//将三个QWidget添加到一个垂直布局
-	QVBoxLayout* vLayout = new QVBoxLayout;
-	vLayout->addLayout(hlayout1);
-	vLayout->addLayout(hlayout2);
-	vLayout->addLayout(hlayout3);
-	vLayout->addLayout(create_Edit_hLayout("\\d+\\s\\d+\\s\\d+", "bin_d sigmaColor sigmaSpace", &blur));
-	vLayout->setSpacing(10);
-
-	QHBoxLayout* hboxl = new QHBoxLayout;
-	hboxl->addLayout(vLayout);
-	return hboxl;
-}
-
-//----------------阈值GUI----------------------------
-QHBoxLayout* Widget::create_GUIThreshold()
-{
-	QSlider* slider1 = new QSlider(Qt::Horizontal);
-	slider1->setRange(0, 255);
-	slider1->setValue(128);
-	slider1->setObjectName("threshold_value");
-	slider1->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-	QSlider* slider2 = new QSlider(Qt::Horizontal);
-	slider2->setRange(0, 255);
-	slider2->setValue(255);
-	slider2->setObjectName("maxValue");
-	slider2->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-
-	//水平布局管理两个控件：label和滑块
-	QHBoxLayout* hlayout1 = new QHBoxLayout;
-	hlayout1->addWidget(new QLabel("threshold"));
-	hlayout1->addWidget(slider1);
-	connect(slider1, &QSlider::sliderMoved, this, [=](int value) {
-		threshold->onTriggered_slider1_valueChanged_thresholdValue(value);
-		});
-
-	//--------------------------------
-
-	QHBoxLayout* hlayout2 = new QHBoxLayout;
-	hlayout2->addWidget(new QLabel("maxval"));
-	hlayout2->addWidget(slider2);
-	//X偏移连接信号
-	connect(slider2, &QSlider::sliderMoved, this, [=](int value) {
-		threshold->onTriggered_slider2_valueChanged_maxValue(value);
-		});
-
-	//--------------------------------
-
-
-	//将三个QWidget添加到一个垂直布局
-	QVBoxLayout* vLayout = new QVBoxLayout;
-	vLayout->addLayout(hlayout1);
-	vLayout->addLayout(hlayout2);
-	vLayout->setSpacing(10);
-
-	QVBoxLayout* vLayout_2 = new QVBoxLayout;
-	vLayout_2->addLayout(vLayout);
-	vLayout_2->addLayout(create_Edit_hLayout("\\d+\\s\\d+", "threshold_value maxVal",&threshold));
-	vLayout_2->setSpacing(10);
-
-	QHBoxLayout* hboxl = new QHBoxLayout;
-	hboxl->addLayout(vLayout_2);
-
-	return hboxl;
-
-}
-
-//----------------形态学GUI----------------------------
-QHBoxLayout* Widget::create_GUIMorphology()
-{
-	//Kernel
-	QSlider* slider1 = new QSlider(Qt::Horizontal);
-	slider1->setRange(1, 50);
-	slider1->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-	//anthorX
-	QSlider* slider2 = new QSlider(Qt::Horizontal);
-	slider2->setRange(1,  20);
-	slider2->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-	//anthorY
-	QSlider* slider3 = new QSlider(Qt::Horizontal);
-	slider3->setRange(1,  20);
-	slider3->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-
-	//水平布局管理两个控件：label和滑块
-	QHBoxLayout* hlayout1 = new QHBoxLayout;
-	hlayout1->addWidget(new QLabel("Kernel"));
-	hlayout1->addWidget(slider1);
-	hlayout1->setSpacing(10);
-	connect(slider1, &QSlider::sliderMoved, this, [=](int value) {
-		morphology->onTriggered_slider1_valueChanged_kernel(value);
-		});
-
-	QHBoxLayout* hlayout2 = new QHBoxLayout;
-	hlayout2->addWidget(new QLabel("anchorX"));
-	hlayout2->addWidget(slider2);
-	hlayout2->setSpacing(10);
-	//X偏移连接信号
-	connect(slider2, &QSlider::sliderMoved, this, [=](int value) {
-		morphology->onTriggered_slider2_valueChanged_anchorX(value);
-		});
-
-	QHBoxLayout* hlayout3 = new QHBoxLayout;
-	hlayout3->addWidget(new QLabel("anchorY"));
-	hlayout3->addWidget(slider3);
-	hlayout3->setSpacing(10);
-	//Y偏移连接信号
-	connect(slider3, &QSlider::sliderMoved, this, [=](int value) {
-		morphology->onTriggered_slider3_valueChanged_anchorY(value);
-		});
-
-	//将三个QWidget添加到一个垂直布局
-	QVBoxLayout* vLayout = new QVBoxLayout;
-	vLayout->addLayout(hlayout1);
-	vLayout->addLayout(hlayout2);
-	vLayout->addLayout(hlayout3);
-	vLayout->setSpacing(10);
-
-	QVBoxLayout* vLayout_2 = new QVBoxLayout;
-	vLayout_2->addLayout(vLayout);
-	vLayout_2->addLayout(create_Edit_hLayout("\\d+\\s\\d+\\s\\d+\\s\\d+", "Kernel X Y iters",&morphology));
-	vLayout_2->setSpacing(10);
-
-	QHBoxLayout* hboxl = new QHBoxLayout;
-	hboxl->addLayout(vLayout_2);
-	return hboxl;
-}
-
 
 //----------------连通区域分析GUI----------------------------
 QHBoxLayout* Widget::create_GUIConnected()
@@ -1899,54 +1768,3 @@ QHBoxLayout* Widget::create_GUIContours()
 
 	return hboxl;
 }
-
-
-//----------------图像效果增强GUI----------------------------
-QVBoxLayout* Widget::create_GUIAdvancedLight()
-{
-	QSlider* slider1 = new QSlider(Qt::Horizontal);
-	slider1->setRange(1,100);
-	slider1->setObjectName("bright_value");
-	slider1->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-
-	
-	QSlider* slider2 = new QSlider(Qt::Horizontal);
-	slider2->setRange(1, 100);
-	slider2->setObjectName("bright_value");
-	slider2->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-
-	connect(slider1, &QSlider::sliderMoved, this, [=](int value) {
-		slider2->setValue(slider2->minimum());
-	showeffect->onTriggered_slider_valueChange_brighten(value);
-		});
-
-
-	connect(slider2, &QSlider::sliderMoved, this, [=](int value) {
-		value = -value;	
-	slider1->setValue(slider1->minimum());
-		showeffect->onTriggered_slider_valueChange_brighten(value);
-		});
-
-
-	QHBoxLayout* hlayout1 = new QHBoxLayout;
-	hlayout1->addWidget(new QLabel("亮度增加"));
-	hlayout1->addWidget(slider1);
-
-	QHBoxLayout* hlayout2 = new QHBoxLayout;
-	hlayout2->addWidget(new QLabel("亮度降低"));
-	hlayout2->addWidget(slider2);
-
-	QVBoxLayout* vlayout = new QVBoxLayout;
-	vlayout->addLayout(hlayout1);
-	vlayout->addLayout(hlayout2);
-
-	return vlayout;
-}
-
-/*
-封装数值调整框
-* 1行Slider
-* 2行Slider
-* 3行Slider
-* 
-*/

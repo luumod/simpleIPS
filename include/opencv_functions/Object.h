@@ -30,5 +30,4 @@ public:
 	int current_choice = 0;
 };
 
-
 #endif

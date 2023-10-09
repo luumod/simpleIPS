@@ -23,6 +23,11 @@ int Object::convertChoice()
 	return 0;
 }
 
+void Object::initialize()
+{
+	return;
+}
+
 void Object::update(const cv::Mat& tMt)
 {
 	//修改当前Mat与其对应的Image

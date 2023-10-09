@@ -7,9 +7,27 @@ Blur::Blur() :Object() {}
 
 Blur::~Blur() {}
 
+int Blur::convertChoice()
+{
+	switch (current_choice)
+	{
+	case BLUR::Average:
+		return BLUR::Average;
+	case BLUR::Gaussian:
+		return BLUR::Gaussian;
+	case BLUR::Median:
+		return BLUR::Median;
+	case BLUR::Bilateral:
+		return BLUR::Bilateral;
+	default:
+		return -1;
+	}
+	return -1;
+}
+
 void Blur::initialize()
 {
-	now_operation = -1;
+	current_choice = 0;
 	//均值滤波
 	avg_Ksize = 1, anchorX = -1, anchorY = -1;
 	//高斯滤波
@@ -147,16 +165,20 @@ void Blur::onTriggered_slider3_valueChange_bilateralBlur(int value)
 
 
 void Blur::onReturnPressed_Edit(QList<QString> strs) {
-	if (now_operation == BLUR::Average) {
+	int types = -1;
+	if ((types = convertChoice()) == -1) {
+		return;
+	}
+	if (types == BLUR::Average) {
 		onReturnPressed_AvgBlur_Edit(strs);
 	}
-	else if (now_operation == BLUR::Gaussian) {
+	else if (types == BLUR::Gaussian) {
 		onReturnPressed_Gaussian_Edit(strs);
 	}
-	else if (now_operation == BLUR::Median) {
+	else if (types == BLUR::Median) {
 		onReturnPressed_Median_Edit(strs);
 	}
-	else if (now_operation == BLUR::Bilateral) {
+	else if (types == BLUR::Bilateral) {
 		onReturnPressed_Bilateral_Edit(strs);
 	}
 }

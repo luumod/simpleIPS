@@ -39,6 +39,7 @@ private:
 	int method = cv::CHAIN_APPROX_NONE;
 	int thick = 1;
 	QColor color = Qt::red;
+
 };
 
 #endif // !CONTOURS_H_

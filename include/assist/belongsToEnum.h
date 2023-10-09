@@ -60,25 +60,59 @@ inline bool belongsToEnum(int data) {
 			return false;
 		}
 	}
-	else if constexpr (std::is_same_v<T, CVTCOLOR>) {
-		switch (static_cast<T>(data)) {
-		case T::CVTCOLOR_TYPE1:
-			return true;
-		default:
-			return false;
-		}
-	}
 	else if constexpr (std::is_same_v<T, SHOW>) {
 		switch (static_cast<T>(data)) {
 		case T::LIGHT:
 			return true;
-		case T::SHARPEN:
+		case T::GAMMA:
 			return true;
 		default:
 			return false;
 		}
 	}
 	return false;
+}
+
+int switch_Dialog_id(int id)
+{
+	switch (id)
+	{
+	case BLUR::Average:
+		return 0;
+	case BLUR::Gaussian:
+		return 1;
+	case BLUR::Median:
+		return 2;
+	case BLUR::Bilateral:
+		return 3;
+	case THRESHOLD::Binary:
+	case THRESHOLD::Binary_inv:
+	case THRESHOLD::Trunc:
+	case THRESHOLD::Tozero:
+	case THRESHOLD::Tozero_inv:
+		return 4;
+	case FORM::Erode:
+	case FORM::Dilate:
+	case FORM::Open:
+	case FORM::Close:
+	case FORM::Gradient:
+	case FORM::Tophat:
+	case FORM::Blackhat:
+	case FORM::Hitmiss:
+		return 5;
+	case CONNECTED::CONNECTED_TYPE1:
+	case CONNECTED::CONNECTED_TYPE2:
+		return 6;
+	case CONTOURS::CONTOURS_TYPE1:
+		return 7;
+	case SHOW::LIGHT:
+		return 8;
+	case SHOW::GAMMA:
+		return 9;
+	default:
+		break;
+	}
+	return 0;
 }
 
 #endif

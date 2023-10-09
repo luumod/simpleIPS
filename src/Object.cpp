@@ -18,6 +18,11 @@ Widget* Object::get() {
 	return Widget::getInstance();
 }
 
+int Object::convertChoice()
+{
+	return 0;
+}
+
 void Object::update(const cv::Mat& tMt)
 {
 	//修改当前Mat与其对应的Image

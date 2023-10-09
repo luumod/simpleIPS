@@ -7,6 +7,20 @@ Connected::Connected() :Object() {}
 
 Connected::~Connected() {}
 
+int Connected::convertChoice()
+{
+	switch (current_choice)
+	{
+	case CONNECTED::CONNECTED_TYPE1:
+		return 0;
+	case CONNECTED::CONNECTED_TYPE2:
+		return 1;
+	default:
+		return -1;
+	}
+	return -1;
+}
+
 void Connected::initialize()
 {
 	int current_choice = -1;
@@ -113,13 +127,17 @@ void Connected::onTriggered_Comb1_currentTextChanged_connectivtiy(int index)
 
 void Connected::onTriggered_Comb2_currentTextChanged_ccltype(int index)
 {
+	int types = -1;
+	if ((types = convertChoice()) == -1) {
+		return;
+	}
 	// 连通算法改变
 	ccltype = cv::ConnectedComponentsAlgorithmsTypes(index - 1);
 
-	if(current_choice == 0) {
+	if(types == 0) {
 		connectedComponents();
 	}
-	else if (current_choice == 1) {
+	else if (types == 1) {
 		connectedComponentsWithStats();
 	}
 }

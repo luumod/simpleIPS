@@ -11,8 +11,29 @@ void Threshold::initialize()
 	int threshold_value = 128, maxVal = 255;
 }
 
+int Threshold::convertChoice()
+{
+	switch (current_choice)
+	{
+	case THRESHOLD::Binary:
+		return cv::ThresholdTypes::THRESH_BINARY;
+	case THRESHOLD::Binary_inv:
+		return cv::ThresholdTypes::THRESH_BINARY_INV;
+	case THRESHOLD::Trunc:
+		return cv::ThresholdTypes::THRESH_TRUNC;
+	case THRESHOLD::Tozero:
+		return cv::ThresholdTypes::THRESH_TOZERO;
+	case THRESHOLD::Tozero_inv:
+		return cv::ThresholdTypes::THRESH_TOZERO_INV;
+	default:
+		return -1;
+	}
+	return -1;
+}
+
 void Threshold::threshold() {
-	if (current_choice == -1) {
+	int types = -1;
+	if ((types = convertChoice()) == -1) {
 		return;
 	}
 
@@ -20,7 +41,7 @@ void Threshold::threshold() {
 	getMat(_mt);
 	cv::Mat tMt;
 
-	cv::threshold(_mt, tMt, threshold_value, maxVal, current_choice);
+	cv::threshold(_mt, tMt, threshold_value, maxVal, types);
 
 	Object::update(tMt);
 }

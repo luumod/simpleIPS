@@ -172,29 +172,38 @@ void Widget::init_Optsdialog()
 	all_dlg.back()->setLayout(create_GUIBilateralBlur());
 
 	all_dlg.push_back(new QDialog);
-	auto dlg_ThresholdBlur = all_dlg.back();
-	dlg_ThresholdBlur->setWindowTitle(tr("图像的阈值化"));
+	auto dlg_Threshold = all_dlg.back();
+	dlg_Threshold->setWindowTitle(tr("图像的阈值化"));
 	all_dlg.back()->setLayout(create_GUIThreshold());
 
 	all_dlg.push_back(new QDialog);
-	auto dlg_MorphologyBlur = all_dlg.back();
-	dlg_MorphologyBlur->setWindowTitle(tr("图像的形态学操作"));
+	auto dlg_Morphology = all_dlg.back();
+	dlg_Morphology->setWindowTitle(tr("图像的形态学操作"));
 	all_dlg.back()->setLayout(create_GUIMorphology());
 
 	all_dlg.push_back(new QDialog);
-	auto dlg_connectedBlur = all_dlg.back();
-	dlg_connectedBlur->setWindowTitle(tr("图像的连通性操作"));
+	auto dlg_connected = all_dlg.back();
+	dlg_connected->setWindowTitle(tr("图像的连通性操作"));
 	all_dlg.back()->setLayout(create_GUIConnected());
 
 	all_dlg.push_back(new QDialog);
-	auto dlg_contoursBlur = all_dlg.back();
-	dlg_contoursBlur->setWindowTitle(tr("图像的轮廓检测操作"));
+	auto dlg_contours = all_dlg.back();
+	dlg_contours->setWindowTitle(tr("图像的轮廓检测操作"));
 	all_dlg.back()->setLayout(create_GUIContours());
 
 	all_dlg.push_back(new QDialog);
-	auto dlg_showBlur = all_dlg.back();
-	dlg_showBlur->setWindowTitle(tr("图像的基础显示操作"));
-	all_dlg.back()->setLayout(create_GUIShow());
+	auto dlg_light = all_dlg.back();
+	dlg_light->setWindowTitle(tr("图像亮度调整"));
+	all_dlg.back()->setLayout(create_GUIAdvancedLight());
+
+	all_dlg.push_back(new QDialog);
+	auto dlg_gamma = all_dlg.back();
+	dlg_gamma->setWindowTitle(tr("图像γ矫正"));
+	all_dlg.back()->setLayout(create_GUI_template_1<int>(slider_gamma, 1, 50, 1, "gamma_slider", "γ矫正", [=](int value) {
+		//将int映射为double
+		double d_val = value * 1.0 / 10.0;
+		showeffect->onTriggered_slider_valueChange_gamma(d_val);
+		}));
 
 	for (auto& x : all_dlg) {
 		x->setGeometry(this->rect().x() + this->width(), this->rect().y() + 100, 200, 200);
@@ -275,13 +284,6 @@ void Widget::wheelEvent(QWheelEvent* ev)
 		else {
 			angleDelta = 0.9; //缩小
 		}
-		//QPointF pos = ev->position();
-		////相对于图片左上角的距离
-		//QPointF imgPos = pos - lab_img->pos();
-		//// 计算缩放后的新位置
-		//QPointF newImgPos(imgPos.x() * angleDelta, imgPos.y() * angleDelta);
-		//// 计算lab_img的新位置，以便保持鼠标位置不变
-		//QPointF newLabImgPos = pos - newImgPos;
 
 		scaledDelta *= angleDelta;
 		update_Image(scaledDelta);
@@ -294,84 +296,14 @@ void Widget::on_label_customContextMenuRequested(const QPoint& pos) {
 	context_menu->exec(QCursor::pos());
 }
 
-
-void Widget::on_bttuonGroup_blur_clicked(QAbstractButton* btn) 
-{
-	int id = btngroup_blur->id(btn); //获取按下的按钮的id
-	blur->now_operation = id; //选择blur的当前操作方式
+void Widget::on_buttonGroup_everyOpeartions_choice(Object*& op,QButtonGroup* btn_group,QAbstractButton* btn){
+	op->current_choice = btn_group->id(btn);
 
 	choice_buttonGroupsBtns();
 
-	hideAllDialog(all_dlg[id-BLUR::Average]);
-	all_dlg[id - BLUR::Average]->open();//0-0 1-0 2-0 3-0
-}
-
-void Widget::on_bttuonGroup_threshold_clicked(QAbstractButton* btn)
-{
-	int id = btngroup_threshold->id(btn); //获取按下的按钮的id
-
-	int type = cv::ThresholdTypes(id - THRESHOLD::Binary);
-
-	//选择当前阈值模式
-	threshold->current_choice = type;
-
-	choice_buttonGroupsBtns();
-
-	hideAllDialog(all_dlg[4]);
-	all_dlg[4]->open();
-}
-
-void Widget::on_bttuonGroup_morphology_clicked(QAbstractButton* btn)
-{
-	int id = btngroup_form->id(btn);
-
-	choice_buttonGroupsBtns();
-
-	int type = cv::MorphTypes(id - FORM::Erode);
-	if (type == cv::MorphTypes::MORPH_HITMISS) {
-		if (res->curr_mt.type() != CV_8UC1) {
-			//只有CV_8UC1可以使用MORPH_HITMISS
-			type = 0;
-		}
-	}
-	//选择当前形态学操作模式
-	morphology->current_choice = type;
-
-	hideAllDialog(all_dlg[5]);
-	all_dlg[5]->open();
-}
-
-void Widget::on_bttuonGroup_connected_clicked(QAbstractButton* btn)
-{
-	int id = btngroup_connected->id(btn);
-
-	//选择当前连通性分析操作模式
-	connected->current_choice = id - CONNECTED::CONNECTED_TYPE1; // 0 1
-
-	choice_buttonGroupsBtns();
-
-	hideAllDialog(all_dlg[6]);
-	all_dlg[6]->open();
-}
-
-void Widget::on_bttuonGroup_contours_clicked(QAbstractButton* btn)
-{
-	int id = btngroup_contours->id(btn);
-
-	choice_buttonGroupsBtns();
-
-	hideAllDialog(all_dlg[7]);
-	all_dlg[7]->open();
-}
-
-void Widget::on_bttuonGroup_show_clicked(QAbstractButton* btn)
-{
-	int id = btngroup_show->id(btn);
-
-	choice_buttonGroupsBtns();
-
-	hideAllDialog(all_dlg[8]);
-	all_dlg[8]->open();
+	int dlg_id = switch_Dialog_id(op->current_choice);
+	hideAllDialog(all_dlg[dlg_id]);
+	all_dlg[dlg_id]->open();
 }
 
 void Widget::on_action_exit_triggered()
@@ -735,12 +667,6 @@ bool Widget::loadImagesFormFloder(const QString& floderPath)
 void Widget::choice_buttonGroupsBtns()
 {
 	if (mode) {
-		//if (sub_lab_img->isVisible()) {
-		//	//如果我操作了图片，但是没有将预览的效果应用到主图片上，则说明此次修改无效。
-		//	//返回上一个保存点
-		//	sub_lab_img->setVisible(false);
-		//}
-		//returnPoint();
 		//先恢复再保存
 		savePoint();
 		clearAllWidgetValue();
@@ -1124,7 +1050,10 @@ void Widget::createToolBox()
 	btngroups.push_back(btngroup_blur = new QButtonGroup(this));
 	btngroup_blur->setExclusive(true);
 	//连接信号
-	connect(btngroup_blur, &QButtonGroup::buttonClicked, this, &Widget::on_bttuonGroup_blur_clicked);
+	connect(btngroup_blur, &QButtonGroup::buttonClicked, this, [=](QAbstractButton* btn) {
+		Object* op = blur;
+		on_buttonGroup_everyOpeartions_choice(op,btngroup_blur,btn);
+		});
 
 	
 	QGridLayout* grid_blur = new QGridLayout;
@@ -1153,7 +1082,10 @@ void Widget::createToolBox()
 	btngroups.push_back(btngroup_threshold = new QButtonGroup(this));
 	btngroup_threshold->setExclusive(true);
 	//连接信号
-	connect(btngroup_threshold, &QButtonGroup::buttonClicked, this, &Widget::on_bttuonGroup_threshold_clicked);
+	connect(btngroup_threshold, &QButtonGroup::buttonClicked, this, [=](QAbstractButton* btn) {
+		Object* op = threshold;
+		on_buttonGroup_everyOpeartions_choice(op, btngroup_threshold, btn);
+		});
 
 	QGridLayout* grid_threshold = new QGridLayout;
 	QWidget* b1 = createToolBtnItemWidget("二进制", THRESHOLD::Binary, "../resource/assert/2.png");
@@ -1187,7 +1119,10 @@ void Widget::createToolBox()
 	btngroups.push_back(btngroup_form = new QButtonGroup(this));
 	btngroup_form->setExclusive(true);
 	//连接信号
-	connect(btngroup_form, &QButtonGroup::buttonClicked, this, &Widget::on_bttuonGroup_morphology_clicked);
+	connect(btngroup_form, &QButtonGroup::buttonClicked, this, [=](QAbstractButton* btn) {
+		Object* op = morphology;
+		on_buttonGroup_everyOpeartions_choice(op, btngroup_form, btn);
+		});
 
 	QGridLayout* grid_form = new QGridLayout;
 	QWidget* c1 = createToolBtnItemWidget("膨胀", FORM::Erode, "../resource/assert/pengzhang.png");
@@ -1218,8 +1153,6 @@ void Widget::createToolBox()
 	c7->setStatusTip(tr("黑帽运算：闭运算图与原图差，分离比邻近点暗的斑块，突出原图像中比周围暗的区域"));
 	grid_form->addWidget(c7, 3, 0);
 
-	grid_form->addWidget(createToolBtnItemWidget("随机", FORM::Hitmiss, "../resource/assert/suiji.png"), 3, 1);
-
 	grid_form->setRowStretch(4, 10);
 	grid_form->setColumnStretch(1, 10);
 
@@ -1231,7 +1164,10 @@ void Widget::createToolBox()
 	btngroups.push_back(btngroup_connected = new QButtonGroup(this));
 	btngroup_connected->setExclusive(true);//互斥
 
-	connect(btngroup_connected, &QButtonGroup::buttonClicked, this, &Widget::on_bttuonGroup_connected_clicked);
+	connect(btngroup_connected, &QButtonGroup::buttonClicked, this, [=](QAbstractButton* btn) {
+		Object* op = connected;
+		on_buttonGroup_everyOpeartions_choice(op, btngroup_connected, btn);
+		});
 	
 	QGridLayout* gird_connected = new QGridLayout;
 
@@ -1252,7 +1188,10 @@ void Widget::createToolBox()
 	btngroups.push_back(btngroup_contours = new QButtonGroup(this));
 	btngroup_contours->setExclusive(true);
 
-	connect(btngroup_contours, &QButtonGroup::buttonClicked, this, &Widget::on_bttuonGroup_contours_clicked);
+	connect(btngroup_contours, &QButtonGroup::buttonClicked, this, [=](QAbstractButton* btn) {
+		Object* op = contours;
+		on_buttonGroup_everyOpeartions_choice(op, btngroup_contours, btn);
+		});
 
 	QGridLayout* gird_contours = new QGridLayout;
 
@@ -1270,13 +1209,20 @@ void Widget::createToolBox()
 	btngroups.push_back(btngroup_show = new QButtonGroup(this));
 	btngroup_show->setExclusive(true);
 
-	connect(btngroup_show, &QButtonGroup::buttonClicked, this, &Widget::on_bttuonGroup_show_clicked);
+	connect(btngroup_show, &QButtonGroup::buttonClicked, this, [=](QAbstractButton* btn) {
+		Object* op = showeffect;
+		on_buttonGroup_everyOpeartions_choice(op, btngroup_show, btn);
+		});
 
 	QGridLayout* gird_effect = new QGridLayout;
 
 	QWidget* f1 = createToolBtnItemWidget(tr("亮度调整"), SHOW::LIGHT, "../resource/assert/light.png");
 	f1->setStatusTip(tr("图像亮度调整：增强图像的亮度"));
 	gird_effect->addWidget(f1, 0, 0);
+
+	QWidget* f2 = createToolBtnItemWidget(tr("γ矫正"),SHOW::GAMMA,"");
+	f2->setStatusTip(tr("γ矫正"));
+	gird_effect->addWidget(f2, 0, 1);
 
 	gird_effect->setRowStretch(4, 10);
 	gird_effect->setColumnStretch(1, 10);
@@ -1292,8 +1238,6 @@ void Widget::createToolBox()
 	toolbox_side->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
 
 	toolbox_side->addItem(widget_blur, "图像模糊操作");
-	//toolbox_side->setItemIcon(0, QIcon(tr("../resource/assert/2.png")));
-	//toolbox_side->setItemToolTip(0, "");
 	toolbox_side->addItem(widget_threshold, "图像阈值操作");
 	toolbox_side->addItem(widget_from, "图像形态化操作");
 	toolbox_side->addItem(widget_connected, "图像连通分析");
@@ -1360,9 +1304,6 @@ QWidget* Widget::createToolBtnItemWidget(const QString& text, int id, const QStr
 	}
 	else if (belongsToEnum<CONTOURS>(id)) {
 		btngroup_contours->addButton(btn, id); //轮廓绘制
-	}
-	else if (belongsToEnum<CVTCOLOR>(id)) {
-		btngroup_cvtColor->addButton(btn, id); //图像转换
 	}
 	else if (belongsToEnum<SHOW>(id)) {
 		btngroup_show->addButton(btn, id);	  //效果增强
@@ -1442,6 +1383,30 @@ void Widget::update_Image(double f_scaledDelta, const QPointF& imgPos)
 	bool needScrollbars = scaledPixmap.size().width() > scrollArea->size().width() || scaledPixmap.size().height() > scrollArea->size().height();
 	scrollArea->setHorizontalScrollBarPolicy(needScrollbars ? Qt::ScrollBarAlwaysOn : Qt::ScrollBarAlwaysOff);
 	scrollArea->setVerticalScrollBarPolicy(needScrollbars ? Qt::ScrollBarAlwaysOn : Qt::ScrollBarAlwaysOff);
+}
+
+template <typename T>
+QBoxLayout* Widget::create_GUI_template_1(QSlider*& slider ,T low, T high, T step, const QString& objectName, const QString& lab_name, std::function<void(int)> slotFunction)
+{
+	if (slider)
+		return nullptr;
+	slider = new QSlider(Qt::Horizontal);
+	slider->setRange(low, high);
+	slider->setSingleStep(step);
+	slider->setObjectName(objectName);
+	slider->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
+	//传递一个槽函数
+	connect(slider, &QSlider::sliderMoved, this,slotFunction);
+
+	QHBoxLayout* hlayout1 = new QHBoxLayout;
+	hlayout1->addWidget(new QLabel(lab_name));
+	hlayout1->addWidget(slider);
+
+	QVBoxLayout* vlayout = new QVBoxLayout;
+	vlayout->addLayout(hlayout1);
+
+	return vlayout;
 }
 
 double Widget::init_scaledImageOk() {
@@ -1937,7 +1902,7 @@ QHBoxLayout* Widget::create_GUIContours()
 
 
 //----------------图像效果增强GUI----------------------------
-QVBoxLayout* Widget::create_GUIShow()
+QVBoxLayout* Widget::create_GUIAdvancedLight()
 {
 	QSlider* slider1 = new QSlider(Qt::Horizontal);
 	slider1->setRange(1,100);
@@ -1977,3 +1942,11 @@ QVBoxLayout* Widget::create_GUIShow()
 
 	return vlayout;
 }
+
+/*
+封装数值调整框
+* 1行Slider
+* 2行Slider
+* 3行Slider
+* 
+*/

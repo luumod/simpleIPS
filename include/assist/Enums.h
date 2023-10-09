@@ -4,20 +4,20 @@
 从 1 开始
 */
 enum BLUR {
-	Average = 1,
+	Average = 0,
 	Gaussian,
 	Median,
 	Bilateral 
 };
 enum THRESHOLD { 
-	Binary = 5,
+	Binary = BLUR::Bilateral + 1,
 	Binary_inv,
 	Trunc,
 	Tozero,
 	Tozero_inv
 };
 enum FORM {
-	Erode = 10,
+	Erode = THRESHOLD::Tozero_inv + 1,
 	Dilate,
 	Open,
 	Close,
@@ -27,26 +27,23 @@ enum FORM {
 	Hitmiss 
 };
 enum CONNECTED {
-	CONNECTED_TYPE1 = 18,
+	CONNECTED_TYPE1 = FORM::Hitmiss + 1,
 	CONNECTED_TYPE2
 };
 
 enum CONTOURS {
-	CONTOURS_TYPE1 = 20,
+	CONTOURS_TYPE1 = CONNECTED::CONNECTED_TYPE2 + 1,
 };
 
-enum CVTCOLOR {
-	CVTCOLOR_TYPE1 = 21,
+enum SHOW {
+	LIGHT = CONTOURS::CONTOURS_TYPE1 + 1,
+	GAMMA, 
 };
+
 
 /*
-显示效果增强
+其他操作枚举
 */
-enum SHOW {
-	LIGHT = 22,
-	SHARPEN,
-};
-
 enum TYPE {
 	BGR = 999,
 	BGR555,

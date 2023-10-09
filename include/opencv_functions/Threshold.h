@@ -17,6 +17,7 @@ public:
 	Threshold();
 	~Threshold();
 
+	int convertChoice();
 	void threshold();
 	void initialize()override;
 public slots:
@@ -27,7 +28,6 @@ public slots:
 public:
 	//阈值 最大值
 	int threshold_value = 128, maxVal = 255;
-	int current_choice = -1;
 };
 
 

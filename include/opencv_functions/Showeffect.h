@@ -19,12 +19,13 @@ public:
 	void initialize()override;
 
 	void Bright();
-	
+	void Gamma();
 public slots:
 	void onTriggered_slider_valueChange_brighten(int); //亮度
-
+	void onTriggered_slider_valueChange_gamma(double); //Gamma
 private:
 	int bright_value = 0;
+	double gamma_value = 1.0;
 };
 
 

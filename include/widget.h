@@ -7,6 +7,7 @@
 #include <opencv2/opencv.hpp>
 #include <stack>
 #include <QDebug>
+#include <functional>
 #if 1 
 class QAbstractButton;
 class QButtonGroup;
@@ -42,6 +43,8 @@ class QWheelEvent;
 class LookWidget;
 class Res;
 class CaptureWidget;
+class QBoxLayout;
+class QSlider;
 #endif
 
 class Widget :public QMainWindow {
@@ -60,7 +63,7 @@ public:
 	//解析json配置文件
 	void init_readJson();
 
-	//构造函数中初始化两个Label，注意：这个函数只是为了封装，只会调用一次
+	//构造函数中初始化两个Label
 	void init_Label();
 
 	//设置每个操作的具体选项数值
@@ -77,7 +80,6 @@ public:
 
 	//初始加载时图片必须被完全看见，需要预缩放
 	double init_scaledImageOk();
-
 protected:
 	//鼠标点击时自动关闭对话框Dialog
 	void mousePressEvent(QMouseEvent* ev)override;
@@ -103,28 +105,15 @@ public:
 	QHBoxLayout* create_GUIMorphology();	//形态学
 	QHBoxLayout* create_GUIConnected();		//连通块分析
 	QHBoxLayout* create_GUIContours();		//轮廓检测
-	QVBoxLayout* create_GUIShow();			//效果增强
+	QVBoxLayout* create_GUIAdvancedLight();			//效果增强
 public slots:
+	//对于所有的opencv操作按钮，封装为此一个函数，此函数可以用于传递指定的op操作，传递对应op操作的按钮组，传递当前按下的按钮：即可完成对于指定行为的响应。
+	//调用示例：on_buttonGroup_everyOpeartions_choice(blur,btngroup_blur,btn);
+	//用在createToolBox中的槽函数
+	void on_buttonGroup_everyOpeartions_choice(Object*& op, QButtonGroup* btn_group, QAbstractButton* btn);
+
 	//右键图片操作
 	void on_label_customContextMenuRequested(const QPoint& pos);
-
-	//模糊操作
-	void on_bttuonGroup_blur_clicked(QAbstractButton* btn);
-
-	//阈值操作
-	void on_bttuonGroup_threshold_clicked(QAbstractButton* btn);
-	
-	//形态学操作
-	void on_bttuonGroup_morphology_clicked(QAbstractButton* btn);
-
-	//连通性分析
-	void on_bttuonGroup_connected_clicked(QAbstractButton* btn);
-
-	//轮廓检测
-	void on_bttuonGroup_contours_clicked(QAbstractButton* btn);
-
-	//图像显示操作
-	void on_bttuonGroup_show_clicked(QAbstractButton* btn);
 
 	//关闭窗口
 	void on_action_exit_triggered();
@@ -239,6 +228,10 @@ private FUNCTION_: //辅助函数
 
 	//工作区：切换图片
 	void work_cutImage();
+
+	//只含一个滑块的GUI模板
+	template <typename T>
+	QBoxLayout* create_GUI_template_1(QSlider*& slider, T low,T high,T step,const QString& objectName, const QString& lab_name,std::function<void(int)> slotFunction);
 public:
 	//配置文件
 	ExeConfig config;
@@ -343,7 +336,6 @@ private:
 	QButtonGroup* btngroup_form = nullptr;
 	QButtonGroup* btngroup_connected = nullptr;
 	QButtonGroup* btngroup_contours = nullptr;
-	QButtonGroup* btngroup_cvtColor = nullptr;
 	QButtonGroup* btngroup_show = nullptr;
 	QList<QButtonGroup*> btngroups;
 
@@ -374,6 +366,9 @@ private:
 	
 	//桌面截图
 	CaptureWidget* all_screen = nullptr;
+
+	//gamma
+	QSlider* slider_gamma = nullptr;
 public:
 	QStringList	work_files; //打开工作区的图片名称组
 	int work_currentIndex = 0, work_prevIndex = 0;

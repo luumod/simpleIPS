@@ -12,6 +12,12 @@ inline QImage Mat2QImage(const cv::Mat& mat)
         image = QImage(mat.data, mat.cols, mat.rows, static_cast<int>(mat.step), QImage::Format_Grayscale8);
         return image;
     }
+    else if (mat.type() == CV_32FC3) {
+        cv::Mat cvImage8Bit;
+        mat.convertTo(cvImage8Bit, CV_8UC3, 255.0);
+        // 创建QImage
+        return Mat2QImage(cvImage8Bit);
+    }
 
     if (mat.empty()) {
         return QImage();

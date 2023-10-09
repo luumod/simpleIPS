@@ -5,7 +5,7 @@
 主要是为了巩固 Qt 与学习 OpenCV 来做的这个软件。
 
 ### 点击下载此程序来体验
-[一个简单的体验版本](https://github.com/luumod/myPhotoshopApp/releases/tag/v1.0)
+[一个简单的体验版本](https://github.com/luumod/simpleIPS/releases/tag/v1.0)
 
 ### 目前进度
 

@@ -156,17 +156,84 @@ void BaseOperate::drawGrayHist(const std::string& title, cv::Mat mt) {
 }
 
 
-void BaseOperate::showEqualizedImage()
+void BaseOperate::showEqualizedBGRImage()
 {
 	cv::Mat tMt;
 	cv::Mat grayMt;
-	cv::cvtColor(get()->res->curr_mt, grayMt, cv::ColorConversionCodes::COLOR_BGR2GRAY);
-	cv::equalizeHist(grayMt, tMt);
+	std::vector<cv::Mat> channels;
+	cv::split(get()->res->curr_mt, channels);
+	cv::Mat m1,m2,m3;
+	cv::equalizeHist(channels[0], m1);
+	cv::equalizeHist(channels[1], m2);
+	cv::equalizeHist(channels[2], m3);
+	cv::merge(std::vector<cv::Mat>{m1, m2, m3}, tMt);
 
 	show_wid->lab_img->setPixmap(QPixmap::fromImage(Mat2QImage(tMt)));
 	show_wid->show();
 }
 
+void BaseOperate::showEqualizedGrayImage()
+{
+	cv::Mat grayMat;
+	cv::cvtColor(get()->res->curr_mt, grayMat, cv::ColorConversionCodes::COLOR_BGR2GRAY);
+	cv::Mat tMt;
+	cv::equalizeHist(grayMat, tMt);
+
+	show_wid->lab_img->setPixmap(QPixmap::fromImage(Mat2QImage(tMt)));
+	show_wid->show();
+}
+cv::Mat BaseOperate::showContrastLinearBroaden(cv::Mat mat)
+{
+	//对比度线性展宽 (f1,f2) --> (g1,g2)
+	cv::Mat grayMat;
+	//转换为灰度图
+	if (mat.empty()) {
+		cv::cvtColor(get()->res->curr_mt, grayMat, cv::COLOR_BGR2GRAY);
+	}
+	else {
+		grayMat = mat;
+	}
+
+	double f1, f2;
+	cv::minMaxLoc(grayMat, &f1, &f2);
+	double g1 = 0.0, g2 = 255.0;
+
+	double k1 = g1 / f1;
+	double k2 = (g2 - g1) / (f2 - f1);
+	double k3 = (255 - g2) / (255 - f2);
+
+	for (int i = 0; i < grayMat.rows; i++) {
+		for (int j = 0; j < grayMat.cols; j++) {
+			uchar pix = grayMat.at<uchar>(i, j);
+			if (pix >= 0 && pix < f1) {
+				grayMat.at<uchar>(i, j) = cv::saturate_cast<uchar>(k1 * pix);
+			}
+			else if (pix >= f1 && pix <= f2) {
+				grayMat.at<uchar>(i, j) = cv::saturate_cast<uchar>(k2 * (pix - f1) + g1);
+			}
+			else if (pix > f2 && pix <= 255) {
+				grayMat.at<uchar>(i, j) = cv::saturate_cast<uchar>(k3 * (pix - f2) + g2);
+			}
+		}
+	}
+	show_wid->lab_img->setPixmap(QPixmap::fromImage(Mat2QImage(grayMat)));
+	show_wid->show();
+	return grayMat;
+}
+
+void BaseOperate::showBGRContrastLinearBroaden()
+{
+	std::vector<cv::Mat> channels;
+	cv::split(get()->res->curr_mt, channels);
+	cv::Mat ch1 = showContrastLinearBroaden(channels[0]);
+	cv::Mat ch2 = showContrastLinearBroaden(channels[1]);
+	cv::Mat ch3 = showContrastLinearBroaden(channels[2]);
+	cv::Mat res;
+	cv::merge(channels, res);
+
+	show_wid->lab_img->setPixmap(QPixmap::fromImage(Mat2QImage(res)));
+	show_wid->show();
+}
 
 /*
 ------- help function -----------

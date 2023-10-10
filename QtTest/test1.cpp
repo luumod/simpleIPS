@@ -1,38 +1,48 @@
 ﻿#include <opencv2/opencv.hpp>
 
+cv::Mat contrastLinearBroaden(cv::Mat ori) {
+    //对比度线性展宽 (f1,f2) --> (g1,g2)
+    cv::Mat grayMat = ori;
+    //cv::cvtColor(ori, grayMat, cv::COLOR_BGR2GRAY);
+
+    double f1, f2;
+    cv::minMaxLoc(grayMat, &f1, &f2);
+    double g1 = 0.0, g2 = 255.0;
+
+    double k1 = g1 / f1;
+    double k2 = (g2 - g1) / (f2 - f1);
+    double k3 = (255 - g2) / (255 - f2);
+
+    for (int i = 0; i < grayMat.rows; i++) {
+        for (int j = 0; j < grayMat.cols; j++) {
+            uchar pix = grayMat.at<uchar>(i, j);
+            if (pix >= 0 && pix < f1) {
+                grayMat.at<uchar>(i, j) =cv::saturate_cast<uchar>( k1 * pix);
+            }
+            else if (pix>=f1 && pix<=f2) {
+                grayMat.at<uchar>(i, j) =cv::saturate_cast<uchar>( k2 * (pix - f1) + g1);
+            }
+            else if (pix > f2 && pix <= 255) {
+                grayMat.at<uchar>(i, j) =cv::saturate_cast<uchar>( k3 * (pix - f2) + g2);
+            }
+        }
+    }
+    return grayMat;
+}
+
 int main() {
     // 读取图像
-    cv::Mat image = cv::imread("dog.png");
-    if (image.empty()) {
-        std::cerr << "无法加载图像" << std::endl;
-        return -1;
-    }
+    cv::Mat image = cv::imread("../resource/testImages/106.png");
 
-    // 定义Gamma值
-    double gamma = 3.0; // 根据需要调整Gamma值
-
-    // 缩放像素值范围到0到255
-    cv::Mat normalizedImage;
-    cv::normalize(image, normalizedImage, 0, 255, cv::NORM_MINMAX);
-
-    // 将归一化后的图像转换为浮点型
-    cv::Mat floatImage;
-    //浮点型Mat是浮点类型
-    normalizedImage.convertTo(floatImage, CV_32F);
-
-     // 使用cv::pow进行幂运算
-     cv::Mat gammaCorrected;
-     cv::pow(floatImage / 255.0, gamma, gammaCorrected);
-
-     cv::Mat cvImage8Bit;
-     gammaCorrected.convertTo(cvImage8Bit, CV_8UC3, 255.0);
-
-     cv::imshow("1", cvImage8Bit);
-
-     // 显示结果
-    cv::imshow("origin Corrected Image", image);
-    cv::imshow("Gamma Corrected Image", gammaCorrected);
+    std::vector<cv::Mat> channels;
+    cv::split(image, channels);
+    cv::Mat ch1 = contrastLinearBroaden(channels[0]);
+    cv::Mat ch2 = contrastLinearBroaden(channels[1]);
+    cv::Mat ch3 = contrastLinearBroaden(channels[2]);
+    cv::Mat res;
+    cv::merge(channels, res);
+    cv::imshow("2", image);
+    cv::imshow("1", res);
     cv::waitKey(0);
-
     return 0;
 }

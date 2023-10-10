@@ -313,7 +313,7 @@ public:
 
 	//功能
 	QAction* action_hist = nullptr;
-	QAction* action_get_equ = nullptr;
+	QAction* action_get_equalizeImg = nullptr;
 	QAction* action_fileInfo = nullptr;
 
 	//扩展

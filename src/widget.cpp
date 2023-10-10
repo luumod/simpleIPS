@@ -888,12 +888,6 @@ void Widget::createAction()
 		img_base->drawGrayHist("image histogram");
 		});
 
-	//得到均衡化图片
-	action_get_equ = new QAction(tr("计算均衡化灰度图"), this);
-	connect(action_get_equ, &QAction::triggered, this, [=]() {
-		img_base->showEqualizedImage();
-		});
-
 	action_fileInfo = new QAction(tr("图片属性"), this);
 	connect(action_fileInfo, &QAction::triggered,this,&Widget::on_action_fileInfo_triggered);
 
@@ -970,7 +964,14 @@ void Widget::createMenu()
 
 	menu_func = menuBar()->addMenu(tr("功能"));
 	menu_func->addAction(action_hist);
-	menu_func->addAction(action_get_equ);
+	QMenu* menu_equalize = new QMenu("均衡化图像",this);
+	menu_equalize->addAction("灰度图", this, [=]() {img_base->showEqualizedGrayImage(); });
+	menu_equalize->addAction("彩色图", this, [=]() {img_base->showEqualizedBGRImage(); });
+	menu_func->addMenu(menu_equalize);
+	QMenu* menu_contrastLinear = new QMenu("对比度线性展宽", this);
+	menu_contrastLinear->addAction("灰度图", this, [=]() {img_base->showContrastLinearBroaden(); });
+	menu_contrastLinear->addAction("彩色图", this, [=]() {img_base->showBGRContrastLinearBroaden(); });
+	menu_func->addMenu(menu_contrastLinear);
 	menu_func->addSeparator();
 	menu_func->addAction(action_fileInfo); //图片属性信息
 

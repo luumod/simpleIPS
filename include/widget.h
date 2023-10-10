@@ -45,6 +45,7 @@ class Res;
 class CaptureWidget;
 class QBoxLayout;
 class QSlider;
+class QComboBox;
 #endif
 
 class Widget :public QMainWindow {
@@ -97,9 +98,19 @@ public:
 	void createStatusBar();
 
 	//GUI创建
-	QHBoxLayout* create_GUIConnected();		//连通块分析
-	QHBoxLayout* create_GUIContours();		//轮廓检测
-	QVBoxLayout* create_GUIAdvancedLight();			//效果增强
+	void create_GUIAvgBlur();
+	void create_GUIGaussian();		
+	void create_GUIMedian();		
+	void create_GUIBilateral();		
+	void create_GUIThreshold();
+	void create_GUIMorphology();
+	void create_GUIConnected();	
+	void create_GUIContours();		
+	void create_GUIbright();		
+	void create_GUIgamma();		
+
+	void choice_GUI_create(int id);
+
 public slots:
 	//对于所有的opencv操作按钮，封装为此一个函数，此函数可以用于传递指定的op操作，传递对应op操作的按钮组，传递当前按下的按钮：即可完成对于指定行为的响应。
 	//调用示例：on_buttonGroup_everyOpeartions_choice(blur,btngroup_blur,btn);
@@ -225,7 +236,7 @@ private FUNCTION_: //辅助函数
 
 	//Dialog: 创建n个滑块和输入框
 	template <typename T, typename Type>
-	QBoxLayout* create_nDialog_GUItemplate(
+	QBoxLayout* createDialog_nSlider_GUItemplate(
 		QList<QSlider*>& ls_slider,
 		QList<T> low, QList<T> high, QList<T> step,
 		QList< QString> objectName,
@@ -235,6 +246,14 @@ private FUNCTION_: //辅助函数
 		const QString& filter = "",
 		const QString& text = "",
 		Type* t = nullptr);
+
+	//Dialog: 创建n个选择框
+	QBoxLayout* createDialog_nComBox_GUItemplate(
+		QList<QComboBox*>& ls_combox,
+		QList<QStringList> ls_item,
+		QList< QString> objectName,
+		QList< QString> lab_name,
+		QList<std::function<void(int)>> slotFunction);
 public:
 	//配置文件
 	ExeConfig config;
@@ -345,7 +364,20 @@ private:
 	//所有对话框操作
 	//0：blur  1: gauss  2: median  3: Bilateral
 	//4: threshold  5：morphology 6: connected  7:contours  8:show
-	QList<QDialog*> all_dlg;
+
+	QDialog* dlg_avgBlur = nullptr;
+	QDialog* dlg_gauss = nullptr;
+	QDialog* dlg_median  = nullptr;
+	QDialog* dlg_Bilateral = nullptr;
+	QDialog* dlg_threshold = nullptr;
+	QDialog* dlg_morphology = nullptr;
+	QDialog* dlg_connected = nullptr;
+	QDialog* dlg_contours = nullptr;
+	QDialog* dlg_bright = nullptr;
+	QDialog* dlg_gamma = nullptr;
+
+	QList<QDialog*> all_dlgs;
+
 
 
 	QFileDialog* fileDialog = nullptr;
@@ -371,6 +403,7 @@ private:
 	CaptureWidget* all_screen = nullptr;
 
 	//gamma
+	//需要的时候创建，而不是一开始就创建
 	QList<QSlider*> ls_slider_blur;
 	QList<QSlider*> ls_slider_gaussian;
 	QList<QSlider*> ls_slider_median;
@@ -379,11 +412,12 @@ private:
 	QList<QSlider*> ls_slider_threshold;
 	QList<QSlider*> ls_slider_morphology;
 
-	QList<QSlider*> ls_slider_connected;
-	QList<QSlider*> ls_slider_contours;
+	QList<QComboBox*> ls_combox_connected;
+	QList<QComboBox*> ls_combox_contours;
 
 	QList<QSlider*> ls_slider_light;
 	QList<QSlider*> ls_slider_gamma;
+
 public:
 	QStringList	work_files; //打开工作区的图片名称组
 	int work_currentIndex = 0, work_prevIndex = 0;

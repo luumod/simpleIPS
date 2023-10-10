@@ -31,6 +31,8 @@ Widget::Widget(QWidget* parent)
 	init_Label();			//预处理图片显示
 	init_WidgetLayout();	//设置主窗口布局
 
+	all_dlgs.resize(10);
+
 	//加载主题
 	if (config.win_theme == "light") {
 		on_action_theme_triggered(0);
@@ -43,11 +45,11 @@ Widget::Widget(QWidget* parent)
 Widget::~Widget()
 {
 	//销毁所有dialog
-	for (auto& x : all_dlg) {
+	for (auto& x : all_dlgs) {
 		delete x;
 		x = nullptr;
 	}
-	all_dlg.clear();
+	all_dlgs.clear();
 
 	//内存释放
 	for (auto& x : Opts) {
@@ -146,258 +148,13 @@ void Widget::init_Label()
 	
 	//截取图片
 	look = new LookWidget(this);
+
+
 }
 
 void Widget::init_Optsdialog()
 {
-	//很多的调整框 
-
-	//----------------------------------------------------------
-	ls_slider_blur.resize(3);
-	std::function<void(int)> funAvgBlur_slider1 = [=](int value) {
-		if (ls_slider_blur[1]->value() == ls_slider_blur[1]->minimum() && ls_slider_blur[2]->value() == ls_slider_blur[2]->minimum()) {
-			blur->anchorX = blur->anchorY = blur->avg_Ksize / 2;
-		}
-		blur->onTriggered_slider1_valueChange_avgBlur(value);
-	};
-
-	std::function<void(int)> funAvgBlur_slider2 = [=](int value) {
-		blur->onTriggered_slider2_valueChange_avgBlur(value);
-	};
-
-	std::function<void(int)> funAvgBlur_slider3 = [=](int value) {
-		blur->onTriggered_slider3_valueChange_avgBlur(value);
-	};
-
-	all_dlg.push_back(new QDialog);
-	auto dlg_avgBlur = all_dlg.back();
-	dlg_avgBlur->setWindowTitle(tr("均值滤波"));
-	all_dlg.back()->setLayout(
-		create_nDialog_GUItemplate<int, Blur*>(
-			ls_slider_blur,
-			QList<int>() << AVG_BLUR_MIN_SIZE<< AVG_BLUR_MIN_SIZE << AVG_BLUR_MIN_SIZE,
-			QList<int>() << AVG_BLUR_MAX_SIZE << AVG_BLUR_MAX_SIZE<< AVG_BLUR_MAX_SIZE,
-			QList<int>() << 1 << 1 << 1,
-			QList<QString>() << "avgKernel_slider" << "x_slider" << "y_slider",
-			QList<QString>() << "kernel" << "sigmaX" << "sigmaY",
-			QList< std::function<void(int)>>() << funAvgBlur_slider1 << funAvgBlur_slider2 << funAvgBlur_slider3,
-			true, "\\d+\\s\\d+\\s\\d+", "KSize X Y", &blur)
-	);
-
-
-	//----------------------------------------------------------
-	//高斯滤波
-	ls_slider_gaussian.resize(3);
-	std::function<void(int)> funGaussian_slider1 = [=](int value) {
-		if (value % 2 == 0) {
-			value += 1;
-		}
-		if (ls_slider_gaussian[1]->value() == ls_slider_gaussian[1]->minimum() && ls_slider_gaussian[2]->value() == ls_slider_gaussian[2]->minimum()) {
-			blur->sigmaX = blur->sigmaY = blur->gas_Ksize / 2;
-		}
-		blur->onTriggered_slider1_valueChange_gaussianBlur(value);
-	};
-
-	std::function<void(int)> funGaussian_slider2 = [=](int value) {
-		blur->onTriggered_slider2_valueChange_gaussianBlur(value);
-	};
-
-	std::function<void(int)> funGaussian_slider3 = [=](int value) {
-		blur->onTriggered_slider3_valueChange_gaussianBlur(value);
-	};
-
-	all_dlg.push_back(new QDialog);
-	auto dlg_gaussBlur = all_dlg.back();
-	dlg_gaussBlur->setWindowTitle(tr("高斯滤波"));
-	all_dlg.back()->setLayout(
-		create_nDialog_GUItemplate<int, Blur*>(
-			ls_slider_gaussian,
-			QList<int>() << 1 << 1 << 1,
-			QList<int>() << GAUSSIAN_BLUR_MAX_SIZE << GAUSSIAN_BLUR_SIGMAX << GAUSSIAN_BLUR_SIGMAY,
-			QList<int>() << 1 << 1 << 1,
-			QList<QString>() << "avgKernel_slider" << "x_slider" << "y_slider",
-			QList<QString>() << "kernel" << "sigmaX" << "sigmaY",
-			QList< std::function<void(int)>>() << funGaussian_slider1 << funGaussian_slider2 << funGaussian_slider3,
-			true, "\\d+\\s\\d+\\s\\d+", "KSize X Y", &blur)
-	);
-
-
-
-	//----------------------------------------------------------
-	//中值滤波
-	ls_slider_median.resize(1);
-	std::function<void(int)> funMedian = [=](int value) {
-		if (value % 2 == 0)
-			value += 1;
-		blur->onTriggered_slider_valueChange_medianBlur(value); };
-
-	all_dlg.push_back(new QDialog);
-	auto dlg_MedianBlur = all_dlg.back();
-	dlg_MedianBlur->setWindowTitle(tr("中值滤波"));
-	dlg_MedianBlur->setLayout(
-		create_nDialog_GUItemplate<int, Blur*>(
-			ls_slider_median,
-		QList<int>() << 1,
-		QList<int>() << MEDIAN_BLUR_MAX,
-		QList<int>() << 2,
-		QList<QString>() << "median_slider",
-		QList<QString>()<<"中值滤波",
-		QList< std::function<void(int)>>()<< funMedian,
-		true, "\\d+", "KSize", &blur)
-	);
-
-	//----------------------------------------------------------
-	//双边滤波
-	ls_slider_bilateral.resize(3);
-	std::function<void(int)> funBilateral_slider1 = [=](int value) {
-		blur->onTriggered_slider1_valueChange_bilateralBlur(value);
-	};
-
-	std::function<void(int)> funBilateral_slider2 = [=](int value) {
-		blur->onTriggered_slider2_valueChange_bilateralBlur(value);
-	};
-
-	std::function<void(int)> funBilateral_slider3 = [=](int value) {
-		blur->onTriggered_slider3_valueChange_bilateralBlur(value);
-	};
-	all_dlg.push_back(new QDialog);
-	auto dlg_BilaterBlur = all_dlg.back();
-	dlg_BilaterBlur->setWindowTitle(tr("双边滤波"));
-	all_dlg.back()->setLayout(
-		create_nDialog_GUItemplate<int, Blur*>(
-			ls_slider_bilateral,
-			QList<int>() << 1 << 0 << 0,
-			QList<int>() << BILATERAL_BLUR_MAX_SIZE << BILATERAL_BLUR_MAX_COLOR << BILATERAL_BLUR_MAX_SPACE,
-			QList<int>() << 1 << 1 << 1,
-			QList<QString>() << "bilateral_slider1" << "bilateral_slider2"<< "bilateral_slider3",
-			QList<QString>() << "ksize" << "sigmaX" << "sigmaY",
-			QList< std::function<void(int)>>() << funBilateral_slider1 << funBilateral_slider2 << funBilateral_slider3,
-			true,"\\d+\\s\\d+\\s\\d+", "bin_d sigmaColor sigmaSpace", &blur)
-	);
-
-
-	//----------------------------------------------------------
-	//阈值化
-	ls_slider_threshold.resize(2);
-	std::function<void(int)> funThreshold_slider1 = [=](int value) {
-		threshold->onTriggered_slider1_valueChanged_thresholdValue(value);
-	};
-
-	std::function<void(int)> funThreshold_slider2 = [=](int value) {
-		threshold->onTriggered_slider2_valueChanged_maxValue(value);
-	};
-
-	all_dlg.push_back(new QDialog);
-	auto dlg_Threshold = all_dlg.back();
-	dlg_Threshold->setWindowTitle(tr("图像的阈值化"));
-	all_dlg.back()->setLayout(
-		create_nDialog_GUItemplate<int, Threshold*>(
-			ls_slider_threshold,
-			QList<int>() << 0 << 0,
-			QList<int>() << 255 << 255,
-			QList<int>() << 1 << 1,
-			QList<QString>() << "threshold_value"<<"maxValue",
-			QList<QString>() << "threshold" << "maxval",
-			QList< std::function<void(int)>>() << funThreshold_slider1 << funThreshold_slider2,
-			true, "\\d+\\s\\d+", "threshold_value maxVal", &threshold)
-	);
-
-	//----------------------------------------------------------
-	//形态学
-	ls_slider_morphology.resize(3);
-	std::function<void(int)> funMorphology_slider1 = [=](int value) {
-		morphology->onTriggered_slider1_valueChanged_kernel(value);
-	};
-
-	std::function<void(int)> funMorphology_slider2 = [=](int value) {
-		morphology->onTriggered_slider2_valueChanged_anchorX(value);
-	};
-
-	std::function<void(int)> funMorphology_slider3 = [=](int value) {
-		morphology->onTriggered_slider3_valueChanged_anchorY(value);
-	};
-
-	all_dlg.push_back(new QDialog);
-	auto dlg_Morphology = all_dlg.back();
-	dlg_Morphology->setWindowTitle(tr("图像的形态学操作"));
-	//
-	all_dlg.back()->setLayout(
-		create_nDialog_GUItemplate<int, Morphology*>(
-			ls_slider_morphology,
-			QList<int>() << 1 << 1 << 1,
-			QList<int>() << 50 << 20 <<20,
-			QList<int>() << 1 << 1 << 1,
-			QList<QString>() << "Kernal_mor" << "X_mor"<< "Y_mor",
-			QList<QString>() << "Kernel" << "anchorX" << "anchorY",
-			QList< std::function<void(int)>>() << funMorphology_slider1 << funMorphology_slider2 << funMorphology_slider3,
-			true, "\\d+\\s\\d+\\s\\d+\\s\\d+", "Kernel X Y iters", &morphology)
-	);
-
-	all_dlg.push_back(new QDialog);
-	auto dlg_connected = all_dlg.back();
-	dlg_connected->setWindowTitle(tr("图像的连通性操作"));
-	all_dlg.back()->setLayout(create_GUIConnected());
-
-	all_dlg.push_back(new QDialog);
-	auto dlg_contours = all_dlg.back();
-	dlg_contours->setWindowTitle(tr("图像的轮廓检测操作"));
-	all_dlg.back()->setLayout(create_GUIContours());
-
-
-	//-----------------------------------------------------
-	//亮度调整
-	ls_slider_light.resize(2);
-	std::function<void(int)> funcLight = [=](int value) {
-		ls_slider_light[1]->setValue(ls_slider_light[1]->minimum());
-		showeffect->onTriggered_slider_valueChange_brighten(value);
-	};
-	std::function<void(int)> funcDark = [=](int value) {
-		value = -value;
-		ls_slider_light[0]->setValue(ls_slider_light[0]->minimum());
-		showeffect->onTriggered_slider_valueChange_brighten(value);
-	};
-
-
-	all_dlg.push_back(new QDialog);
-	auto dlg_light = all_dlg.back();
-	dlg_light->setWindowTitle(tr("图像亮度调整"));
-	dlg_light->setLayout(
-		create_nDialog_GUItemplate<int, Blur*>(
-			ls_slider_light,
-			QList<int>() << 1<< 1,
-			QList<int>() << 100 <<100,
-			QList<int>() << 1<< 1,
-			QList<QString>() <<"bright_light_value" << "bright_dark_value",
-			QList<QString>() << "亮度增加"<<"亮度降低",
-			QList< std::function<void(int)>>() << funcLight << funcDark)
-	);
-
-
-	//-----------------------------------------------------
-	//gamma矫正
-	ls_slider_gamma.resize(1);
-	std::function<void(int)> funcGamma = [=](int value) {
-		//将int映射为double
-		double d_val = value * 1.0 / 10.0;
-		showeffect->onTriggered_slider_valueChange_gamma(d_val);
-	};
-
-	all_dlg.push_back(new QDialog);
-	auto dlg_gamma = all_dlg.back();
-	dlg_gamma->setWindowTitle(tr("图像γ矫正"));
-	all_dlg.back()->setLayout(
-		create_nDialog_GUItemplate<int, Blur*>(
-			ls_slider_gamma,
-			QList<int>() << 1,
-			QList<int>() << 50,
-			QList<int>() << 1,
-			QList<QString>() << "gamma_slider",
-			QList<QString>() << "γ矫正",
-			QList< std::function<void(int)>>() << funcGamma,
-			true)
-	);
-
-	for (auto& x : all_dlg) {
+	for (auto& x : all_dlgs) {
 		x->setGeometry(this->rect().x() + this->width(), this->rect().y() + 100, 200, 200);
 		x->setWindowFlags(x->windowFlags() | Qt::WindowStaysOnTopHint);
 	}
@@ -494,8 +251,13 @@ void Widget::on_buttonGroup_everyOpeartions_choice(Object*& op,QButtonGroup* btn
 	choice_buttonGroupsBtns();
 
 	int dlg_id = switch_Dialog_id(op->current_choice);
-	hideAllDialog(all_dlg[dlg_id]);
-	all_dlg[dlg_id]->open();
+	if (!all_dlgs[dlg_id]) {
+		//如果这个操作此前没有做过，则初始化这个操作的Dialog
+		choice_GUI_create(dlg_id);
+	}
+	hideAllDialog(all_dlgs[dlg_id]);
+	all_dlgs[dlg_id]->open();
+	all_dlgs[dlg_id]->raise();
 }
 
 void Widget::on_action_exit_triggered()
@@ -928,8 +690,8 @@ void Widget::returnPoint()
 
 void Widget::hideAllDialog(QDialog* currDialog)
 {
-	for (auto& x : all_dlg) {
-		if (x != currDialog) {
+	for (auto& x : all_dlgs) {
+		if (x && x != currDialog) {
 			x->accept();
 		}
 	}
@@ -942,9 +704,12 @@ void Widget::setIndexPageWidgetValue(int index)
 		clearAllWidgetValue();
 		return;
 	}
-	
+
 	//否则就是第index页
-	QList<QWidget*> Opts = all_dlg[index]->findChildren<QWidget*>();
+	if (!all_dlgs[index]) {
+		return;
+	}
+	QList<QWidget*> Opts = all_dlgs[index]->findChildren<QWidget*>();
 
 	for (auto& x : Opts) {
 		if (QSlider* slider = qobject_cast<QSlider*>(x)) {
@@ -967,7 +732,7 @@ void Widget::setIndexPageWidgetValue(int index)
 void Widget::clearAllWidgetValue()
 {
 	//清除所有的滑块的值
-	for (int i = 0; i < all_dlg.count(); i++) { // (0 1 2 3) 4 5 6 7 8
+	for (int i = 0; i < all_dlgs.count(); i++) { // (0 1 2 3) 4 5 6 7 8
 		setIndexPageWidgetValue(i);
 	}
 }
@@ -1469,6 +1234,378 @@ void Widget::createStatusBar()
 	statusBar()->addWidget(statusLab);
 }
 
+void Widget::create_GUIAvgBlur()
+{
+	//----------------------------------------------------------
+	ls_slider_blur.resize(3);
+	std::function<void(int)> funAvgBlur_slider1 = [=](int value) {
+		if (ls_slider_blur[1]->value() == ls_slider_blur[1]->minimum() && ls_slider_blur[2]->value() == ls_slider_blur[2]->minimum()) {
+			blur->anchorX = blur->anchorY = blur->avg_Ksize / 2;
+		}
+		blur->onTriggered_slider1_valueChange_avgBlur(value);
+	};
+
+	std::function<void(int)> funAvgBlur_slider2 = [=](int value) {
+		blur->onTriggered_slider2_valueChange_avgBlur(value);
+	};
+
+	std::function<void(int)> funAvgBlur_slider3 = [=](int value) {
+		blur->onTriggered_slider3_valueChange_avgBlur(value);
+	};
+
+	dlg_avgBlur = new QDialog;
+	all_dlgs[0] = dlg_avgBlur;
+	dlg_avgBlur->setWindowTitle(tr("均值滤波"));
+	dlg_avgBlur->setLayout(
+		createDialog_nSlider_GUItemplate<int, Blur*>(
+			ls_slider_blur,
+			QList<int>() << 1 << 1 << 1,
+			QList<int>() << 30 << 30 << 30,
+			QList<int>() << 1 << 1 << 1,
+			QList<QString>() << "Kernel_slider" << "x_slider" << "y_slider",
+			QList<QString>() << "kernel" << "sigmaX" << "sigmaY",
+			QList< std::function<void(int)>>() << funAvgBlur_slider1 << funAvgBlur_slider2 << funAvgBlur_slider3,
+			true, "\\d+\\s\\d+\\s\\d+", "KSize X Y", &blur)
+	);
+}
+
+void Widget::create_GUIGaussian()
+{
+	//----------------------------------------------------------
+	//高斯滤波
+	ls_slider_gaussian.resize(3);
+	std::function<void(int)> funGaussian_slider1 = [=](int value) {
+		if (value % 2 == 0) {
+			value += 1;
+		}
+		if (ls_slider_gaussian[1]->value() == ls_slider_gaussian[1]->minimum() && ls_slider_gaussian[2]->value() == ls_slider_gaussian[2]->minimum()) {
+			blur->sigmaX = blur->sigmaY = blur->gas_Ksize / 2;
+		}
+		blur->onTriggered_slider1_valueChange_gaussianBlur(value);
+	};
+
+	std::function<void(int)> funGaussian_slider2 = [=](int value) {
+		blur->onTriggered_slider2_valueChange_gaussianBlur(value);
+	};
+
+	std::function<void(int)> funGaussian_slider3 = [=](int value) {
+		blur->onTriggered_slider3_valueChange_gaussianBlur(value);
+	};
+
+	dlg_gauss = new QDialog;
+	all_dlgs[1] = dlg_gauss;
+	dlg_gauss->setWindowTitle(tr("高斯滤波"));
+	dlg_gauss->setLayout(
+		createDialog_nSlider_GUItemplate<int, Blur*>(
+			ls_slider_gaussian,
+			QList<int>() << 1 << 1 << 1,
+			QList<int>() << 41 << 41 << 40,
+			QList<int>() << 1 << 1 << 1,
+			QList<QString>() << "Kernel_slider" << "x_slider" << "y_slider",
+			QList<QString>() << "kernel" << "sigmaX" << "sigmaY",
+			QList< std::function<void(int)>>() << funGaussian_slider1 << funGaussian_slider2 << funGaussian_slider3,
+			true, "\\d+\\s\\d+\\s\\d+", "KSize X Y", &blur)
+	);
+}
+
+void Widget::create_GUIMedian()
+{
+	//----------------------------------------------------------
+	//中值滤波
+	ls_slider_median.resize(1);
+	std::function<void(int)> funMedian = [=](int value) {
+		if (value % 2 == 0)
+			value += 1;
+		blur->onTriggered_slider_valueChange_medianBlur(value); };
+
+	dlg_median = new QDialog;
+	all_dlgs[2] = dlg_median;
+	dlg_median->setWindowTitle(tr("中值滤波"));
+	dlg_median->setLayout(
+		createDialog_nSlider_GUItemplate<int, Blur*>(
+			ls_slider_median,
+			QList<int>() << 1,
+			QList<int>() << MEDIAN_BLUR_MAX,
+			QList<int>() << 2,
+			QList<QString>() << "median_slider",
+			QList<QString>() << "KSize",
+			QList< std::function<void(int)>>() << funMedian,
+			true, "\\d+", "KSize", &blur)
+	);
+}
+
+void Widget::create_GUIBilateral()
+{
+	//----------------------------------------------------------
+	//双边滤波
+	ls_slider_bilateral.resize(3);
+	std::function<void(int)> funBilateral_slider1 = [=](int value) {
+		blur->onTriggered_slider1_valueChange_bilateralBlur(value);
+	};
+
+	std::function<void(int)> funBilateral_slider2 = [=](int value) {
+		blur->onTriggered_slider2_valueChange_bilateralBlur(value);
+	};
+
+	std::function<void(int)> funBilateral_slider3 = [=](int value) {
+		blur->onTriggered_slider3_valueChange_bilateralBlur(value);
+	};
+	dlg_Bilateral = new QDialog;
+	all_dlgs[3] = dlg_Bilateral;
+	dlg_Bilateral->setWindowTitle(tr("双边滤波"));
+	dlg_Bilateral->setLayout(
+		createDialog_nSlider_GUItemplate<int, Blur*>(
+			ls_slider_bilateral,
+			QList<int>() << 1 << 0 << 0,
+			QList<int>() << 50 << 120 << 150,
+			QList<int>() << 1 << 1 << 1,
+			QList<QString>() << "bilateral_slider" << "sigma_Color" << "sigma_Space",
+			QList<QString>() << "ksize" << "sigmaX" << "sigmaY",
+			QList< std::function<void(int)>>() << funBilateral_slider1 << funBilateral_slider2 << funBilateral_slider3,
+			true, "\\d+\\s\\d+\\s\\d+", "bin_d sigmaColor sigmaSpace", &blur)
+	);
+}
+
+void Widget::create_GUIThreshold()
+{
+	//----------------------------------------------------------
+	//阈值化
+	ls_slider_threshold.resize(2);
+	std::function<void(int)> funThreshold_slider1 = [=](int value) {
+		threshold->onTriggered_slider1_valueChanged_thresholdValue(value);
+	};
+
+	std::function<void(int)> funThreshold_slider2 = [=](int value) {
+		threshold->onTriggered_slider2_valueChanged_maxValue(value);
+	};
+
+	dlg_threshold = new QDialog;
+	all_dlgs[4] = dlg_threshold;
+	dlg_threshold->setWindowTitle(tr("图像的阈值化"));
+	dlg_threshold->setLayout(
+		createDialog_nSlider_GUItemplate<int, Threshold*>(
+			ls_slider_threshold,
+			QList<int>() << 0 << 0,
+			QList<int>() << 255 << 255,
+			QList<int>() << 1 << 1,
+			QList<QString>() << "threshold_value" << "maxValue",
+			QList<QString>() << "threshold" << "maxval",
+			QList< std::function<void(int)>>() << funThreshold_slider1 << funThreshold_slider2,
+			true, "\\d+\\s\\d+", "threshold_value maxVal", &threshold)
+	);
+
+}
+
+void Widget::create_GUIMorphology()
+{
+	//----------------------------------------------------------
+	//形态学
+	ls_slider_morphology.resize(3);
+	std::function<void(int)> funMorphology_slider1 = [=](int value) {
+		morphology->onTriggered_slider1_valueChanged_kernel(value);
+	};
+
+	std::function<void(int)> funMorphology_slider2 = [=](int value) {
+		morphology->onTriggered_slider2_valueChanged_anchorX(value);
+	};
+
+	std::function<void(int)> funMorphology_slider3 = [=](int value) {
+		morphology->onTriggered_slider3_valueChanged_anchorY(value);
+	};
+
+	dlg_morphology = new QDialog;
+	all_dlgs[5] = dlg_morphology;
+	dlg_morphology->setWindowTitle(tr("图像的形态学操作"));
+	dlg_morphology->setLayout(
+		createDialog_nSlider_GUItemplate<int, Morphology*>(
+			ls_slider_morphology,
+			QList<int>() << 1 << 1 << 1,
+			QList<int>() << 50 << 20 << 20,
+			QList<int>() << 1 << 1 << 1,
+			QList<QString>() << "Kernal_mor" << "X_mor" << "Y_mor",
+			QList<QString>() << "Kernel" << "anchorX" << "anchorY",
+			QList< std::function<void(int)>>() << funMorphology_slider1 << funMorphology_slider2 << funMorphology_slider3,
+			true, "\\d+\\s\\d+\\s\\d+\\s\\d+", "Kernel X Y iters", &morphology)
+	);
+}
+
+void Widget::create_GUIConnected()
+{
+	//----------------------------------------------------------
+	//连通性
+	ls_combox_connected.resize(2);
+	std::function<void(int)> funConnected_combo1 = [=](int index) {
+		connected->onTriggered_Comb2_currentTextChanged_ccltype(index);
+	};
+
+	std::function<void(int)> funConnected_combo2 = [=](int index) {
+		connected->onTriggered_Comb2_currentTextChanged_ccltype(index);
+	};
+
+	dlg_connected = new QDialog;
+	all_dlgs[6] = dlg_connected;
+	dlg_connected->setWindowTitle(tr("图像的连通性操作①"));
+	QStringList com1 = { "8" , "4" };
+	QStringList com2 = { "default","CC_WU","CCL_GRANA","CCL_BOLELLI","CCL_SAUF","CCL_BBDT","CCL_SPAGHETTI" };
+	dlg_connected->setLayout(
+		createDialog_nComBox_GUItemplate(
+			ls_combox_connected,
+			QList<QStringList>() << com1 << com2,
+			QList<QString>() << "connectivity" << "ccltype",
+			QList<QString>() << "邻域" << "联通算法",
+			QList< std::function<void(int)>>() << funConnected_combo1 << funConnected_combo2
+		)
+	);
+}
+
+void Widget::create_GUIContours()
+{
+	//----------------------------------------------------------
+	//轮廓
+	ls_combox_contours.resize(5);
+	std::function<void(int)> funContours_combo1 = [=](int index) {
+		contours->onTriggered_Comb1_currentTextChanged_contoursMode(index);
+	};
+
+	std::function<void(int)> funContours_combo2 = [=](int index) {
+		contours->onTriggered_Comb2_currentTextChanged_contoursMethod(index);
+	};
+
+	std::function<void(int)> funContours_combo3 = [=](int index) {
+		contours->onTriggered_Comb3_currentTextChanged_contoursThick(index);
+	};
+
+	std::function<void(int)> funContours_combo4 = [=](int index) {
+		colorDialog->setMinimumSize(375, 375);
+		colorDialog->setMaximumSize(653, 498);
+		colorDialog->setGeometry(810, 306, 375, 375);
+		colorDialog->show(); //弹出颜色框
+	};
+
+	std::function<void(int)> funContours_combo5 = [=](int index) {
+		contours->onClicked_btn_convexHull();
+	};
+
+	dlg_contours = new QDialog;
+	all_dlgs[7] = dlg_contours;
+	dlg_contours->setWindowTitle(tr("图像的轮廓检测操作"));
+	QStringList contours_com1 = { "RETR_EXTERNAL", "RETR_LIST","RETR_CCOMP","RETR_TREE" };
+	QStringList contours_com2 = { "CHAIN_APPROX_NONE", "CHAIN_APPROX_SIMPLE","CHAIN_APPROX_TC89_L1","CHAIN_APPROX_TC89_KCOS" };
+	QStringList contours_com3;
+	for (int i = 1; i <= 10; i++) {
+		contours_com3.append(QString("%1").arg(i));
+	}
+	QStringList contours_com4 = { "更换颜色" };
+	QStringList contours_com5 = { "绘制图像凸包" };
+	dlg_contours->setLayout(
+		createDialog_nComBox_GUItemplate(
+			ls_combox_contours,
+			QList<QStringList>() << contours_com1 << contours_com2 << contours_com3 << contours_com4 << contours_com5,
+			QList<QString>() << "contours_mode" << "contours_method" << "contours_thick" << "coutours_color" << "coutours_FullHex",
+			QList<QString>() << "轮廓检索模式" << "轮廓逼近方法" << "绘制线宽度" << "other" << "other",
+			QList< std::function<void(int)>>() << funContours_combo1 << funContours_combo2 << funContours_combo3 << funContours_combo4 << funContours_combo5
+		)
+	);
+
+}
+
+void Widget::create_GUIbright()
+{
+	//-----------------------------------------------------
+	//亮度调整
+	ls_slider_light.resize(2);
+	std::function<void(int)> funcLight = [=](int value) {
+		ls_slider_light[1]->setValue(ls_slider_light[1]->minimum());
+		showeffect->onTriggered_slider_valueChange_brighten(value);
+	};
+	std::function<void(int)> funcDark = [=](int value) {
+		value = -value;
+		ls_slider_light[0]->setValue(ls_slider_light[0]->minimum());
+		showeffect->onTriggered_slider_valueChange_brighten(value);
+	};
+
+
+	dlg_bright = new QDialog;
+	all_dlgs[8] = dlg_bright;
+	dlg_bright->setWindowTitle(tr("图像亮度调整"));
+	dlg_bright->setLayout(
+		createDialog_nSlider_GUItemplate<int, Blur*>(
+			ls_slider_light,
+			QList<int>() << 1 << 1,
+			QList<int>() << 100 << 100,
+			QList<int>() << 1 << 1,
+			QList<QString>() << "bright_light_value" << "bright_dark_value",
+			QList<QString>() << "亮度增加" << "亮度降低",
+			QList< std::function<void(int)>>() << funcLight << funcDark)
+	);
+}
+
+void Widget::create_GUIgamma()
+{
+	//-----------------------------------------------------
+	//gamma矫正
+	ls_slider_gamma.resize(1);
+	std::function<void(int)> funcGamma = [=](int value) {
+		//将int映射为double
+		double d_val = value * 1.0 / 10.0;
+		showeffect->onTriggered_slider_valueChange_gamma(d_val);
+	};
+
+	dlg_gamma = new QDialog;
+	all_dlgs[9] = dlg_gamma;
+	dlg_gamma->setWindowTitle(tr("图像γ矫正"));
+	dlg_gamma->setLayout(
+		createDialog_nSlider_GUItemplate<int, Blur*>(
+			ls_slider_gamma,
+			QList<int>() << 1,
+			QList<int>() << 50,
+			QList<int>() << 1,
+			QList<QString>() << "gamma_slider",
+			QList<QString>() << "γ矫正",
+			QList< std::function<void(int)>>() << funcGamma,
+			true)
+	);
+}
+
+
+void Widget::choice_GUI_create(int id)
+{
+	switch (id)
+	{
+	case 0:
+		create_GUIAvgBlur();
+		break;
+	case 1:
+		create_GUIGaussian();
+		break;
+	case 2:
+		create_GUIMedian();
+		break;
+	case 3:
+		create_GUIBilateral();
+		break;
+	case 4:
+		create_GUIThreshold();
+		break;
+	case 5:
+		create_GUIMorphology();
+		break;
+	case 6:
+		create_GUIConnected();
+		break;
+	case 7:
+		create_GUIContours();
+		break;
+	case 8:
+		create_GUIbright();
+		break;
+	case 9:
+		create_GUIgamma();
+		break;
+	default:
+		break;
+	}
+}
 
 QWidget* Widget::createToolBtnItemWidget(const QString& text, int id, const QString& fileName)
 {
@@ -1573,7 +1710,7 @@ void Widget::update_Image(double f_scaledDelta, const QPointF& imgPos)
 
 
 template<typename T, typename Type>
-QBoxLayout* Widget::create_nDialog_GUItemplate(
+QBoxLayout* Widget::createDialog_nSlider_GUItemplate(
 	QList<QSlider*>& ls_slider,
 	QList<T> low,
 	QList<T> high,
@@ -1595,16 +1732,50 @@ QBoxLayout* Widget::create_nDialog_GUItemplate(
 		ls_slider[i]->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
 		//传递一个槽函数
-		connect(ls_slider[i], &QSlider::sliderMoved, this, slotFunction[i]);
+		connect(ls_slider[i], &QSlider::sliderMoved,
+			this, slotFunction[i]);
 
-		vlayout->addWidget(new QLabel(lab_name[i]));
-		vlayout->addWidget(ls_slider[i]);
+		QHBoxLayout* hlayout = new QHBoxLayout;
+		hlayout->addWidget(new QLabel(lab_name[i]));
+		hlayout->addWidget(ls_slider[i]);
+
+		vlayout->addLayout(hlayout);
 	}	
 	//----------------------------
 	//具有可输入功能，添加一个输入框
 	if (edit) {
 		vlayout->addSpacing(10);
 		vlayout->addLayout(create_Edit_hLayout(filter, text, t));
+	}
+	return vlayout;
+}
+
+QBoxLayout* Widget::createDialog_nComBox_GUItemplate(
+	QList<QComboBox*>& ls_combox,
+	QList<QStringList> ls_item,
+	QList< QString> objectName,
+	QList< QString> lab_name,
+	QList<std::function<void(int)>> slotFunction)
+{
+	QVBoxLayout* vlayout = new QVBoxLayout;
+	for (int i = 0; i < ls_combox.size(); i++) {
+		ls_combox[i] = new QComboBox;
+		ls_combox[i]->setEditable(false);
+		for (auto& item : ls_item[i]) {
+			ls_combox[i]->addItem(item);
+		}
+		ls_combox[i]->setObjectName(objectName[i]);
+		ls_combox[i]->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
+		//传递一个槽函数
+		connect(ls_combox[i], &QComboBox::activated,
+			this, slotFunction[i]);
+
+		QHBoxLayout* hlayout = new QHBoxLayout;
+		hlayout->addWidget(new QLabel(lab_name[i]));
+		hlayout->addWidget(ls_combox[i]);
+
+		vlayout->addLayout(hlayout);
 	}
 	return vlayout;
 }
@@ -1624,147 +1795,4 @@ double Widget::init_scaledImageOk() {
 	update_Image(t_scaledDelta);
 
 	return t_scaledDelta;
-}
-
-//----------------连通区域分析GUI----------------------------
-QHBoxLayout* Widget::create_GUIConnected()
-{
-	QComboBox* comb1 = new QComboBox; //选择 connectivity = 8 or 4
-	comb1->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-	comb1->setObjectName(tr("connectivity"));
-	comb1->addItem(tr("8"));
-	comb1->addItem(tr("4"));
-	comb1->setEditable(false);
-	connect(comb1, &QComboBox::activated, this, [=](int index) {
-		connected->onTriggered_Comb1_currentTextChanged_connectivtiy(index);
-	});
-	QComboBox* comb2 = new QComboBox;  //选择算法
-	comb2->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-	comb2->setObjectName(tr("ccltype"));
-	comb2->addItem(tr("default"));
-	comb2->addItem(tr("CC_WU"));
-	comb2->addItem(tr("CCL_GRANA"));
-	comb2->addItem(tr("CCL_BOLELLI"));
-	comb2->addItem(tr("CCL_SAUF"));
-	comb2->addItem(tr("CCL_BBDT"));
-	comb2->addItem(tr("CCL_SPAGHETTI"));
-	comb2->setEditable(false);
-	connect(comb2, &QComboBox::activated, this, [=](int index) {
-		connected->onTriggered_Comb2_currentTextChanged_ccltype(index);
-	});
-
-	QHBoxLayout* hlayout1 = new QHBoxLayout;
-	hlayout1->addWidget(new QLabel("邻域"));
-	hlayout1->addWidget(comb1);
-	hlayout1->setAlignment(Qt::AlignmentFlag::AlignCenter);
-
-	QHBoxLayout* hlayout2 = new QHBoxLayout;
-	hlayout2->addWidget(new QLabel("联通算法"));
-	hlayout2->addWidget(comb2);
-	hlayout2->setAlignment(Qt::AlignmentFlag::AlignCenter);
-
-	QVBoxLayout* vlayout = new QVBoxLayout;
-	vlayout->addLayout(hlayout1);
-	vlayout->addLayout(hlayout2);
-
-	QHBoxLayout* hboxl = new QHBoxLayout;
-	hboxl->addLayout(vlayout);
-
-	return hboxl;
-}
-
-//----------------图像轮廓分析GUI----------------------------
-QHBoxLayout* Widget::create_GUIContours()
-{
-	QComboBox* comb1 = new QComboBox; // mode
-	comb1->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-	comb1->setObjectName(tr("contours_mode"));
-	comb1->addItem(tr("RETR_EXTERNAL"));
-	comb1->addItem(tr("RETR_LIST"));
-	comb1->addItem(tr("RETR_CCOMP"));
-	comb1->addItem(tr("RETR_TREE"));
-	comb1->setEditable(false);
-	connect(comb1, &QComboBox::activated, this, [=](int index) {
-		contours->onTriggered_Comb1_currentTextChanged_contoursMode(index);
-		});
-
-	QComboBox* comb2 = new QComboBox;  //method
-	comb2->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-	comb2->setObjectName(tr("contours_method"));
-	comb2->addItem(tr("CHAIN_APPROX_NONE"));
-	comb2->addItem(tr("CHAIN_APPROX_SIMPLE"));
-	comb2->addItem(tr("CHAIN_APPROX_TC89_L1"));
-	comb2->addItem(tr("CHAIN_APPROX_TC89_KCOS"));
-	comb2->setEditable(false);
-	connect(comb2, &QComboBox::activated, this, [=](int index) {
-		contours->onTriggered_Comb2_currentTextChanged_contoursMethod(index);
-		});
-
-	QComboBox* comb3 = new QComboBox;  //绘制线的粗细
-	comb3->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-	comb3->setObjectName(tr("contours_thick"));
-	for (int i = 1; i <= 10; i++) {
-		comb3->addItem(QString("%1").arg(i));
-	}
-
-	connect(comb3, &QComboBox::activated, this, [=](int index) {
-	contours->onTriggered_Comb3_currentTextChanged_contoursThick(index);
-		});
-
-	QPushButton* btn = new QPushButton;
-	btn->setText("绘制图像凸包");
-	connect(btn, &QPushButton::clicked, this, [=]() {
-		contours->onClicked_btn_convexHull();
-	});
-
-	QToolButton* color = new QToolButton;
-	color->setIcon(QPixmap("../resource/colors.png"));
-	color->setMinimumSize(48, 48);
-	color->setMaximumSize(48, 48);
-	color->setIconSize(color->size());
-	connect(color, &QToolButton::clicked, this, [=]() {
-		colorDialog->setMinimumSize(375, 375);
-		colorDialog->setMaximumSize(653, 498);
-		colorDialog->setGeometry(810, 306, 375, 375);
-		colorDialog->show(); //弹出颜色框
-		});
-
-	QGridLayout* grid = new QGridLayout;
-	grid->addWidget(color, 0, 0, Qt::AlignHCenter);
-	grid->addWidget(new QLabel("绘制颜色"), 1, 0, Qt::AlignHCenter);
-
-	QHBoxLayout* hlayout1 = new QHBoxLayout;
-	hlayout1->addWidget(new QLabel("轮廓检索模式"));
-	hlayout1->addWidget(comb1);
-	hlayout1->setAlignment(Qt::AlignmentFlag::AlignCenter);
-
-	QHBoxLayout* hlayout2 = new QHBoxLayout;
-	hlayout2->addWidget(new QLabel("轮廓逼近方法"));
-	hlayout2->addWidget(comb2);
-	hlayout2->setAlignment(Qt::AlignmentFlag::AlignCenter);
-	
-	QHBoxLayout* hlayout3 = new QHBoxLayout;
-	hlayout3->addWidget(new QLabel("绘制线宽度"));
-	hlayout3->addWidget(comb3);
-	hlayout3->setAlignment(Qt::AlignmentFlag::AlignCenter);
-
-	QVBoxLayout* vlayoutRight = new QVBoxLayout;
-	vlayoutRight->addStretch(10);
-	vlayoutRight->addLayout(grid);
-	vlayoutRight->addStretch(10);
-
-	QVBoxLayout* vlayoutLeft = new QVBoxLayout;
-	vlayoutLeft->addLayout(hlayout1);
-	vlayoutLeft->addLayout(hlayout2);
-	vlayoutLeft->addLayout(hlayout3);
-	vlayoutLeft->addWidget(btn);
-
-	QHBoxLayout* hlayout = new QHBoxLayout;
-	hlayout->addLayout(vlayoutLeft);
-	hlayout->addLayout(vlayoutRight);
-
-	QHBoxLayout* hboxl = new QHBoxLayout;
-	hboxl->addLayout(hlayout);
-
-	return hboxl;
 }

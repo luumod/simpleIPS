@@ -82,8 +82,7 @@ void Contours::convexHull()
 		std::vector<cv::Point> convex;
 		cv::convexHull(points[i], convex);
 		for (int j = 0; j < convex.size(); j++) {
-			//cv::circle(tMt, convex[j], 1, cv::Scalar(0, 0, 255));
-			cv::line(tMt, convex[j % (convex.size())], convex[(j + 1) % (convex.size())], cv::Scalar(255, 255, 0),3); //两点之间相连接
+			cv::line(tMt, convex[j % (convex.size())], convex[(j + 1) % (convex.size())], cv::Scalar(color.black(),color.green(),color.red(),color.alpha()), 3); //两点之间相连接
 		}
 	}
 	Object::update(tMt);

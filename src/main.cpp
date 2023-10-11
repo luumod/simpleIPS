@@ -7,7 +7,7 @@
 #include <QFile>
 #include <Windows.h>
 //未安装vld的话可以直接删除
-//#include <vld.h>
+#include <vld.h>
 class Widget;
 //添加控制台windows/console
 #pragma comment(linker,"/subSystem:console /entry:mainCRTStartup")

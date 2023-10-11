@@ -2,7 +2,7 @@
 #include "../include/assist/Res.h"
 #include "../include/opencv_functions/BaseOperate.h"
 #include "../include/assist/Mat2QImage.h"
-#include "../include/Widget/LabelImg.h"
+#include "../include/Widget/LookWidget.h"
 #include "../include/Widget/ShowImgWidget.h"
 #include <QLabel>
 

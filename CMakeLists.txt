@@ -35,7 +35,7 @@ add_executable(QtPro
     src/main.cpp
     src/Connected.cpp
     src/Object.cpp
-    src/LabelImg.cpp
+    "src/LookWidget.cpp"
     src/Contours.cpp
     src/Res.cpp
 
@@ -69,17 +69,16 @@ add_executable(QtPro
     include/other_functions/GraphicsScene.h
     include/other_functions/eventfilterobject.h
 
-    include/Widget/LabelImg.h 
+    "include/Widget/LookWidget.h" 
     include/Widget/DrawWidget.h 
     include/Widget/ShowImgWidget.h
     include/Widget/CaptureWidget.h
 
     include/widget_include_files.h
     include/widget.h
- )
+  "include/Widget/WidgetBuilder.h" "src/WidgetBuilder.cpp")
  add_executable(QtTest
-    QtTest/test1.cpp 
- )
+    QtTest/test1.cpp )
 
 
 

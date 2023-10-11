@@ -1,7 +1,7 @@
 ﻿#include "../include/opencv_functions/Object.h"
 #include "../include/widget.h"
 #include "../include/assist/Mat2QImage.h"
-#include "../include/Widget/LabelImg.h"
+#include "../include/Widget/LookWidget.h"
 #include <QDebug>
 #include "../include/assist/Common.h"
 #include "../include/assist/Res.h"

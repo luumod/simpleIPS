@@ -1,5 +1,5 @@
-﻿#ifndef LABELIMG_H_
-#define LABELIMG_H_
+﻿#ifndef LOOKWIDGET_H_
+#define LOOKWIDGET_H_
 
 #include <QMainWindow>
 #include <QLabel>
@@ -19,20 +19,6 @@ class HandleJieWidget;
 class ShowImgWidget;
 
 Widget* get();
-
-/*
-主图片Label
-*/
-
-class Main_Label :public QLabel {
-	Q_OBJECT
-public:
-	Main_Label(QWidget* parent = nullptr);
-	~Main_Label();
-protected:
-	/**/
-private:
-};
 
 /*
 截取图片的Widget

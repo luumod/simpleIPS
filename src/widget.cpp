@@ -137,19 +137,14 @@ void Widget::init_WidgetInfo()
 
 void Widget::init_Label()
 {
-	lab_img = new Main_Label;
-	lab_img->setAlignment(Qt::AlignCenter);
-	lab_img->setObjectName("lab_img");
-	if (res) {
-		lab_img->setPixmap(QPixmap::fromImage(res->curr_img));
-	}
+	lab_img = LabelBuilder()
+		.setObjectName("lab_img")
+		.setAlignment(Qt::AlignCenter)
+		.setContextMenuPolicy(Qt::CustomContextMenu)
+		.setPixmap(QPixmap::fromImage(res->curr_img))
+		.create(this);
 	//图片上下文菜单
 	connect(lab_img, &QLabel::customContextMenuRequested, this, &Widget::on_label_customContextMenuRequested);
-	
-	//截取图片
-	look = new LookWidget(this);
-
-
 }
 
 void Widget::init_Optsdialog()
@@ -409,6 +404,9 @@ void Widget::on_action_theme_triggered(int type)
 void Widget::on_action_jie_triggered()
 {
 	//图片截取Widget
+	if (!look) {
+		look = new LookWidget(this);
+	}
 	look->reset(QPixmap::fromImage(res->curr_img));
 	look->show();
 }
@@ -1189,21 +1187,19 @@ void Widget::createToolBox()
 	widget_effect->setLayout(gird_effect);
 
 	//-----------------创建ToolBox-----------------
-	toolbox_side = new QToolBox(this);
-	toolbox_side->setMinimumWidth(200);
-	toolbox_side->setMaximumWidth(200);
-	toolbox_side->setFrameShape(QFrame::StyledPanel);
-	toolbox_side->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
-
-	toolbox_side->addItem(widget_blur, "图像模糊操作");
-	toolbox_side->addItem(widget_threshold, "图像阈值操作");
-	toolbox_side->addItem(widget_from, "图像形态化操作");
-	toolbox_side->addItem(widget_connected, "图像连通分析");
-	toolbox_side->addItem(widget_contours, "图像轮廓分析");
-	toolbox_side->addItem(widget_effect, "图像效果增强");
-
-	toolbox_side->setCurrentIndex(0); 
-
+	toolbox_side = ToolBoxBuilder()
+		.setMinimumWidth(200)
+		.setMaximumWidth(200)
+		.setFrameShape(QFrame::StyledPanel)
+		.setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored)
+		.addItem(widget_blur, "图像模糊操作")
+		.addItem(widget_threshold, "图像阈值操作")
+		.addItem(widget_from, "图像形态化操作")
+		.addItem(widget_connected, "图像连通分析")
+		.addItem(widget_contours, "图像轮廓分析")
+		.addItem(widget_effect, "图像效果增强")
+		.setCurrentIndex(0)
+		.create(this);
 
 	////获取切换后的toolbox索引
 	connect(toolbox_side, &QToolBox::currentChanged, this, [=](int value) {

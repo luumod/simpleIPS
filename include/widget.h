@@ -14,7 +14,7 @@ class QButtonGroup;
 class QGridLayout;
 class QToolButton;
 class QToolBox;
-class Main_Label;	//主图片
+class QLabel;	//主图片
 class Sub_widget;	//预览图片
 class QLabel;
 class QAction;
@@ -261,7 +261,7 @@ public:
 	Res* res = nullptr;
 
 	//主图片
-	Main_Label* lab_img = nullptr;
+	QLabel* lab_img = nullptr;
 
 	//图像截取的预览图片
 	LookWidget* look = nullptr;

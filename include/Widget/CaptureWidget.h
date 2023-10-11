@@ -2,7 +2,7 @@
 #define CAPTUREWIDGET_H_
 
 #include <QMainWindow>
-#include "LabelImg.h"
+#include "LookWidget.h"
 #include <QWidget>
 class QLabel;
 class QPaintEvent;

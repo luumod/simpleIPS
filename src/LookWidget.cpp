@@ -1,4 +1,4 @@
-﻿#include "../include/Widget/LabelImg.h"
+﻿#include "../include/Widget/LookWidget.h"
 #include "../include/Widget/ShowImgWidget.h"
 #include "../include/assist/Common.h"
 #include "../include/widget.h"
@@ -22,21 +22,6 @@
 
 Widget* get() {
 	return Widget::getInstance();
-}
-
-/*
-Main_Label
-*/
-
-Main_Label::Main_Label(QWidget* parent)
-	:QLabel(parent)
-{
-	this->setContextMenuPolicy(Qt::CustomContextMenu);
-}
-
-Main_Label::~Main_Label()
-{
-	
 }
 
 /*

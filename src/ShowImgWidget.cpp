@@ -2,7 +2,7 @@
 #include "../include/assist/QImage2Mat.h"
 #include "../include/widget.h"
 #include "../include/assist/Res.h"
-#include "../include/Widget/LabelImg.h"
+#include "../include/Widget/LookWidget.h"
 #include <QMenu>
 #include <QAction>
 #include <QScrollArea>

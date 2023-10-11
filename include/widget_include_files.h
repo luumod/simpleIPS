@@ -15,8 +15,9 @@
 #include "other_functions/eventfilterobject.h"
 #include "Widget/ShowImgWidget.h"
 #include "Widget/CaptureWidget.h"
+#include "Widget/WidgetBuilder.h"
 
-#include "Widget/LabelImg.h"
+#include "Widget/LookWidget.h"
 #include "Widget/DrawWidget.h"
 #include <QDebug>
 #include <QBoxLayout>

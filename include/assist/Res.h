@@ -23,6 +23,9 @@ public:
 
 	//资源更新
 	void update();
+	void updateFileInfo(const QString& filePath);
+signals:
+	void signal_updateImage();
 public:
 	cv::Mat	root_mt; //root根层：保存原始的加载的图片
 	cv::Mat inter_mt; //intermediate中间层：普通模式下对此图片进行操作

@@ -22,6 +22,13 @@ Res::~Res()
 {
 }
 
+void Res::updateFileInfo(const QString& filePath) {
+	fileInfo = QFileInfo(filePath);
+	QString fileName = fileInfo.fileName(); // 获取文件名，这里会得到 "dog.png"
+	QString pathWithoutFileName = fileInfo.path(); // 获取文件名之前的路径，这里会得到 "F:/code/simplePS_work/myPhotoshopApp/bin"
+}
+
+
 Res::Res(const std::string& filePath,QObject* parent)
 	:root_mt(cv::imread(filePath))
 	,QObject(parent)
@@ -29,6 +36,7 @@ Res::Res(const std::string& filePath,QObject* parent)
 	if (filePath == "")return;
 	update();
 	fileInfo = QFileInfo(QString::fromStdString(filePath));
+	emit signal_updateImage();
 }
 
 void Res::reset(const std::string& filePath)
@@ -36,6 +44,7 @@ void Res::reset(const std::string& filePath)
 	root_mt = cv::imread(filePath);
 	update();
 	fileInfo = QFileInfo(QString::fromStdString(filePath));
+	emit signal_updateImage();
 }
 
 Res::Res(const cv::Mat& mat, QObject* parent)
@@ -47,6 +56,7 @@ Res::Res(const cv::Mat& mat, QObject* parent)
 		return;
 	}
 	fileInfo = QFileInfo(get()->work_files[get()->work_currentIndex]);
+	emit signal_updateImage();
 }
 
 void Res::reset(const cv::Mat& mat)
@@ -57,4 +67,5 @@ void Res::reset(const cv::Mat& mat)
 		return;
 	}
 	fileInfo = QFileInfo(get()->work_files[get()->work_currentIndex]);
+	emit signal_updateImage();
 }

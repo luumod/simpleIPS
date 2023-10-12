@@ -67,9 +67,6 @@ public:
 	//构造函数中初始化两个Label
 	void init_Label();
 
-	//设置每个操作的具体选项数值
-	void init_Optsdialog();
-
 	//初始化所有opencv操作对象
 	void init_OpencvFunctions();
 
@@ -82,9 +79,6 @@ public:
 	//初始加载时图片必须被完全看见，需要预缩放
 	double init_scaledImageOk();
 protected:
-	//鼠标点击时自动关闭对话框Dialog
-	void mousePressEvent(QMouseEvent* ev)override;
-
 	//移动窗口获取当前左上角坐标
 	void moveEvent(QMoveEvent* ev)override;
 
@@ -98,18 +92,18 @@ public:
 	void createStatusBar();
 
 	//GUI创建
-	void create_GUIAvgBlur();
-	void create_GUIGaussian();		
-	void create_GUIMedian();		
-	void create_GUIBilateral();		
-	void create_GUIThreshold();
-	void create_GUIMorphology();
-	void create_GUIConnected();	
-	void create_GUIContours();		
-	void create_GUIbright();		
-	void create_GUIgamma();		
+	QWidget* create_GUIAvgBlur();
+	QWidget* create_GUIGaussian();		
+	QWidget* create_GUIMedian();		
+	QWidget* create_GUIBilateral();		
+	QWidget* create_GUIThreshold();
+	QWidget* create_GUIMorphology();
+	QWidget* create_GUIConnected();	
+	QWidget* create_GUIContours();		
+	QWidget* create_GUIbright();		
+	QWidget* create_GUIgamma();		
 
-	void choice_GUI_create(int id);
+	QWidget* choice_GUI_create(int id);
 
 public slots:
 	//对于所有的opencv操作按钮，封装为此一个函数，此函数可以用于传递指定的op操作，传递对应op操作的按钮组，传递当前按下的按钮：即可完成对于指定行为的响应。
@@ -169,7 +163,7 @@ public slots:
 	void on_action_capture_triggered();
 
 	//获取图片信息
-	void on_action_fileInfo_triggered();
+	QWidget* on_action_fileInfo_triggered();
 
 	//查看帮助
 	void on_actionGroup_help_triggered(QAction* action);
@@ -202,9 +196,6 @@ public:
 
 	//读取保存点
 	void returnPoint();
-
-	//当点击一个Dialog后，隐藏其他的QDialog，只会显示一个
-	void hideAllDialog(QDialog* currDialog);
 
 	//依照inter_mt更新所有图片数据（不包括对图像格式的改变与旋转等基础操作造成的改变）
 	void updateFromIntermediate(); 
@@ -365,21 +356,21 @@ private:
 	//0：blur  1: gauss  2: median  3: Bilateral
 	//4: threshold  5：morphology 6: connected  7:contours  8:show
 
-	QDialog* dlg_avgBlur = nullptr;
-	QDialog* dlg_gauss = nullptr;
-	QDialog* dlg_median  = nullptr;
-	QDialog* dlg_Bilateral = nullptr;
-	QDialog* dlg_threshold = nullptr;
-	QDialog* dlg_morphology = nullptr;
-	QDialog* dlg_connected = nullptr;
-	QDialog* dlg_contours = nullptr;
-	QDialog* dlg_bright = nullptr;
-	QDialog* dlg_gamma = nullptr;
+	QStackedWidget*  stacked_widgets = nullptr;
+	QTabWidget* tab_widgets = nullptr;
 
-	QList<QDialog*> all_dlgs;
+	//QDialog* dlg_avgBlur = nullptr;
+	//QDialog* dlg_gauss = nullptr;
+	//QDialog* dlg_median  = nullptr;
+	//QDialog* dlg_Bilateral = nullptr;
+	//QDialog* dlg_threshold = nullptr;
+	//QDialog* dlg_morphology = nullptr;
+	//QDialog* dlg_connected = nullptr;
+	//QDialog* dlg_contours = nullptr;
+	//QDialog* dlg_bright = nullptr;
+	//QDialog* dlg_gamma = nullptr;
 
-
-
+	//QList<QDialog*> all_dlgs;
 	QFileDialog* fileDialog = nullptr;
 	QColorDialog* colorDialog = nullptr;
 

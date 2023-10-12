@@ -802,7 +802,7 @@ void Widget::layout_changeToWork()
 	QWidget* centralWidget = new QWidget(this);
 	centralWidget->setLayout(mainLayout);
 	this->setCentralWidget(centralWidget);
-	this->setFixedSize(QSize(1426,773));
+	//this->setFixedSize(QSize(1426, 773));
 }
 
 void Widget::layout_changeToNormal()
@@ -812,7 +812,7 @@ void Widget::layout_changeToNormal()
 	}
 	scrollArea->setFixedSize(SCROLLAREA_WIDTH, SCROLLAREA_HEIGHT);
 	this->setCentralWidget(scrollArea);
-	this->setFixedSize(QSize(1312, 713));
+	//this->setFixedSize(QSize(1312, 713));
 }
 
 void Widget::createAction()

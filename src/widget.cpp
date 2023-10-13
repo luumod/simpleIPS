@@ -136,31 +136,34 @@ void Widget::init_Label()
 		.create(this);
 	//图片上下文菜单
 	connect(lab_img, &QLabel::customContextMenuRequested, this, &Widget::on_label_customContextMenuRequested);
-}
 
+	lab_img_ori = LabelBuilder()
+		.setObjectName("lab_img")
+		.setAlignment(Qt::AlignCenter)
+		.setContextMenuPolicy(Qt::CustomContextMenu)
+		.setPixmap(QPixmap::fromImage(res->curr_img))
+		.create(this);
+	//图片上下文菜单
+	connect(lab_img, &QLabel::customContextMenuRequested, this, &Widget::on_label_customContextMenuRequested);
+}
 void Widget::init_WidgetLayout()
 {
-	//--------------------------------------------------
-	//左侧：ToolBox
+	Main_Tab = new QTabWidget;
+	Main_Tab->addTab(WidgetLayout_mode1(), "对比模式");
+	Main_Tab->setTabPosition(QTabWidget::West);
+	Main_Tab->setCurrentIndex(0);
 
+	QHBoxLayout* lay_main = new QHBoxLayout;
+	lay_main->addWidget(Main_Tab);
 
+	this->setCentralWidget(new QWidget);
+	this->centralWidget()->setLayout(lay_main);
+}
 
-	//--------------------------------------------------
-	//中侧：QLabel
-	scrollArea = new QScrollArea;
-	scrollArea->setBackgroundRole(QPalette::Dark);
-	scrollArea->setWidgetResizable(true);
-	scrollArea->setContentsMargins(0,0,0,0);
-	//滚动窗口添加此图片
-	scrollArea->setWidget(lab_img);
-	scrollArea->setFixedSize(QSize(SCROLLAREA_WIDTH, SCROLLAREA_HEIGHT));
-
-	//图片预缩放
-	scaledDelta = ori_scaledDelta  = init_scaledImageOk();
-
-	//--------------------------------------------------
-	//右侧主垂直布局
-	QVBoxLayout* v_rightLayout = new QVBoxLayout;
+template <typename T>
+void Widget::init_RightWidget(T* layout)
+{
+	layout = new T;
 
 	tab_widgets = new QTabWidget;
 
@@ -183,7 +186,7 @@ void Widget::init_WidgetLayout()
 		groupBox_adj->setVisible(true);
 		});
 
-	v_rightLayout->addWidget(groupBox_adj);
+	layout->addWidget(groupBox_adj);
 
 	//----------------------------------------
 	//中间切换图片：隐藏
@@ -200,7 +203,7 @@ void Widget::init_WidgetLayout()
 
 	groupBox_cut->setLayout(btn_work_layout);
 	groupBox_cut->setVisible(false);
-	connect(this, &Widget::signal_changeFileWork, groupBox_cut, [=]() {
+	connect(this, &Widget::signal_changeTo_FileOrWork, groupBox_cut, [=]() {
 		if (work_files.empty()) {
 			//为空，则是file
 			groupBox_cut->setVisible(false);
@@ -210,31 +213,84 @@ void Widget::init_WidgetLayout()
 			groupBox_cut->setVisible(true);
 		}
 		});
-	v_rightLayout->addWidget(groupBox_cut);
-
-	QSpacerItem* verticalSpacer = new QSpacerItem(30, 30, QSizePolicy::Expanding, QSizePolicy::Expanding);
-	v_rightLayout->addSpacerItem(verticalSpacer);
+	layout->addWidget(groupBox_cut);
 
 	//----------------------------------------------
 	//右下显示Tab
 	//第一页：图片信息
-	tab_widgets->addTab(on_action_fileInfo_triggered(),"图片信息");
-	v_rightLayout->addWidget(tab_widgets);
+	tab_widgets->addTab(on_action_fileInfo_triggered(), "图片信息");
+	layout->addWidget(tab_widgets);
 
 	//右侧主窗口
-	r_w = new QWidget;
-	r_w->setLayout(v_rightLayout);
+	if (!r_w) {
+		r_w = new QWidget;
+	}
+	r_w->setLayout(layout);
+}
 
+QWidget* Widget::WidgetLayout_mode1()
+{
+	//--------------------------------------------------
+	//中侧：QLabel
+	QLabel* lab_name_ori = new QLabel("原图片");
+	scrollArea_ori = new QScrollArea;
+	scrollArea_ori->setBackgroundRole(QPalette::Light);
+	scrollArea_ori->setWidgetResizable(true);
+	scrollArea_ori->setContentsMargins(0, 0, 0, 0);
+	//滚动窗口添加此图片
+	scrollArea_ori->setWidget(lab_img_ori);
+	scrollArea_ori->setFixedSize(QSize(SCROLLAREA_WIDTH, SCROLLAREA_HEIGHT));
+
+	//先显示2，因为2是主要操作对象
+
+	//--------
+	QLabel* lab_name = new QLabel("操作后");
+	scrollArea = new QScrollArea;
+	scrollArea->setBackgroundRole(QPalette::Light);
+	scrollArea->setWidgetResizable(true);
+	scrollArea->setContentsMargins(0, 0, 0, 0);
+	//滚动窗口添加此图片
+	scrollArea->setWidget(lab_img);
+	scrollArea->setFixedSize(QSize(SCROLLAREA_WIDTH, SCROLLAREA_HEIGHT));
+
+	//2：图片预缩放
+	scaledDelta = ori_scaledDelta = init_scaledImageOk();
+
+	//1：图片缩放
+	update_Image_1(ori_scaledDelta);
+
+	QVBoxLayout* v_lab_1 = new QVBoxLayout;
+	v_lab_1->addWidget(lab_name_ori, 0, Qt::AlignCenter);
+	v_lab_1->addWidget(scrollArea_ori);
+
+	QVBoxLayout* v_lab_2 = new QVBoxLayout;
+	v_lab_2->addWidget(lab_name, 0, Qt::AlignCenter);
+	v_lab_2->addWidget(scrollArea);
+
+	QHBoxLayout* lay_lab = new QHBoxLayout;
+	lay_lab->addLayout(v_lab_1);
+	auto lab_arrow = new QLabel;
+	lab_arrow->setPixmap(tr("../resource/assert/right_arrow.png"));
+	lay_lab->addWidget(lab_arrow);
+	lay_lab->addLayout(v_lab_2);
+
+	QWidget* wid_lab = new QWidget;
+	wid_lab->setLayout(lay_lab);
+
+	//--------------------------------------------------
+	//底部布局
+	init_RightWidget<QHBoxLayout>(h_rightLayout);
 
 	//------------------------------------
 	//主窗口
-	QHBoxLayout* lay_main = new QHBoxLayout;
-	lay_main->addWidget(toolbox_side);
-	lay_main->addWidget(scrollArea);
-	lay_main->addWidget(r_w);
+	QGridLayout* lay_main = new QGridLayout;
+	lay_main->addWidget(toolbox_side, 0, 0, 3, 1);
+	lay_main->addWidget(wid_lab, 0, 1, 2, 4);
+	lay_main->addWidget(r_w, 2, 1, 1, 4);
 
-	this->setCentralWidget(new QWidget);
-	this->centralWidget()->setLayout(lay_main);
+	QWidget* wid_lay_main = new QWidget;
+	wid_lay_main->setLayout(lay_main);
+	return wid_lay_main;
 }
 
 void Widget::init_OpencvFunctions()
@@ -301,7 +357,7 @@ void Widget::on_action_openFile_triggered()
 	QString fileName = QFileDialog::getOpenFileName(nullptr, "选择文件", ".",	"图像文件(*.png *.jpg)");
 	if (!fileName.isEmpty()) {
 		work_files.clear();
-		emit signal_changeFileWork();//发送改变信号
+		emit signal_changeTo_FileOrWork();//发送改变信号
 		reload_Resources_ScrollArea(fileName);		
 	}
 }
@@ -618,6 +674,15 @@ void Widget::reload_Resources_ScrollArea(const QString& fileName, int mode)
 	//图片尺寸预调整
 	scaledDelta = ori_scaledDelta = init_scaledImageOk();
 
+	// 原图片更新
+	lab_img_ori->setPixmap(QPixmap::fromImage(res->curr_img));
+
+	scrollArea_ori->takeWidget();
+	scrollArea_ori->setWidget(lab_img_ori);
+
+	//图片尺寸预调整
+	update_Image_1(ori_scaledDelta);
+
 	//更新数值
 	for (auto& x : Opts) {
 		x->initialize();
@@ -655,7 +720,7 @@ bool Widget::loadImagesFormFloder(const QString& floderPath)
 			work_files.push_back(x.absoluteFilePath());
 		}
 	}
-	emit signal_changeFileWork();//发送改变为Work信号
+	emit signal_changeTo_FileOrWork();//发送改变为Work信号
 	work_currentIndex = work_prevIndex = 0;
 	return true;
 }
@@ -1673,7 +1738,21 @@ void Widget::work_cutImage()
 	}
 }
 
-void Widget::update_Image(double f_scaledDelta, const QPointF& imgPos)
+void Widget::update_Image_1(double f_scaledDelta)
+{
+	//更新图片显示到完美缩放比例
+	QPixmap t_pixmap = QPixmap::fromImage(res->curr_img);
+	QPixmap scaledPixmap = t_pixmap.scaled(t_pixmap.size() * f_scaledDelta, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+
+	lab_img_ori->setPixmap(scaledPixmap);
+
+	//检查是否需要启用滚动条
+	bool needScrollbars = scaledPixmap.size().width() > scrollArea->size().width() || scaledPixmap.size().height() > scrollArea->size().height();
+	scrollArea_ori->setHorizontalScrollBarPolicy(needScrollbars ? Qt::ScrollBarAlwaysOn : Qt::ScrollBarAlwaysOff);
+	scrollArea_ori->setVerticalScrollBarPolicy(needScrollbars ? Qt::ScrollBarAlwaysOn : Qt::ScrollBarAlwaysOff);
+}
+
+void Widget::update_Image(double f_scaledDelta)
 {
 	//更新图片显示到完美缩放比例
 	QPixmap t_pixmap = QPixmap::fromImage(res->curr_img);

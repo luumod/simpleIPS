@@ -73,14 +73,21 @@ public:
 	//设置窗口主布局
 	void init_WidgetLayout();
 
+	template <typename T>
+	void init_RightWidget(T* layout);
+
+	QWidget* WidgetLayout_mode1();
+	QWidget* WidgetLayout_mode2();
+
+	void update_Image_1(double f_scaledDelta);
 	//更新图片显示到任意的缩放比例，如果为ori_scaledDelta，则为完美比例，否则为自定义缩放比例
-	void update_Image(double scaledDelta, const QPointF& pf = QPointF());
+	void update_Image(double f_scaledDelta);
 
 	//初始加载时图片必须被完全看见，需要预缩放
 	double init_scaledImageOk();
 signals:
 	//打开图片模式改变
-	void signal_changeFileWork();
+	void signal_changeTo_FileOrWork();
 
 	//ToolBox切换窗口，但是此时还没有选择操作ToolButton
 	void signal_changeToolBoxPage_ButNoChoice();
@@ -255,6 +262,7 @@ public:
 	Res* res = nullptr;
 
 	//主图片
+	QLabel* lab_img_ori = nullptr;
 	QLabel* lab_img = nullptr;
 
 	//图像截取的预览图片
@@ -324,6 +332,10 @@ public:
 
 	//----------------滚动页面--------------
 	QScrollArea* scrollArea = nullptr;
+	QScrollArea* scrollArea_ori = nullptr;
+
+	//Tab2
+	QScrollArea* tab2_scrollArea = nullptr;
 private:
 	//上下文菜单
 	QMenu* context_menu = nullptr;
@@ -360,6 +372,15 @@ private:
 	QStackedWidget*  stacked_widgets = nullptr;
 	QTabWidget* tab_widgets = nullptr;
 	QWidget* r_w = nullptr;
+
+	QTabWidget* Main_Tab = nullptr;
+
+
+	QHBoxLayout* h_rightLayout = nullptr;
+	QVBoxLayout* v_rightLayout = nullptr;
+
+	QGridLayout* grid_lay_main = nullptr;
+	QHBoxLayout* h_lay_main = nullptr;
 
 	//-------------------------
 	QFileDialog* fileDialog = nullptr;

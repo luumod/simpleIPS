@@ -140,39 +140,23 @@ void Widget::init_Label()
 
 void Widget::init_WidgetLayout()
 {
-	//左侧是一个DockWidget，其内部是一个QToolBox
-	QDockWidget* dockWidget = new QDockWidget("操作区域", this);
-	QLabel* title_lab = new QLabel("操作管理器", dockWidget);
-	title_lab->setObjectName("dock_title_lab");
-	dockWidget->setTitleBarWidget(title_lab);
-	dockWidget->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+	//--------------------------------------------------
+	//左侧：ToolBox
 
-	QHBoxLayout* toolBox_layout = new QHBoxLayout;
-	toolBox_layout->addWidget(toolbox_side);
 
-	//Dock内部空间
-	QWidget* dockContent = new QWidget;
-	dockContent->setLayout(toolBox_layout);//添加一个内容
-
-	dockWidget->setWidget(dockContent);
-
-	//添加到mainWindow中
-	this->addDockWidget(Qt::LeftDockWidgetArea, dockWidget);
 
 	//--------------------------------------------------
-	//右侧
-	//添加一个QScrollArea用于处理不同尺寸的图片
+	//中侧：QLabel
 	scrollArea = new QScrollArea;
 	scrollArea->setBackgroundRole(QPalette::Dark);
 	scrollArea->setWidgetResizable(true);
 	scrollArea->setContentsMargins(0,0,0,0);
 	//滚动窗口添加此图片
 	scrollArea->setWidget(lab_img);
+	scrollArea->setFixedSize(QSize(SCROLLAREA_WIDTH, SCROLLAREA_HEIGHT));
 
 	//图片预缩放
 	scaledDelta = ori_scaledDelta  = init_scaledImageOk();
-
-	layout_changeToNormal();
 
 	//--------------------------------------------------
 	//右侧主垂直布局
@@ -180,6 +164,8 @@ void Widget::init_WidgetLayout()
 
 	tab_widgets = new QTabWidget;
 
+	//右上：调整框
+	QGroupBox* groupBox_adj = new QGroupBox("参数调整");
 	stacked_widgets = new QStackedWidget;
 	for (int i = 0; i < 10; i++) {
 		stacked_widgets->insertWidget(i, choice_GUI_create(i));
@@ -187,41 +173,68 @@ void Widget::init_WidgetLayout()
 	//右上显示数值操作框
 	stacked_widgets->setCurrentIndex(0);
 
-	v_rightLayout->addWidget(stacked_widgets);
+	QHBoxLayout* lay_adj = new QHBoxLayout;
+	lay_adj->addWidget(stacked_widgets);
+	groupBox_adj->setLayout(lay_adj);
+	connect(this, &Widget::signal_changeToolBoxPage_ButNoChoice, groupBox_adj, [=]() {
+		groupBox_adj->setVisible(false);
+		});
+	connect(this, &Widget::signal_choiceToolButton, groupBox_adj, [=]() {
+		groupBox_adj->setVisible(true);
+		});
 
-	//中间分割一下
+	v_rightLayout->addWidget(groupBox_adj);
+
+	//----------------------------------------
+	//中间切换图片：隐藏
+	QGroupBox* groupBox_cut = new QGroupBox("切换图片"); // 替换"标题"为您想要的标题
+
+	btn_work_prev = new QPushButton("上一页");
+	btn_work_next = new QPushButton("下一页");
+	cbx_work_autoSave = new QCheckBox("离开时自动保存");
+
+	btn_work_layout = new QHBoxLayout;
+	btn_work_layout->addWidget(btn_work_prev);
+	btn_work_layout->addWidget(btn_work_next);
+	btn_work_layout->addWidget(cbx_work_autoSave);
+
+	groupBox_cut->setLayout(btn_work_layout);
+	groupBox_cut->setVisible(false);
+	connect(this, &Widget::signal_changeFileWork, groupBox_cut, [=]() {
+		if (work_files.empty()) {
+			//为空，则是file
+			groupBox_cut->setVisible(false);
+		}
+		else {
+			//否则，是Work
+			groupBox_cut->setVisible(true);
+		}
+		});
+	v_rightLayout->addWidget(groupBox_cut);
+
 	QSpacerItem* verticalSpacer = new QSpacerItem(30, 30, QSizePolicy::Expanding, QSizePolicy::Expanding);
 	v_rightLayout->addSpacerItem(verticalSpacer);
 
+	//----------------------------------------------
 	//右下显示Tab
 	//第一页：图片信息
 	tab_widgets->addTab(on_action_fileInfo_triggered(),"图片信息");
-
 	v_rightLayout->addWidget(tab_widgets);
 
-
 	//右侧主窗口
-	QWidget* r_w = new QWidget;
+	r_w = new QWidget;
 	r_w->setLayout(v_rightLayout);
 
-	//----------------------------------
-	//右侧是一个DockWidget
-	QDockWidget* dockWidget_r = new QDockWidget("数值选择", this);
-	QLabel* title_lab_r = new QLabel("数据调整器", dockWidget_r);
-	title_lab_r->setObjectName("dock_title_lab");
-	dockWidget_r->setTitleBarWidget(title_lab_r);
-	dockWidget_r->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-	//Dock内部空间
-	QHBoxLayout* toolBox_layout_r = new QHBoxLayout;
-	toolBox_layout_r->addWidget(r_w);
 
-	QWidget* dockContent_r = new QWidget;
-	dockContent_r->setLayout(toolBox_layout_r);
+	//------------------------------------
+	//主窗口
+	QHBoxLayout* lay_main = new QHBoxLayout;
+	lay_main->addWidget(toolbox_side);
+	lay_main->addWidget(scrollArea);
+	lay_main->addWidget(r_w);
 
-	dockWidget_r->setWidget(dockContent_r);
-
-	//添加到mainWindow中
-	this->addDockWidget(Qt::RightDockWidgetArea, dockWidget_r);
+	this->setCentralWidget(new QWidget);
+	this->centralWidget()->setLayout(lay_main);
 }
 
 void Widget::init_OpencvFunctions()
@@ -267,6 +280,8 @@ void Widget::on_label_customContextMenuRequested(const QPoint& pos) {
 }
 
 void Widget::on_buttonGroup_everyOpeartions_choice(Object*& op,QButtonGroup* btn_group,QAbstractButton* btn){
+	emit signal_choiceToolButton();
+
 	stacked_widgets->setVisible(true);
 	op->current_choice = btn_group->id(btn);
 
@@ -286,7 +301,7 @@ void Widget::on_action_openFile_triggered()
 	QString fileName = QFileDialog::getOpenFileName(nullptr, "选择文件", ".",	"图像文件(*.png *.jpg)");
 	if (!fileName.isEmpty()) {
 		work_files.clear();
-		//qInfo() << this->size();
+		emit signal_changeFileWork();//发送改变信号
 		reload_Resources_ScrollArea(fileName);		
 	}
 }
@@ -326,9 +341,6 @@ void Widget::on_action_openWorks_triggered()
 	reload_Resources_ScrollArea(work_files[work_currentIndex], 1);
 	
 	//------------------------------
-	//切换布局
-	layout_changeToWork();
-	//qInfo() << this->size();
 	connect(btn_work_next, &QPushButton::clicked, this, &Widget::on_pushButton_next_clicked);
 	connect(btn_work_prev, &QPushButton::clicked, this, &Widget::on_pushButton_prev_clicked);
 }
@@ -455,7 +467,9 @@ void Widget::on_action_capture_triggered()
 QWidget* Widget::on_action_fileInfo_triggered()
 {
 	auto edit_name = new QLineEdit(res->fileInfo.fileName());
-	auto edit_path = new QLabel(res->fileInfo.absoluteFilePath());
+	edit_name->setMaximumWidth(100);
+	auto edit_path = new QLineEdit(res->fileInfo.absolutePath());
+	edit_path->setReadOnly(true);
 	auto B = res->fileInfo.size() / 1024;
 	auto edit_size = new QLabel(QString::number(B) + " Bytes");
 	auto edit_rect = new QLabel(QString::number(res->root_mt.cols) + " * " + QString::number(res->root_mt.rows));
@@ -475,11 +489,9 @@ QWidget* Widget::on_action_fileInfo_triggered()
 	connect(edit_name, &QLineEdit::editingFinished, this, [=]() {
 		//修改文件名字
 		QString oldPathName = res->fileInfo.absoluteFilePath();
-	QString newPathName = res->fileInfo.absolutePath() + "/" + edit_name->text();
-	QFile::rename(oldPathName, newPathName);
-	res->updateFileInfo(newPathName);
-	edit_path->setText(res->fileInfo.absoluteFilePath());
-	QMessageBox::information(nullptr, "提示", "图片名称已修改：" + edit_name->text());
+		QString newPathName = res->fileInfo.absolutePath() + "/" + edit_name->text();
+		QFile::rename(oldPathName, newPathName);
+		res->updateFileInfo(newPathName);
 		});
 
 	//文件路径
@@ -502,13 +514,13 @@ QWidget* Widget::on_action_fileInfo_triggered()
 
 	connect(res, &Res::signal_updateImage, this, [=, &B]() {
 		edit_name->setText(res->fileInfo.fileName());
-	edit_path->setText(res->fileInfo.absoluteFilePath());
-	B = res->fileInfo.size() / 1024;
-	edit_size->setText(QString::number(B) + " Bytes");
-	edit_rect->setText(QString::number(res->root_mt.cols) + " * " + QString::number(res->root_mt.rows));
-	edit_mode->setText(QVariant(res->curr_img.format()).toString());
-	edit_channels->setText(QString::number(res->root_mt.channels()));
-	edit_geshi->setText(QString(res->fileInfo.suffix().toLower()));
+		edit_path->setText(res->fileInfo.absolutePath());
+		B = res->fileInfo.size() / 1024;
+		edit_size->setText(QString::number(B) + " Bytes");
+		edit_rect->setText(QString::number(res->root_mt.cols) + " * " + QString::number(res->root_mt.rows));
+		edit_mode->setText(QVariant(res->curr_img.format()).toString());
+		edit_channels->setText(QString::number(res->root_mt.channels()));
+		edit_geshi->setText(QString(res->fileInfo.suffix().toLower()));
 		});
 
 	QVBoxLayout* v = new QVBoxLayout;
@@ -596,9 +608,6 @@ void Widget::on_pushButton_prev_clicked()
 
 void Widget::reload_Resources_ScrollArea(const QString& fileName, int mode)
 {
-	if (work_files.empty()) {
-		layout_changeToNormal();
-	}
 	res->reset(fileName.toLocal8Bit().data());
 
 	lab_img->setPixmap(QPixmap::fromImage(res->curr_img));
@@ -646,6 +655,7 @@ bool Widget::loadImagesFormFloder(const QString& floderPath)
 			work_files.push_back(x.absoluteFilePath());
 		}
 	}
+	emit signal_changeFileWork();//发送改变为Work信号
 	work_currentIndex = work_prevIndex = 0;
 	return true;
 }
@@ -665,9 +675,7 @@ void Widget::choice_buttonGroupsBtns()
 void Widget::restore_cutOperation()
 {
 	clearAllWidgetValue();
-
 	updateFromIntermediate();
-
 }
 
 void Widget::on_action_changeMode_triggered(){
@@ -705,7 +713,6 @@ void Widget::savePoint()
 {
 	//每次切换操作时自动保存当前图片作为保存点
 	res->flash_mt = res->curr_mt.clone();
-	cv::imshow("1", res->flash_mt);
 	undo_sta.push(res->curr_mt);
 }
 
@@ -716,7 +723,6 @@ void Widget::returnPoint()
 	if (!undo_sta.empty()) {
 		//修改当前显示的mt与图片
 		res->curr_mt = undo_sta.top();
-		cv::imshow("2", res->curr_mt);
 		res->curr_img = Mat2QImage(res->curr_mt);
 		undo_sta.pop();
 	}
@@ -778,41 +784,6 @@ void Widget::updateFromRoot()
 {
 	res->inter_mt = res->root_mt.clone();
 	updateFromIntermediate();
-}
-
-void Widget::layout_changeToWork()
-{
-	btn_work_next = new QPushButton("下一页");
-	btn_work_prev = new QPushButton("上一页");
-	cbx_work_autoSave = new QCheckBox("离开时自动保存");
-
-	btn_work_layout = new QHBoxLayout;
-	btn_work_layout->addWidget(btn_work_prev);
-	btn_work_layout->addWidget(btn_work_next);
-	btn_work_layout->addWidget(cbx_work_autoSave);
-	btn_work_layout->setSizeConstraint(QLayout::SetFixedSize);
-
-	// 创建主布局
-	QVBoxLayout* mainLayout = new QVBoxLayout;
-	scrollArea->setFixedSize(SCROLLAREA_WIDTH, SCROLLAREA_HEIGHT);
-	mainLayout->addWidget(scrollArea);
-	mainLayout->addLayout(btn_work_layout);
-
-	// 创建主窗口
-	QWidget* centralWidget = new QWidget(this);
-	centralWidget->setLayout(mainLayout);
-	this->setCentralWidget(centralWidget);
-	//this->setFixedSize(QSize(1426, 773));
-}
-
-void Widget::layout_changeToNormal()
-{
-	if (!scrollArea) {
-		return;
-	}
-	scrollArea->setFixedSize(SCROLLAREA_WIDTH, SCROLLAREA_HEIGHT);
-	this->setCentralWidget(scrollArea);
-	//this->setFixedSize(QSize(1312, 713));
 }
 
 void Widget::createAction()
@@ -1234,7 +1205,7 @@ void Widget::createToolBox()
 	connect(toolbox_side, &QToolBox::currentChanged, this, [=](int value) {
 		preToolBoxIndex = curToolBoxIndex;
 		curToolBoxIndex = value;
-		stacked_widgets->setVisible(false);
+		emit signal_changeToolBoxPage_ButNoChoice();
 
 		//	清除之前页面上的选项
 		auto btns = btngroups[preToolBoxIndex]->buttons();

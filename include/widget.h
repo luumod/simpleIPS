@@ -78,6 +78,15 @@ public:
 
 	//初始加载时图片必须被完全看见，需要预缩放
 	double init_scaledImageOk();
+signals:
+	//打开图片模式改变
+	void signal_changeFileWork();
+
+	//ToolBox切换窗口，但是此时还没有选择操作ToolButton
+	void signal_changeToolBoxPage_ButNoChoice();
+
+	//ToolButton组中选择某个操作
+	void signal_choiceToolButton();
 protected:
 	//移动窗口获取当前左上角坐标
 	void moveEvent(QMoveEvent* ev)override;
@@ -162,9 +171,6 @@ public slots:
 	//桌面截图
 	void on_action_capture_triggered();
 
-	//获取图片信息
-	QWidget* on_action_fileInfo_triggered();
-
 	//查看帮助
 	void on_actionGroup_help_triggered(QAction* action);
 
@@ -202,12 +208,6 @@ public:
 
 	//依照root_mt更新所有图片数据：相当于清除所有操作
 	void updateFromRoot();
-
-	//切换到工作区的布局（多张图片）
-	void layout_changeToWork();
-
-	//切换到普通的布局
-	void layout_changeToNormal();
 private FUNCTION_: //辅助函数
 	//获取所有的指定的QSlider 控件并且清除值
 	void setIndexPageWidgetValue(int index = -1);
@@ -224,6 +224,9 @@ private FUNCTION_: //辅助函数
 
 	//工作区：切换图片
 	void work_cutImage();
+
+	//Tab1：图片信息窗口
+	QWidget* on_action_fileInfo_triggered();
 
 	//Dialog: 创建n个滑块和输入框
 	template <typename T, typename Type>
@@ -352,25 +355,13 @@ private:
 	QButtonGroup* btngroup_show = nullptr;
 	QList<QButtonGroup*> btngroups;
 
-	//所有对话框操作
-	//0：blur  1: gauss  2: median  3: Bilateral
-	//4: threshold  5：morphology 6: connected  7:contours  8:show
-
+	//-----------------
+	//布局-
 	QStackedWidget*  stacked_widgets = nullptr;
 	QTabWidget* tab_widgets = nullptr;
+	QWidget* r_w = nullptr;
 
-	//QDialog* dlg_avgBlur = nullptr;
-	//QDialog* dlg_gauss = nullptr;
-	//QDialog* dlg_median  = nullptr;
-	//QDialog* dlg_Bilateral = nullptr;
-	//QDialog* dlg_threshold = nullptr;
-	//QDialog* dlg_morphology = nullptr;
-	//QDialog* dlg_connected = nullptr;
-	//QDialog* dlg_contours = nullptr;
-	//QDialog* dlg_bright = nullptr;
-	//QDialog* dlg_gamma = nullptr;
-
-	//QList<QDialog*> all_dlgs;
+	//-------------------------
 	QFileDialog* fileDialog = nullptr;
 	QColorDialog* colorDialog = nullptr;
 

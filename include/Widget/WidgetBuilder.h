@@ -3,23 +3,51 @@
 
 #include <QWidget>
 #include <QFrame>
+#include <QMouseEvent>
+#include <QLabel>
 class QToolBox;
 class QLabel;
 
+
+class Temp_Label : public QLabel
+{
+	Q_OBJECT
+
+public:
+	Temp_Label(const QString& text, QWidget* parent = nullptr)
+		: QLabel(text, parent)
+	{
+		setMouseTracking(true); // 启用鼠标跟踪，这样可以捕获鼠标左键点击事件
+	}
+signals:
+	void LeftButtonClicked();
+protected:
+	void mousePressEvent(QMouseEvent* event) override
+	{
+		if (event->button() == Qt::LeftButton)
+		{
+			emit LeftButtonClicked();
+		}
+	}
+};
+
+
 //专为图片设计的 QLabel
-class LabelBuilder {
+class LabelBuilder:public QLabel {
 public:
 	LabelBuilder();
 	~LabelBuilder();
 
+	LabelBuilder& setMouseTracking(bool open);
 	LabelBuilder& setObjectName(const QString& objName);
 	LabelBuilder& setContextMenuPolicy(Qt::ContextMenuPolicy policy);
 	LabelBuilder& setAlignment(Qt::Alignment align);
 	LabelBuilder& setPixmap(const QPixmap& pixmap);
 
 	QLabel* create(QWidget* parent = nullptr);
-protected:
-	/**/
+	void ClickableLabel(const QString& text, QWidget* parent = nullptr);
+
+
 private:
 	QLabel* lab;
 };

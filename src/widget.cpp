@@ -144,40 +144,45 @@ void Widget::init_Label()
 		.setPixmap(QPixmap::fromImage(res->curr_img))
 		.create(this);
 	//图片上下文菜单
-	connect(lab_img, &QLabel::customContextMenuRequested, this, &Widget::on_label_customContextMenuRequested);
+	connect(lab_img_ori, &QLabel::customContextMenuRequested, this, &Widget::on_label_customContextMenuRequested__);
 }
 void Widget::init_WidgetLayout()
 {
-	Main_Tab = new QTabWidget;
-	Main_Tab->addTab(WidgetLayout_mode1(), "对比模式");
-	Main_Tab->setTabPosition(QTabWidget::West);
-	Main_Tab->setCurrentIndex(0);
+	this->setMaximumSize(QSize(1215, 800));
+	this->setCentralWidget(WidgetLayout_mode1());
 
-	QHBoxLayout* lay_main = new QHBoxLayout;
-	lay_main->addWidget(Main_Tab);
-
-	this->setCentralWidget(new QWidget);
-	this->centralWidget()->setLayout(lay_main);
+	connect(this, &Widget::signal_singleImageMode, this, [=]() {
+		action_show->setEnabled(true);
+		});
+	action_show->setEnabled(false);
+	connect(this, &Widget::signal_doubleImageMode, this, [=]() {
+		action_show->setEnabled(false);
+		});
 }
 
 template <typename T>
-void Widget::init_RightWidget(T* layout)
+QBoxLayout* Widget::init_layout_AdjArea()
 {
-	layout = new T;
+	auto layout = new T;
 
-	tab_widgets = new QTabWidget;
+	AdjArea_TabWidget = new QTabWidget;
+	
 
 	//右上：调整框
 	QGroupBox* groupBox_adj = new QGroupBox("参数调整");
-	stacked_widgets = new QStackedWidget;
-	for (int i = 0; i < 10; i++) {
-		stacked_widgets->insertWidget(i, choice_GUI_create(i));
+	connect(this, &Widget::signal_choiceToolButton, this, [=](const QString& name) {
+		groupBox_adj->setTitle("参数调整: " + name);
+		});
+	
+	AdjArea_StackedWidgets = new QStackedWidget;
+	for (int i = 0; i < MAX_OPTS; i++) {
+		AdjArea_StackedWidgets->insertWidget(i, choice_GUI_create(i));
 	}
 	//右上显示数值操作框
-	stacked_widgets->setCurrentIndex(0);
+	AdjArea_StackedWidgets->setCurrentIndex(0);
 
 	QHBoxLayout* lay_adj = new QHBoxLayout;
-	lay_adj->addWidget(stacked_widgets);
+	lay_adj->addWidget(AdjArea_StackedWidgets);
 	groupBox_adj->setLayout(lay_adj);
 	connect(this, &Widget::signal_changeToolBoxPage_ButNoChoice, groupBox_adj, [=]() {
 		groupBox_adj->setVisible(false);
@@ -218,14 +223,10 @@ void Widget::init_RightWidget(T* layout)
 	//----------------------------------------------
 	//右下显示Tab
 	//第一页：图片信息
-	tab_widgets->addTab(on_action_fileInfo_triggered(), "图片信息");
-	layout->addWidget(tab_widgets);
+	AdjArea_TabWidget->addTab(create_GUIFileInfoWidget(), "图片信息");
+	layout->addWidget(AdjArea_TabWidget);
 
-	//右侧主窗口
-	if (!r_w) {
-		r_w = new QWidget;
-	}
-	r_w->setLayout(layout);
+	return layout;	
 }
 
 QWidget* Widget::WidgetLayout_mode1()
@@ -242,9 +243,8 @@ QWidget* Widget::WidgetLayout_mode1()
 	scrollArea_ori->setFixedSize(QSize(SCROLLAREA_WIDTH, SCROLLAREA_HEIGHT));
 
 	//先显示2，因为2是主要操作对象
-
 	//--------
-	QLabel* lab_name = new QLabel("操作后");
+	QLabel* lab_name = new QLabel("操作图片");
 	scrollArea = new QScrollArea;
 	scrollArea->setBackgroundRole(QPalette::Light);
 	scrollArea->setWidgetResizable(true);
@@ -259,34 +259,115 @@ QWidget* Widget::WidgetLayout_mode1()
 	//1：图片缩放
 	update_Image_1(ori_scaledDelta);
 
+	//垂直：原始图片及其标签
 	QVBoxLayout* v_lab_1 = new QVBoxLayout;
 	v_lab_1->addWidget(lab_name_ori, 0, Qt::AlignCenter);
 	v_lab_1->addWidget(scrollArea_ori);
 
+	//垂直：操作图片及其标签
 	QVBoxLayout* v_lab_2 = new QVBoxLayout;
 	v_lab_2->addWidget(lab_name, 0, Qt::AlignCenter);
 	v_lab_2->addWidget(scrollArea);
+	
+	//用于隐藏原始图片的QWidget
+	QWidget* wid_ori_ver= new QWidget;
+	wid_ori_ver->setLayout(v_lab_1);
 
-	QHBoxLayout* lay_lab = new QHBoxLayout;
-	lay_lab->addLayout(v_lab_1);
+	//水平布局：左中右
+	QHBoxLayout* lay_ShowArea = new QHBoxLayout;
 	auto lab_arrow = new QLabel;
 	lab_arrow->setPixmap(tr("../resource/assert/right_arrow.png"));
-	lay_lab->addWidget(lab_arrow);
-	lay_lab->addLayout(v_lab_2);
+	lay_ShowArea->addWidget(wid_ori_ver);
+	lay_ShowArea->addWidget(lab_arrow);
+	lay_ShowArea->addLayout(v_lab_2);
 
-	QWidget* wid_lab = new QWidget;
-	wid_lab->setLayout(lay_lab);
-
+	QWidget* wid_ShowArea = new QWidget;
+	wid_ShowArea->setLayout(lay_ShowArea);
+	wid_ShowArea->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
 	//--------------------------------------------------
 	//底部布局
-	init_RightWidget<QHBoxLayout>(h_rightLayout);
-
+	if (!hor_AdjArea) {
+		hor_AdjArea = new QWidget;
+	}
+	hor_AdjArea->setLayout(init_layout_AdjArea<QHBoxLayout>());
 	//------------------------------------
 	//主窗口
 	QGridLayout* lay_main = new QGridLayout;
 	lay_main->addWidget(toolbox_side, 0, 0, 3, 1);
-	lay_main->addWidget(wid_lab, 0, 1, 2, 4);
-	lay_main->addWidget(r_w, 2, 1, 1, 4);
+	lay_main->addWidget(wid_ShowArea, 0, 1, 2, 4);
+	lay_main->addWidget(hor_AdjArea, 2, 1, 1, 4);
+
+	//隐藏原图片，改变为ver布局
+	connect(action_hide, &QAction::triggered, this, [=]() {
+		//改变为单图片模式
+		emit signal_singleImageMode();
+		wid_ori_ver->setVisible(false);
+		lab_arrow->setVisible(false);
+
+		//转换布局
+		// 创建一个垂直布局
+		QVBoxLayout* v_layout = new QVBoxLayout;
+
+		// 迭代遍历水平布局中的所有控件和子布局，并将它们添加到垂直布局中
+		QLayoutItem* item;
+		auto hor_layout = hor_AdjArea->layout();
+		//takeAt(index)：布局中移除指定处的控件并且返回这个控件
+		while ((item = hor_layout->takeAt(0))) {
+			v_layout->addItem(item);
+		}
+		delete hor_layout;
+		hor_layout = nullptr;
+
+		if (!ver_AdjArea) {
+			ver_AdjArea = new QWidget;
+		}
+		ver_AdjArea->setLayout(v_layout);
+		scrollArea->setFixedSize(640, 640);
+		scaledDelta = ori_scaledDelta = init_scaledImageOk();
+		// 设置垂直布局
+		auto GridLayout = qobject_cast<QGridLayout*>(this->centralWidget()->layout());
+		GridLayout->removeWidget(hor_AdjArea);
+		GridLayout->addWidget(ver_AdjArea, 0, 5, 3, 1);
+		delete hor_AdjArea;
+		hor_AdjArea = nullptr;
+	
+	});
+
+	//显示原图片，改变为hor布局
+	connect(action_show, &QAction::triggered, this, [=]() {
+		emit signal_doubleImageMode();
+		wid_ori_ver->setVisible(true);
+		lab_arrow->setVisible(true);
+
+		//转换布局
+		// 创建一个水平布局
+		QHBoxLayout* h_layout = new QHBoxLayout;
+
+		// 迭代遍历水平布局中的所有控件和子布局，并将它们添加到垂直布局中
+		QLayoutItem* item;
+		auto ver_layout = ver_AdjArea->layout();
+		//takeAt(index)：布局中移除指定处的控件并且返回这个控件
+		while ((item = ver_layout->takeAt(0))) {
+			h_layout->addItem(item);
+		}
+		delete ver_layout;
+		ver_layout = nullptr;
+
+		if (!hor_AdjArea) {
+			hor_AdjArea = new QWidget;
+		}
+		hor_AdjArea->setLayout(h_layout);
+		scrollArea->setFixedSize(SCROLLAREA_WIDTH,SCROLLAREA_HEIGHT);
+		scaledDelta = ori_scaledDelta = init_scaledImageOk();
+		update_Image_1(ori_scaledDelta);
+		// 设置垂直布局
+		auto GridLayout = qobject_cast<QGridLayout*>(this->centralWidget()->layout());
+		GridLayout->removeWidget(ver_AdjArea);
+		GridLayout->addWidget(hor_AdjArea,2,1,1,4);
+		delete ver_AdjArea;
+		ver_AdjArea = nullptr;
+		});
+
 
 	QWidget* wid_lay_main = new QWidget;
 	wid_lay_main->setLayout(lay_main);
@@ -330,21 +411,30 @@ void Widget::wheelEvent(QWheelEvent* ev)
 	QMainWindow::wheelEvent(ev);
 }
 
+void Widget::resizeEvent(QResizeEvent* ev)
+{
+	//qInfo() <<"当前:"<< this->size() << "旧的:"<< ev->oldSize();
+	this->adjustSize();
+}
 
 void Widget::on_label_customContextMenuRequested(const QPoint& pos) {
 	context_menu->exec(QCursor::pos());
 }
 
-void Widget::on_buttonGroup_everyOpeartions_choice(Object*& op,QButtonGroup* btn_group,QAbstractButton* btn){
-	emit signal_choiceToolButton();
+void Widget::on_label_customContextMenuRequested__(const QPoint& pos) {
+	context_menu__->exec(QCursor::pos());
+}
 
-	stacked_widgets->setVisible(true);
+void Widget::on_buttonGroup_everyOpeartions_choice(Object*& op,QButtonGroup* btn_group,QAbstractButton* btn){
+	emit signal_choiceToolButton(btn->text());
+
+	AdjArea_StackedWidgets->setVisible(true);
 	op->current_choice = btn_group->id(btn);
 
 	choice_buttonGroupsBtns();
 
 	int id = switch_Dialog_id(op->current_choice);
-	stacked_widgets->setCurrentIndex(id);
+	AdjArea_StackedWidgets->setCurrentIndex(id);
 }
 
 void Widget::on_action_exit_triggered()
@@ -520,11 +610,11 @@ void Widget::on_action_capture_triggered()
 	all_screen->show();
 }
 
-QWidget* Widget::on_action_fileInfo_triggered()
+QWidget* Widget::create_GUIFileInfoWidget()
 {
 	auto edit_name = new QLineEdit(res->fileInfo.fileName());
-	edit_name->setMaximumWidth(100);
-	auto edit_path = new QLineEdit(res->fileInfo.absolutePath());
+	auto edit_path = new QLineEdit(res->fileInfo.absolutePath()
+	 + "/");
 	edit_path->setReadOnly(true);
 	auto B = res->fileInfo.size() / 1024;
 	auto edit_size = new QLabel(QString::number(B) + " Bytes");
@@ -551,7 +641,7 @@ QWidget* Widget::on_action_fileInfo_triggered()
 		});
 
 	//文件路径
-	form_path->addRow(new QLabel("文件名称："), edit_path);
+	form_path->addRow(new QLabel("文件路径："), edit_path);
 
 	//文件大小
 	form_size->addRow(new QLabel("文件大小："), edit_size);
@@ -570,7 +660,7 @@ QWidget* Widget::on_action_fileInfo_triggered()
 
 	connect(res, &Res::signal_updateImage, this, [=, &B]() {
 		edit_name->setText(res->fileInfo.fileName());
-		edit_path->setText(res->fileInfo.absolutePath());
+		edit_path->setText(res->fileInfo.absolutePath() + "/");
 		B = res->fileInfo.size() / 1024;
 		edit_size->setText(QString::number(B) + " Bytes");
 		edit_rect->setText(QString::number(res->root_mt.cols) + " * " + QString::number(res->root_mt.rows));
@@ -747,12 +837,10 @@ void Widget::on_action_changeMode_triggered(){
 	//点击此开始创作模式
 	//图片清除，重新开始，所有滑块归零
 	if (!mode) {
-		this->mode = true;
-		statusLab->setText(tr("混合加工模式"));
+		emit signal_changeMode(true);
 	}
 	else {
-		mode = false;
-		statusLab->setText(tr("默认模式"));
+		emit signal_changeMode(false);
 	}
 	clearAllWidgetValue();
 	//数据清空
@@ -802,7 +890,7 @@ void Widget::setIndexPageWidgetValue(int index)
 	}
 
 	//否则就是第index页
-	QWidget* pageW = stacked_widgets->widget(index);
+	QWidget* pageW = AdjArea_StackedWidgets->widget(index);
 	if (pageW) {
 		QList<QWidget*> childWidgets = pageW->findChildren<QWidget*>(); // 获取该页中的所有子部件
 		for (auto& x : childWidgets) {
@@ -827,7 +915,7 @@ void Widget::setIndexPageWidgetValue(int index)
 void Widget::clearAllWidgetValue()
 {
 	//清除所有的滑块的值
-	for (int i = 0; i < stacked_widgets->count(); i++) { // (0 1 2 3) 4 5 6 7 8
+	for (int i = 0; i < AdjArea_StackedWidgets->count(); i++) { // (0 1 2 3) 4 5 6 7 8
 		setIndexPageWidgetValue(i);
 	}
 }
@@ -853,6 +941,12 @@ void Widget::updateFromRoot()
 
 void Widget::createAction()
 {
+	//隐藏
+	action_hide = new QAction(tr("隐藏原始图片"), this);
+	action_hide->setStatusTip(tr("隐藏图片"));
+	action_show = new QAction(tr("显示原始图片"), this);
+	action_show->setStatusTip(tr("显示图片"));
+
 	//关闭窗口
 	action_exit = new QAction(tr("退出"), this);
 	action_exit->setStatusTip(tr("退出程序"));
@@ -952,7 +1046,7 @@ void Widget::createAction()
 		});
 
 	action_fileInfo = new QAction(tr("图片属性"), this);
-	connect(action_fileInfo, &QAction::triggered,this,&Widget::on_action_fileInfo_triggered);
+	connect(action_fileInfo, &QAction::triggered,this,&Widget::create_GUIFileInfoWidget);
 
 	//扩展
 	action_light = new QAction(tr("亮色"), this);
@@ -988,11 +1082,15 @@ void Widget::createMenu()
 	//图片上下文菜单
 	//此处跟随滑动区域，滑动区域在整个窗口中作为主窗口不会消失。
 	context_menu = new QMenu(this); 
+	context_menu->addAction(action_show);
 	context_menu->addAction(action_save);
 	context_menu->addAction(action_exit);
 	context_menu->addAction(action_restore);
 	context_menu->addAction(action_fileInfo);
 
+	context_menu__ = new QMenu(this);
+	context_menu__->addAction(action_hide);
+	context_menu__->addAction(action_exit);
 	//菜单栏
 	menu_file = menuBar()->addMenu(tr("&文件"));
 	menu_file->addAction(action_open);
@@ -1031,10 +1129,6 @@ void Widget::createMenu()
 	menu_equalize->addAction("灰度图", this, [=]() {img_base->showEqualizedGrayImage(); });
 	menu_equalize->addAction("彩色图", this, [=]() {img_base->showEqualizedBGRImage(); });
 	menu_func->addMenu(menu_equalize);
-	QMenu* menu_contrastLinear = new QMenu("对比度线性展宽", this);
-	menu_contrastLinear->addAction("灰度图", this, [=]() {img_base->showContrastLinearBroaden(); });
-	menu_contrastLinear->addAction("彩色图", this, [=]() {img_base->showBGRContrastLinearBroaden(); });
-	menu_func->addMenu(menu_contrastLinear);
 	menu_func->addSeparator();
 	menu_func->addAction(action_fileInfo); //图片属性信息
 
@@ -1057,12 +1151,12 @@ void Widget::createMenu()
 
 void Widget::createToolBar()
 {
-	toolbar1 = addToolBar(tr("file"));
-	toolbar1->addAction(action_begin);
-	toolbar1->addAction(action_restore);
-	toolbar1->addAction(action_return);
-	toolbar1->addAction(action_previewOk);
-	toolbar1->addAction(action_draw);
+	toolBar = addToolBar(tr("file"));
+	toolBar->addAction(action_begin);
+	toolBar->addAction(action_restore);
+	toolBar->addAction(action_return);
+	toolBar->addAction(action_previewOk);
+	toolBar->addAction(action_draw);
 }
 
 void Widget::createToolBox()
@@ -1245,6 +1339,22 @@ void Widget::createToolBox()
 	f2->setStatusTip(tr("γ矫正"));
 	gird_effect->addWidget(f2, 0, 1);
 
+	QWidget* f3 = createToolBtnItemWidget(tr("对比度展宽"), SHOW::LINEAR,"../resource/assert/duibiduzhankuan.png");
+	f3->setStatusTip(tr("对比度展宽"));
+	gird_effect->addWidget(f3, 1, 0);
+
+	QWidget* f4 = createToolBtnItemWidget(tr("灰级窗处理"), SHOW::GRAYWINDOW, "../resource/assert/huiji.png");
+	f4->setStatusTip(tr("灰级窗处理"));
+	gird_effect->addWidget(f4, 1, 1);
+
+	QWidget* f5 = createToolBtnItemWidget(tr("线性动态范围调整"), SHOW::DPLINEAR, "../resource/assert/linear.png");
+	f5->setStatusTip(tr("线性动态范围调整"));
+	gird_effect->addWidget(f5, 2, 0);
+
+	QWidget* f6 = createToolBtnItemWidget(tr("非线性动态范围调整"), SHOW::NON_DPLINEAR, "../resource/assert/non_linear.png");
+	f6->setStatusTip(tr("非线性动态范围调整"));
+	gird_effect->addWidget(f6, 2, 1);
+
 	gird_effect->setRowStretch(4, 10);
 	gird_effect->setColumnStretch(1, 10);
 
@@ -1295,6 +1405,36 @@ void Widget::createStatusBar()
 	statusLab = new QLabel("默认模式");
 	statusLab->setObjectName("statusBar_lab");
 	statusBar()->addWidget(statusLab);
+
+	connect(this, &Widget::signal_changeMode, this, [=](bool st) {
+		if (st) {
+			mode = true;
+			statusLab->setText(tr("混合加工模式"));
+
+			// 获取应用程序的状态栏
+			QStatusBar* statusBar_warn = statusBar();
+
+			// 创建一个 QLabel 来显示警告信息
+			QLabel* warningLabel = new QLabel("警告！混合操作具有不确定性，若操作失败产生中断本人概不负责！");
+			warningLabel->setStyleSheet("color: red"); // 设置文本颜色为红色
+
+			// 使用 addWidget 将 QLabel 放置在状态栏的右侧
+			statusBar_warn->addPermanentWidget(warningLabel);
+
+			// 如果需要显示一段时间后自动隐藏，您可以使用 QTimer 来实现
+			QTimer::singleShot(5000, [=]() {
+				warningLabel->setVisible(false);
+			statusBar_warn->removeWidget(warningLabel);
+			delete warningLabel;
+				});
+		}
+		else {
+			mode = false;
+			statusLab->setText(tr("默认模式"));
+		}
+		});
+	
+
 }
 
 QWidget* Widget::create_GUIAvgBlur()
@@ -1611,6 +1751,166 @@ QWidget* Widget::create_GUIgamma()
 	return w;
 }
 
+QWidget* Widget::create_GUIContrast()
+{
+	ls_slider_linear.resize(2);
+	std::function<void(int)> funcLinearG1 = [=](int value) {
+		//将int映射为double
+		showeffect->onTriggered_slider_valueChange_linearg1(value);
+	};
+	std::function<void(int)> funcLinearG2 = [=](int value) {
+		//将int映射为double
+		showeffect->onTriggered_slider_valueChange_linearg2(value);
+	};
+
+	auto w = new QWidget;
+	w->setLayout(createDialog_nSlider_GUItemplate<int, Blur*>(
+		ls_slider_linear,
+		QList<int>() << 0 << 0,
+		QList<int>() << 255 << 255,
+		QList<int>() << 1 << 1,
+		QList<QString>() << "linearG1_slider" << "linearG2_slider",
+		QList<QString>() << "仿射下限" <<"仿射上限",
+		QList< std::function<void(int)>>() << funcLinearG1 << funcLinearG2,
+		true)
+	);
+	// 获取QWidget的布局
+	//额外添加控件
+	QVBoxLayout* layout = dynamic_cast<QVBoxLayout*>(w->layout());
+
+	if (layout) {
+		QHBoxLayout* hlayout = new QHBoxLayout;
+		QRadioButton* r_btn1 = new QRadioButton("灰度图");
+		r_btn1->setChecked(true);
+		QRadioButton* r_btn2 = new QRadioButton("彩色图");
+		connect(r_btn1, &QRadioButton::toggled, this, [=](bool checked) {
+			showeffect->linear_mode = !checked;
+			});
+		connect(r_btn2, &QRadioButton::toggled, this, [=](bool checked) {
+			showeffect->linear_mode = checked;
+			});
+		hlayout->addWidget(r_btn1,0,Qt::AlignHCenter);
+		hlayout->addWidget(r_btn2,0, Qt::AlignHCenter);
+
+		layout->insertLayout(0, hlayout);
+	}
+
+	return w;
+}
+
+QWidget* Widget::create_GUIGrayWindow()
+{
+	ls_slider_grayWindow.resize(2);
+	std::function<void(int)> funcGrayG1 = [=](int value) {
+		//将int映射为double
+		showeffect->onTriggered_slider_valueChange_GaryWindowF1(value);
+	};
+	std::function<void(int)> funcGrayG2 = [=](int value) {
+		//将int映射为double
+		showeffect->onTriggered_slider_valueChange_GaryWindowF2(value);
+	};
+
+	auto w = new QWidget;
+	w->setLayout(createDialog_nSlider_GUItemplate<int, Blur*>(
+		ls_slider_grayWindow,
+		QList<int>() << 0 << 0,
+		QList<int>() << 255 << 255,
+		QList<int>() << 1 << 1,
+		QList<QString>() << "GreayF1_slider" << "GrayF2_slider",
+		QList<QString>() << "选择下限" << "选择上限",
+		QList< std::function<void(int)>>() << funcGrayG1 << funcGrayG2,
+		true)
+	);
+	return w;
+}
+
+QWidget* Widget::create_GUIDPLinear()
+{
+	ls_slider_dpLinear.resize(2);
+	std::function<void(int)> funcdpA = [=](int value) {
+		//将int映射为double
+		showeffect->onTriggered_slider_valueChange_DynamicA(value);
+	};
+	std::function<void(int)> funcdpB = [=](int value) {
+		//将int映射为double
+		showeffect->onTriggered_slider_valueChange_DynamicB(value);
+	};
+
+	auto w = new QWidget;
+	w->setLayout(createDialog_nSlider_GUItemplate<int, Blur*>(
+		ls_slider_dpLinear,
+		QList<int>() << 0 << 0,
+		QList<int>() << 255 << 255,
+		QList<int>() << 1 << 1,
+		QList<QString>() << "DPLinearA_slider" << "DPLinearB_slider",
+		QList<QString>() << "区域下限" << "区域上限",
+		QList< std::function<void(int)>>() << funcdpA << funcdpB,
+		true)
+	);
+	// 获取QWidget的布局
+	//额外添加控件
+	QVBoxLayout* layout = dynamic_cast<QVBoxLayout*>(w->layout());
+
+	if (layout) {
+		QHBoxLayout* hlayout = new QHBoxLayout;
+		QRadioButton* r_btn1 = new QRadioButton("灰度图");
+		r_btn1->setChecked(true);
+		QRadioButton* r_btn2 = new QRadioButton("彩色图");
+		connect(r_btn1, &QRadioButton::toggled, this, [=](bool checked) {
+			showeffect->DpLinear_mode = !checked;
+			});
+		connect(r_btn2, &QRadioButton::toggled, this, [=](bool checked) {
+			showeffect->DpLinear_mode = checked;
+			});
+		hlayout->addWidget(r_btn1, 0, Qt::AlignHCenter);
+		hlayout->addWidget(r_btn2, 0, Qt::AlignHCenter);
+
+		layout->insertLayout(0, hlayout);
+	}
+	return w;
+}
+
+QWidget* Widget::create_GUINoneDpLinear()
+{
+	ls_slider_NoneDpLinear.resize(1);
+	std::function<void(int)> funcNoneDpC = [=](int value) {
+		//将int映射为double
+		showeffect->onTriggered_slider_valueChange_NoneDynamicC(value);
+	};
+
+	auto w = new QWidget;
+	w->setLayout(createDialog_nSlider_GUItemplate<int, Blur*>(
+		ls_slider_NoneDpLinear,
+		QList<int>() << 0,
+		QList<int>() << 80,
+		QList<int>() << 1,
+		QList<QString>() << "NoneDpLinearC_slider",
+		QList<QString>() << "增益常数",
+		QList< std::function<void(int)>>() << funcNoneDpC,
+		true)
+	);
+	// 获取QWidget的布局
+	//额外添加控件
+	QVBoxLayout* layout = dynamic_cast<QVBoxLayout*>(w->layout());
+
+	if (layout) {
+		QHBoxLayout* hlayout = new QHBoxLayout;
+		QRadioButton* r_btn1 = new QRadioButton("灰度图");
+		r_btn1->setChecked(true);
+		QRadioButton* r_btn2 = new QRadioButton("彩色图");
+		connect(r_btn1, &QRadioButton::toggled, this, [=](bool checked) {
+			showeffect->NoneDpLinear_mode = !checked;
+			});
+		connect(r_btn2, &QRadioButton::toggled, this, [=](bool checked) {
+			showeffect->NoneDpLinear_mode = checked;
+			});
+		hlayout->addWidget(r_btn1, 0, Qt::AlignHCenter);
+		hlayout->addWidget(r_btn2, 0, Qt::AlignHCenter);
+
+		layout->insertLayout(0, hlayout);
+	}
+	return w;
+}
 
 QWidget* Widget::choice_GUI_create(int id)
 {
@@ -1646,6 +1946,14 @@ QWidget* Widget::choice_GUI_create(int id)
 	case 9:
 		return create_GUIgamma();
 		break;
+	case 10:
+		return create_GUIContrast();
+	case 11:
+		return create_GUIGrayWindow();
+	case 12:
+		return create_GUIDPLinear();
+	case 13:
+		return create_GUINoneDpLinear();
 	default:
 		break;
 	}
@@ -1655,6 +1963,7 @@ QWidget* Widget::createToolBtnItemWidget(const QString& text, int id, const QStr
 {
 	QToolButton* btn = new QToolButton;
 	btn->setObjectName("function_tbtn");
+	btn->setText(text);
 	btn->resize(48, 48);
 	btn->setCheckable(true);
 	btn->setChecked(false);
@@ -1686,6 +1995,7 @@ QWidget* Widget::createToolBtnItemWidget(const QString& text, int id, const QStr
 	QGridLayout* grid = new QGridLayout;
 	grid->addWidget(btn, 0, 0, Qt::AlignHCenter);
 	QLabel* textlab = new QLabel(text);
+	textlab->setWordWrap(true);  // 启用自动换行
 	textlab->setObjectName("function_tbtn_textLab");
 	grid->addWidget(textlab, 1, 0, Qt::AlignHCenter);
 
@@ -1736,6 +2046,11 @@ void Widget::work_cutImage()
 	if (work_currentIndex >= 0 && work_currentIndex < work_files.count()) {
 		reload_Resources_ScrollArea(work_files[work_currentIndex], 1);
 	}
+}
+QString Widget::choice_currentOpt_name()
+{
+
+	return QString();
 }
 
 void Widget::update_Image_1(double f_scaledDelta)

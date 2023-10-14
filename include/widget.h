@@ -74,10 +74,9 @@ public:
 	void init_WidgetLayout();
 
 	template <typename T>
-	void init_RightWidget(T* layout);
+	QBoxLayout* init_layout_AdjArea();
 
 	QWidget* WidgetLayout_mode1();
-	QWidget* WidgetLayout_mode2();
 
 	void update_Image_1(double f_scaledDelta);
 	//更新图片显示到任意的缩放比例，如果为ori_scaledDelta，则为完美比例，否则为自定义缩放比例
@@ -86,6 +85,15 @@ public:
 	//初始加载时图片必须被完全看见，需要预缩放
 	double init_scaledImageOk();
 signals:
+	//单图片模式
+	void signal_singleImageMode();
+
+	//双图片模式
+	void signal_doubleImageMode();
+
+	//混合加工模式
+	void signal_changeMode(bool st);
+
 	//打开图片模式改变
 	void signal_changeTo_FileOrWork();
 
@@ -93,13 +101,15 @@ signals:
 	void signal_changeToolBoxPage_ButNoChoice();
 
 	//ToolButton组中选择某个操作
-	void signal_choiceToolButton();
+	void signal_choiceToolButton(const QString& optName= "");
 protected:
 	//移动窗口获取当前左上角坐标
 	void moveEvent(QMoveEvent* ev)override;
 
 	//Ctrl+滑轮 缩放图片
 	void wheelEvent(QWheelEvent* ev)override;
+
+	void resizeEvent(QResizeEvent* ev)override;
 public:
 	void createAction();
 	void createMenu();
@@ -117,10 +127,16 @@ public:
 	QWidget* create_GUIConnected();	
 	QWidget* create_GUIContours();		
 	QWidget* create_GUIbright();		
-	QWidget* create_GUIgamma();		
+	QWidget* create_GUIgamma();	
+	QWidget* create_GUIContrast();
+	QWidget* create_GUIGrayWindow();
+	QWidget* create_GUIDPLinear();
+	QWidget* create_GUINoneDpLinear();
 
 	QWidget* choice_GUI_create(int id);
 
+	//Tab1：图片信息窗口
+	QWidget* create_GUIFileInfoWidget();
 public slots:
 	//对于所有的opencv操作按钮，封装为此一个函数，此函数可以用于传递指定的op操作，传递对应op操作的按钮组，传递当前按下的按钮：即可完成对于指定行为的响应。
 	//调用示例：on_buttonGroup_everyOpeartions_choice(blur,btngroup_blur,btn);
@@ -129,6 +145,7 @@ public slots:
 
 	//右键图片操作
 	void on_label_customContextMenuRequested(const QPoint& pos);
+	void on_label_customContextMenuRequested__(const QPoint& pos);
 
 	//关闭窗口
 	void on_action_exit_triggered();
@@ -232,8 +249,7 @@ private FUNCTION_: //辅助函数
 	//工作区：切换图片
 	void work_cutImage();
 
-	//Tab1：图片信息窗口
-	QWidget* on_action_fileInfo_triggered();
+	QString choice_currentOpt_name();
 
 	//Dialog: 创建n个滑块和输入框
 	template <typename T, typename Type>
@@ -274,11 +290,42 @@ public:
 	//鼠标滑轮控制
 	double ori_scaledDelta = 1.0; //原始完美缩放比例
 	double scaledDelta = 1.0;
-private:
+
+public:
+	//---------------------
+	//opencv操作按钮组
+	QButtonGroup* btngroup_blur = nullptr;
+	QButtonGroup* btngroup_threshold = nullptr;
+	QButtonGroup* btngroup_form = nullptr;
+	QButtonGroup* btngroup_connected = nullptr;
+	QButtonGroup* btngroup_contours = nullptr;
+	QButtonGroup* btngroup_show = nullptr;
+	QList<QButtonGroup*> btngroups;
+
+	//---------------功能实现-----------------
+	Blur* blur = nullptr; //模糊
+	Threshold* threshold = nullptr;
+	Morphology* morphology = nullptr;
+	Connected* connected = nullptr;
+	Contours* contours = nullptr;
+	Showeffect* showeffect = nullptr;
+	BaseOperate* img_base = nullptr; //图像基础操作
+	QList<Object*> Opts;
+
+	//---------------------
 	//撤销栈
 	std::stack<cv::Mat> undo_sta;
 
-	DrawWidget* widget_draw = nullptr; //一个简单的绘图板
+	//---------------------
+	//一个简单的绘图板
+	DrawWidget* widget_draw = nullptr;
+
+	QStringList	work_files; //打开工作区的图片名称组
+	int work_currentIndex = 0, work_prevIndex = 0;
+public: // GUI部分
+	//---------------------
+	QAction* action_hide = nullptr;
+	QAction* action_show = nullptr;
 
 	QAction* action_exit = nullptr;
 	QAction* action_open = nullptr;
@@ -288,7 +335,6 @@ private:
 	QAction* action_begin = nullptr;
 	QAction* action_return = nullptr;
 	QAction* action_previewOk = nullptr;
-public:
 
 	QAction* action_ori = nullptr;
 	QAction* action_hls = nullptr;
@@ -329,16 +375,15 @@ public:
 	QAction* action_aboutme = nullptr;
 	QActionGroup* action_help_group = nullptr;
 
-
-	//----------------滚动页面--------------
-	QScrollArea* scrollArea = nullptr;
+	//---------------------
+	//控制label的滚动页面
 	QScrollArea* scrollArea_ori = nullptr;
+	QScrollArea* scrollArea = nullptr;
 
-	//Tab2
-	QScrollArea* tab2_scrollArea = nullptr;
-private:
 	//上下文菜单
-	QMenu* context_menu = nullptr;
+	QMenu* context_menu__ = nullptr; //原图片的
+	QMenu* context_menu = nullptr;	 //目标图片的
+
 	//主菜单
 	QMenu* menu_file = nullptr;
 	QMenu* menu_edit = nullptr;
@@ -349,52 +394,30 @@ private:
 	QMenu* menu_func = nullptr;
 	QMenu* menu_tools = nullptr;
 	QMenu* menu_help = nullptr;
-	
 
-	QToolBar* toolbar1 = nullptr;
+	//---------------------
+	//工具栏
+	QToolBar* toolBar = nullptr;
 
+	//---------------------
+	//左侧操作选择栏
 	QToolBox* toolbox_side = nullptr;
 	int preToolBoxIndex = 0, curToolBoxIndex = 0; //切换toolbox页面时清除选择状态
 
+	//---------------------
+	//底部状态栏
 	QLabel* statusLab = nullptr;
-	
-
-	QButtonGroup* btngroup_blur = nullptr;
-	QButtonGroup* btngroup_threshold = nullptr;
-	QButtonGroup* btngroup_form = nullptr;
-	QButtonGroup* btngroup_connected = nullptr;
-	QButtonGroup* btngroup_contours = nullptr;
-	QButtonGroup* btngroup_show = nullptr;
-	QList<QButtonGroup*> btngroups;
 
 	//-----------------
-	//布局-
-	QStackedWidget*  stacked_widgets = nullptr;
-	QTabWidget* tab_widgets = nullptr;
-	QWidget* r_w = nullptr;
-
-	QTabWidget* Main_Tab = nullptr;
-
-
-	QHBoxLayout* h_rightLayout = nullptr;
-	QVBoxLayout* v_rightLayout = nullptr;
-
-	QGridLayout* grid_lay_main = nullptr;
-	QHBoxLayout* h_lay_main = nullptr;
+	//AdjArea布局
+	QStackedWidget*  AdjArea_StackedWidgets = nullptr; //所有参数调整GUI
+	QTabWidget* AdjArea_TabWidget = nullptr;	//AdjArea Tab
+	QWidget* hor_AdjArea = nullptr; // 非隐藏时的底部栏
+	QWidget* ver_AdjArea = nullptr;	// 隐藏时的右侧栏
 
 	//-------------------------
-	QFileDialog* fileDialog = nullptr;
+	//选择颜色
 	QColorDialog* colorDialog = nullptr;
-
-	//---------------功能实现-----------------
-	Blur* blur = nullptr; //模糊
-	Threshold* threshold = nullptr;
-	Morphology* morphology = nullptr;
-	Connected* connected = nullptr;
-	Contours* contours = nullptr;
-	Showeffect* showeffect = nullptr;
-	BaseOperate* img_base = nullptr; //图像基础操作
-	QList<Object*> Opts;
 
 	//打开文件夹
 	QPushButton* btn_work_next = nullptr;
@@ -406,24 +429,20 @@ private:
 	CaptureWidget* all_screen = nullptr;
 
 	//gamma
-	//需要的时候创建，而不是一开始就创建
 	QList<QSlider*> ls_slider_blur;
 	QList<QSlider*> ls_slider_gaussian;
 	QList<QSlider*> ls_slider_median;
 	QList<QSlider*> ls_slider_bilateral;
-
 	QList<QSlider*> ls_slider_threshold;
 	QList<QSlider*> ls_slider_morphology;
-
 	QList<QComboBox*> ls_combox_connected;
 	QList<QComboBox*> ls_combox_contours;
-
 	QList<QSlider*> ls_slider_light;
 	QList<QSlider*> ls_slider_gamma;
-
-public:
-	QStringList	work_files; //打开工作区的图片名称组
-	int work_currentIndex = 0, work_prevIndex = 0;
+	QList<QSlider*> ls_slider_linear;
+	QList<QSlider*> ls_slider_grayWindow;
+	QList<QSlider*> ls_slider_dpLinear;
+	QList<QSlider*> ls_slider_NoneDpLinear;
 };
 
 

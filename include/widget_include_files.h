@@ -67,3 +67,5 @@
 #include <QShortcut>
 #include <Windows.h>
 #include <QStandardPaths>
+#include <QRadioButton>
+#include <QTimer>

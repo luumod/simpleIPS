@@ -39,10 +39,6 @@ public slots:
 	//显示均衡化后的图像
 	void showEqualizedBGRImage();
 	void showEqualizedGrayImage();
-
-	//对比度线性展宽
-	cv::Mat showContrastLinearBroaden(cv::Mat mat = cv::Mat());
-	void showBGRContrastLinearBroaden();
 private:
 	cv::Mat getHist(cv::Mat mt);
 	void new_showWidget();

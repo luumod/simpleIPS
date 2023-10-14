@@ -66,6 +66,14 @@ inline bool belongsToEnum(int data) {
 			return true;
 		case T::GAMMA:
 			return true;
+		case T::LINEAR:
+			return true;
+		case T::GRAYWINDOW:
+			return true;
+		case T::DPLINEAR:
+			return true;
+		case T::NON_DPLINEAR:
+			return true;
 		default:
 			return false;
 		}
@@ -109,6 +117,14 @@ int switch_Dialog_id(int id)
 		return 8;
 	case SHOW::GAMMA:
 		return 9;
+	case SHOW::LINEAR:
+		return 10;
+	case SHOW::GRAYWINDOW:
+		return 11;
+	case SHOW::DPLINEAR:
+		return 12;
+	case SHOW::NON_DPLINEAR:
+		return 13;
 	default:
 		break;
 	}

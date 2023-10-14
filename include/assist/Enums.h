@@ -37,7 +37,11 @@ enum CONTOURS {
 
 enum SHOW {
 	LIGHT = CONTOURS::CONTOURS_TYPE1 + 1,
-	GAMMA, 
+	GAMMA,
+	LINEAR,
+	GRAYWINDOW,
+	DPLINEAR,
+	NON_DPLINEAR,
 };
 
 
@@ -60,6 +64,7 @@ enum SHAPE {
 	Rect,
 	Eillipse,
 	Path,
+
 };
 
 

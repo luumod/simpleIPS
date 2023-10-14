@@ -10,11 +10,18 @@ QLabel
 LabelBuilder::LabelBuilder()
 {
 	lab = new QLabel;
+	lab->setMouseTracking(false);
 }
 
 LabelBuilder::~LabelBuilder()
 {
 
+}
+
+LabelBuilder& LabelBuilder::setMouseTracking(bool open)
+{
+	lab->setMouseTracking(open);
+	return *this;
 }
 
 LabelBuilder& LabelBuilder::setObjectName(const QString& objName)

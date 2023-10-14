@@ -35,7 +35,7 @@ Res::Res(const std::string& filePath,QObject* parent)
 {
 	if (filePath == "")return;
 	update();
-	fileInfo = QFileInfo(QString::fromStdString(filePath));
+	fileInfo = QFileInfo(QString::fromLocal8Bit(filePath.c_str()));
 	emit signal_updateImage();
 }
 
@@ -43,7 +43,7 @@ void Res::reset(const std::string& filePath)
 {
 	root_mt = cv::imread(filePath);
 	update();
-	fileInfo = QFileInfo(QString::fromStdString(filePath));
+	fileInfo = QFileInfo(QString::fromLocal8Bit(filePath.c_str()));
 	emit signal_updateImage();
 }
 

@@ -14,7 +14,10 @@ Widget* Widget::getInstance() {
 	}
 	return widget;
 }
-
+/**
+ * @brief Construct a new Widget:: Widget object
+ * @param  parent           My Param doc
+ */
 Widget::Widget(QWidget* parent)
 	:QMainWindow(parent)
 	, res(new Res("dog.png", this))
@@ -39,6 +42,9 @@ Widget::Widget(QWidget* parent)
 	}
 }
 
+/**
+ * @brief Destroy the Widget:: Widget object
+ */
 Widget::~Widget()
 {
 
@@ -219,7 +225,6 @@ QBoxLayout* Widget::init_layout_AdjArea()
 		}
 		});
 	layout->addWidget(groupBox_cut);
-
 	//----------------------------------------------
 	//右下显示Tab
 	//第一页：图片信息
@@ -513,15 +518,6 @@ void Widget::on_action_allRestore_triggered()
 	clearAllWidgetValue();
 
 	updateFromRoot();
-}
-
-void Widget::on_action_previewToNormal_triggered()
-{
-	//预览图点击确定转换为正常图 lan_img
-	if (mode) {
-		//lab_img->setPixmap(QPixmap::fromImage(curr_img));
-		get()->update_Image(get()->ori_scaledDelta);
-	}
 }
 
 void Widget::on_action_drawBoard_triggered()
@@ -992,12 +988,6 @@ void Widget::createAction()
 	action_return->setIcon(QIcon("../resource/assert/return.png"));
 	connect(action_return, &QAction::triggered, this, &Widget::on_action_undo_triggered);
 
-	//预览图点击确定
-	action_previewOk = new QAction(tr("确定"),this);
-	action_previewOk->setIcon(QIcon("../resource/assert/previewOk.png"));
-	action_previewOk->setStatusTip(tr("确定操作"));
-	connect(action_previewOk, &QAction::triggered, this, &Widget::on_action_previewToNormal_triggered);
-
 	//打开简单绘图板
 	action_draw = new QAction(tr("绘画"), this);
 	action_draw->setIcon(QIcon("../resource/assert/draw.png"));
@@ -1155,7 +1145,6 @@ void Widget::createToolBar()
 	toolBar->addAction(action_begin);
 	toolBar->addAction(action_restore);
 	toolBar->addAction(action_return);
-	toolBar->addAction(action_previewOk);
 	toolBar->addAction(action_draw);
 }
 
@@ -2047,11 +2036,7 @@ void Widget::work_cutImage()
 		reload_Resources_ScrollArea(work_files[work_currentIndex], 1);
 	}
 }
-QString Widget::choice_currentOpt_name()
-{
 
-	return QString();
-}
 
 void Widget::update_Image_1(double f_scaledDelta)
 {

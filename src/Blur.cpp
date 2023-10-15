@@ -1,4 +1,19 @@
-﻿#include "../include/widget.h"
+﻿/**
+ * @file Blur.cpp
+ * @brief 
+ * @author wangh (wanghuan3037@fiberhome.com)
+ * @version 1.0
+ * @date 2023-10-15
+ * 
+ * @copyright Copyright (c) 2023  xxx
+ * 
+ * @par 修改日志:
+ * <table>
+ * <tr><th>Date       <th>Version <th>Author  <th>Description
+ * <tr><td>2023-10-15 <td>1.0     <td>wangh     <td>内容
+ * </table>
+ */
+#include "../include/widget.h"
 #include "../include/opencv_functions/Blur.h"
 #include <QDebug>
 #include <QLabel>
@@ -24,7 +39,6 @@ int Blur::convertChoice()
 	}
 	return -1;
 }
-
 void Blur::initialize()
 {
 	current_choice = 0;

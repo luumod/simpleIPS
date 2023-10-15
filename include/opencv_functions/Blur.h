@@ -23,7 +23,7 @@ public:
 	void median_blur();//中值滤波
 	void bilateral_blur();//双边滤波
 public slots:
-	void onTriggered_slider1_valueChange_avgBlur(int);
+	void onTriggered_slider1_valueChange_avgBlur(int); 
 	void onTriggered_slider2_valueChange_avgBlur(int);
 	void onTriggered_slider3_valueChange_avgBlur(int);
 
@@ -46,7 +46,7 @@ public slots:
 public:
 
 	//均值滤波
-	int avg_Ksize = 1, anchorX = -1, anchorY = -1;
+	int avg_Ksize = 1, anchorX = -1, anchorY = -1; 
 	//高斯滤波
 	int gas_Ksize = 1, sigmaX = -1, sigmaY = -1;
 	//中值滤波

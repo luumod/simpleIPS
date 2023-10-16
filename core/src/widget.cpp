@@ -20,7 +20,7 @@ Widget* Widget::getInstance() {
  */
 Widget::Widget(QWidget* parent)
 	:QMainWindow(parent)
-	, res(new Res("dog.png", this))
+	, res(new Res("resource/testImages/113.png", this))
 {
 	init_readJson();		//读取配置文件
 	init_WidgetInfo();		//设置主窗口信息	
@@ -281,7 +281,7 @@ QWidget* Widget::WidgetLayout_mode1()
 	//水平布局：左中右
 	QHBoxLayout* lay_ShowArea = new QHBoxLayout;
 	auto lab_arrow = new QLabel;
-	lab_arrow->setPixmap(tr("../resource/assert/right_arrow.png"));
+	lab_arrow->setPixmap(tr("resource/assert/right_arrow.png"));
 	lay_ShowArea->addWidget(wid_ori_ver);
 	lay_ShowArea->addWidget(lab_arrow);
 	lay_ShowArea->addLayout(v_lab_2);
@@ -461,7 +461,7 @@ void Widget::on_action_openWorks_triggered()
 {
 	//清除原始内容
 	work_files.clear();
-	QString FloderPath = QFileDialog::getExistingDirectory(this, "选择文件夹", "../resource/testImages");
+	QString FloderPath = QFileDialog::getExistingDirectory(this, "选择文件夹", "resource/testImages");
 	if (FloderPath.isEmpty()) {
 		//取消
 		return;
@@ -568,10 +568,10 @@ void Widget::on_action_theme_triggered(int type)
 {
 	QFile qssFile;
 	if (type == 0) {
-		qssFile.setFileName("../resource/qss/light.css");
+		qssFile.setFileName("resource/qss/light.css");
 	}
 	else if ( type == 1){
-		qssFile.setFileName("../resource/qss/dark.css");
+		qssFile.setFileName("resource/qss/dark.css");
 	}
 	if (qssFile.open(QFile::OpenModeFlag::ReadOnly)) {
 		this->setStyleSheet(qssFile.readAll());
@@ -970,14 +970,14 @@ void Widget::createAction()
 	//重置图片
 	action_restore = new QAction(tr("重置图片"), this);
 	action_restore->setStatusTip(tr("重置此图片，取消所有加工"));
-	action_restore->setIcon(QIcon("../resource/assert/restore.png"));
+	action_restore->setIcon(QIcon("resource/assert/restore.png"));
 	action_restore->setShortcut(tr("Ctrl+Shift+Z"));
 	connect(action_restore, &QAction::triggered, this, &Widget::on_action_allRestore_triggered);
 
 	//开始制作模式
 	action_begin = new QAction(tr("图片加工"),this);
 	action_begin->setStatusTip(tr("图片加工模式，可以混合修改图片"));
-	action_begin->setIcon(QIcon("../resource/assert/begin.png"));
+	action_begin->setIcon(QIcon("resource/assert/begin.png"));
 	action_begin->setCheckable(true);
 	connect(action_begin, &QAction::triggered, this, &Widget::on_action_changeMode_triggered);
 
@@ -985,12 +985,12 @@ void Widget::createAction()
 	action_return = new QAction(tr("撤销"), this);
 	action_return->setShortcut(tr("Ctrl+Z"));
 	action_return->setStatusTip(tr("撤销此操作"));
-	action_return->setIcon(QIcon("../resource/assert/return.png"));
+	action_return->setIcon(QIcon("resource/assert/return.png"));
 	connect(action_return, &QAction::triggered, this, &Widget::on_action_undo_triggered);
 
 	//打开简单绘图板
 	action_draw = new QAction(tr("绘画"), this);
-	action_draw->setIcon(QIcon("../resource/assert/draw.png"));
+	action_draw->setIcon(QIcon("resource/assert/draw.png"));
 	action_draw->setStatusTip(tr("绘图操作"));
 	connect(action_draw, &QAction::triggered, this,&Widget::on_action_drawBoard_triggered);
 
@@ -1161,17 +1161,17 @@ void Widget::createToolBox()
 
 	
 	QGridLayout* grid_blur = new QGridLayout;
-	QWidget* a1 = createToolBtnItemWidget("均值模糊", BLUR::Average, "../resource/assert/avg.png");
+	QWidget* a1 = createToolBtnItemWidget("均值模糊", BLUR::Average, "resource/assert/avg.png");
 	a1->setStatusTip(tr("均值滤波：取周围像素平均值进行滤波，可以帮助消除图像尖锐噪声，实现图像平滑，模糊等功能"));
 	grid_blur->addWidget(a1, 0, 0);
 
-	QWidget* a2 = createToolBtnItemWidget("高斯模糊", BLUR::Gaussian, "../resource/assert/gaussian.png");
+	QWidget* a2 = createToolBtnItemWidget("高斯模糊", BLUR::Gaussian, "resource/assert/gaussian.png");
 	a2->setStatusTip(tr("高斯滤波：线性平滑滤波，适用于消除高斯噪声，广泛应用于图像处理的减噪过程。"));
 	grid_blur->addWidget(a2,0,1);
-	QWidget* a3 = createToolBtnItemWidget("中值模糊", BLUR::Median, "../resource/assert/zhong.png");
+	QWidget* a3 = createToolBtnItemWidget("中值模糊", BLUR::Median, "resource/assert/zhong.png");
 	a3->setStatusTip(tr("中值滤波：非线性平滑滤波，它将每一像素点的灰度值设置为该点某邻域窗口内的所有像素点灰度值的中值。"));
 	grid_blur->addWidget(a3,1,0);
-	QWidget* a4 = createToolBtnItemWidget("双边滤波", BLUR::Bilateral, "../resource/assert/shuangbian.png");
+	QWidget* a4 = createToolBtnItemWidget("双边滤波", BLUR::Bilateral, "resource/assert/shuangbian.png");
 	a4->setStatusTip(tr("双边滤波：有很好的边缘保护效果，即可以在去噪的同时，保护图像的边缘特性。"));
 	grid_blur->addWidget(a4,1,1);
 
@@ -1192,23 +1192,23 @@ void Widget::createToolBox()
 		});
 
 	QGridLayout* grid_threshold = new QGridLayout;
-	QWidget* b1 = createToolBtnItemWidget("二进制", THRESHOLD::Binary, "../resource/assert/2.png");
+	QWidget* b1 = createToolBtnItemWidget("二进制", THRESHOLD::Binary, "resource/assert/2.png");
 	b1->setStatusTip(tr("二进制阈值化：大变最大，小变0"));
 	grid_threshold->addWidget(b1, 0, 0);
 
-	QWidget* b2 = createToolBtnItemWidget("反二进制", THRESHOLD::Binary_inv, "../resource/assert/f2.png");
+	QWidget* b2 = createToolBtnItemWidget("反二进制", THRESHOLD::Binary_inv, "resource/assert/f2.png");
 	b2->setStatusTip(tr("反二进制阈值化：大变0，小变最大"));
 	grid_threshold->addWidget(b2, 0, 1);
 
-	QWidget* b3 = createToolBtnItemWidget("截断", THRESHOLD::Trunc, "../resource/assert/jieduan.png");
+	QWidget* b3 = createToolBtnItemWidget("截断", THRESHOLD::Trunc, "resource/assert/jieduan.png");
 	b3->setStatusTip(tr("截断阈值化：大变阈值，小不变"));
 	grid_threshold->addWidget(b3, 1, 0);
 
-	QWidget* b4 = createToolBtnItemWidget("阈值化为零", THRESHOLD::Tozero, "../resource/assert/0.png");
+	QWidget* b4 = createToolBtnItemWidget("阈值化为零", THRESHOLD::Tozero, "resource/assert/0.png");
 	b4->setStatusTip(tr("阈值化为0：大不变，小变0"));
 	grid_threshold->addWidget(b4, 1, 1);
 
-	QWidget* b5 = createToolBtnItemWidget("反阈值化为零", THRESHOLD::Tozero_inv, "../resource/assert/f0.png");
+	QWidget* b5 = createToolBtnItemWidget("反阈值化为零", THRESHOLD::Tozero_inv, "resource/assert/f0.png");
 	b5->setStatusTip(tr("反阈值化为0：大变0，小不变"));
 	grid_threshold->addWidget(b5, 2, 0);
 
@@ -1229,31 +1229,31 @@ void Widget::createToolBox()
 		});
 
 	QGridLayout* grid_form = new QGridLayout;
-	QWidget* c1 = createToolBtnItemWidget("膨胀", FORM::Erode, "../resource/assert/pengzhang.png");
+	QWidget* c1 = createToolBtnItemWidget("膨胀", FORM::Erode, "resource/assert/pengzhang.png");
 	c1->setStatusTip(tr("膨胀：取每个位置领域内最大值，膨胀后输出图像的总体亮度的平均值比起原图会有所升高"));
 	grid_form->addWidget(c1, 0, 0);
 
-	QWidget* c2 = createToolBtnItemWidget("腐蚀", FORM::Dilate, "../resource/assert/fushi.png");
+	QWidget* c2 = createToolBtnItemWidget("腐蚀", FORM::Dilate, "resource/assert/fushi.png");
 	c2->setStatusTip(tr("腐蚀：取每个位置领域内最小值，腐蚀后输出图像的总体亮度的平均值比起原图会有所降低"));
 	grid_form->addWidget(c2, 0, 1);
 
-	QWidget* c3 = createToolBtnItemWidget("开运算", FORM::Open, "../resource/assert/kai.png");
+	QWidget* c3 = createToolBtnItemWidget("开运算", FORM::Open, "resource/assert/kai.png");
 	c3->setStatusTip(tr("开运算：先腐蚀再膨胀，可在纤细点出分离物体。有助于消除噪音"));
 	grid_form->addWidget(c3, 1, 0);
 
-	QWidget* c4 = createToolBtnItemWidget("闭运算", FORM::Close, "../resource/assert/bi.png");
+	QWidget* c4 = createToolBtnItemWidget("闭运算", FORM::Close, "resource/assert/bi.png");
 	c4->setStatusTip(tr("闭运算：先膨胀后腐蚀，可以排除前景对象中的小孔或对象上的小黑点"));
 	grid_form->addWidget(c4, 1, 1);
 
-	QWidget* c5 = createToolBtnItemWidget("梯度", FORM::Gradient, "../resource/assert/tidu.png");
+	QWidget* c5 = createToolBtnItemWidget("梯度", FORM::Gradient, "resource/assert/tidu.png");
 	c5->setStatusTip(tr("梯度运算：膨胀图与腐蚀图之差，可以用于保留目标物体的边缘轮廓"));
 	grid_form->addWidget(c5, 2, 0);
 
-	QWidget* c6 = createToolBtnItemWidget("顶帽", FORM::Tophat, "../resource/assert/dingmao.png");
+	QWidget* c6 = createToolBtnItemWidget("顶帽", FORM::Tophat, "resource/assert/dingmao.png");
 	c6->setStatusTip(tr("顶帽运算：	原图与开运算图之差，分离比邻近点亮的斑块，用于突出原图像中比周围亮的区域"));
 	grid_form->addWidget(c6, 2, 1);
 
-	QWidget* c7 = createToolBtnItemWidget("黑帽", FORM::Tophat, "../resource/assert/dingmao.png");
+	QWidget* c7 = createToolBtnItemWidget("黑帽", FORM::Tophat, "resource/assert/dingmao.png");
 	c7->setStatusTip(tr("黑帽运算：闭运算图与原图差，分离比邻近点暗的斑块，突出原图像中比周围暗的区域"));
 	grid_form->addWidget(c7, 3, 0);
 
@@ -1275,11 +1275,11 @@ void Widget::createToolBox()
 	
 	QGridLayout* gird_connected = new QGridLayout;
 
-	QWidget* d1 = createToolBtnItemWidget(tr("连通区域分析①"), CONNECTED::CONNECTED_TYPE1, "../resource/assert/liantongkuai.png");
+	QWidget* d1 = createToolBtnItemWidget(tr("连通区域分析①"), CONNECTED::CONNECTED_TYPE1, "resource/assert/liantongkuai.png");
 	d1->setStatusTip(tr("连通区域：找到图片之间的连通块，并且用不同颜色标记。"));
 	gird_connected->addWidget(d1,0,0);
 
-	QWidget* d2 = createToolBtnItemWidget(tr("连通区域分析②"), CONNECTED::CONNECTED_TYPE2, "../resource/assert/liantongkuais.png");
+	QWidget* d2 = createToolBtnItemWidget(tr("连通区域分析②"), CONNECTED::CONNECTED_TYPE2, "resource/assert/liantongkuais.png");
 	d2->setStatusTip(tr("连通区域：找到图片之间的连通块，并且使用方框进行标记。"));
 	gird_connected->addWidget(d2,1,0);
 	gird_connected->setRowStretch(4, 10);
@@ -1299,7 +1299,7 @@ void Widget::createToolBox()
 
 	QGridLayout* gird_contours = new QGridLayout;
 
-	QWidget* e1 = createToolBtnItemWidget(tr("轮廓绘制操作"), CONTOURS::CONTOURS_TYPE1, "../resource/assert/lunkuo.png");
+	QWidget* e1 = createToolBtnItemWidget(tr("轮廓绘制操作"), CONTOURS::CONTOURS_TYPE1, "resource/assert/lunkuo.png");
 	e1->setStatusTip(tr("轮廓绘制：绘制图像的轮廓信息"));
 	gird_contours->addWidget(e1, 0, 0);
 
@@ -1320,27 +1320,27 @@ void Widget::createToolBox()
 
 	QGridLayout* gird_effect = new QGridLayout;
 
-	QWidget* f1 = createToolBtnItemWidget(tr("亮度调整"), SHOW::LIGHT, "../resource/assert/light.png");
+	QWidget* f1 = createToolBtnItemWidget(tr("亮度调整"), SHOW::LIGHT, "resource/assert/light.png");
 	f1->setStatusTip(tr("图像亮度调整：增强图像的亮度"));
 	gird_effect->addWidget(f1, 0, 0);
 
-	QWidget* f2 = createToolBtnItemWidget(tr("γ矫正"),SHOW::GAMMA, "../resource/assert/gamma.png");
+	QWidget* f2 = createToolBtnItemWidget(tr("γ矫正"),SHOW::GAMMA, "resource/assert/gamma.png");
 	f2->setStatusTip(tr("γ矫正"));
 	gird_effect->addWidget(f2, 0, 1);
 
-	QWidget* f3 = createToolBtnItemWidget(tr("对比度展宽"), SHOW::LINEAR,"../resource/assert/duibiduzhankuan.png");
+	QWidget* f3 = createToolBtnItemWidget(tr("对比度展宽"), SHOW::LINEAR,"resource/assert/duibiduzhankuan.png");
 	f3->setStatusTip(tr("对比度展宽"));
 	gird_effect->addWidget(f3, 1, 0);
 
-	QWidget* f4 = createToolBtnItemWidget(tr("灰级窗处理"), SHOW::GRAYWINDOW, "../resource/assert/huiji.png");
+	QWidget* f4 = createToolBtnItemWidget(tr("灰级窗处理"), SHOW::GRAYWINDOW, "resource/assert/huiji.png");
 	f4->setStatusTip(tr("灰级窗处理"));
 	gird_effect->addWidget(f4, 1, 1);
 
-	QWidget* f5 = createToolBtnItemWidget(tr("线性动态范围调整"), SHOW::DPLINEAR, "../resource/assert/linear.png");
+	QWidget* f5 = createToolBtnItemWidget(tr("线性动态范围调整"), SHOW::DPLINEAR, "resource/assert/linear.png");
 	f5->setStatusTip(tr("线性动态范围调整"));
 	gird_effect->addWidget(f5, 2, 0);
 
-	QWidget* f6 = createToolBtnItemWidget(tr("非线性动态范围调整"), SHOW::NON_DPLINEAR, "../resource/assert/non_linear.png");
+	QWidget* f6 = createToolBtnItemWidget(tr("非线性动态范围调整"), SHOW::NON_DPLINEAR, "resource/assert/non_linear.png");
 	f6->setStatusTip(tr("非线性动态范围调整"));
 	gird_effect->addWidget(f6, 2, 1);
 

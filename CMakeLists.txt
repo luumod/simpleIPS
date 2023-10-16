@@ -12,13 +12,11 @@ set(CMAKE_AUTOMOC ON)
 # 查找并引用Qt6库
 find_package(Qt6 COMPONENTS Core Widgets REQUIRED)
 
-
-
 # 设置调试
 set(CMAKE_BUILD_TYPE Debug)
 
 # 指定目标exe生成位置
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/bin)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/core)
 
 # 设置OpenCV安装路径
 set(OpenCV_DIR "F:\\Tools\\openCV\\openCV\\build")
@@ -28,57 +26,60 @@ find_package(OpenCV REQUIRED PATHS ${OpenCV_DIR} NO_DEFAULT_PATH)
 
 # 添加可执行文件或库
 add_executable(QtPro
-    src/widget.cpp
-    src/Blur.cpp
-    src/Threshold.cpp
-    src/Morphology.cpp
-    src/main.cpp
-    src/Connected.cpp
-    src/Object.cpp
-    "src/LookWidget.cpp"
-    src/Contours.cpp
-    src/Res.cpp
+    core/src/widget.cpp
+    core/src/Blur.cpp
+    core/src/Threshold.cpp
+    core/src/Morphology.cpp
+    core/src/main.cpp
+    core/src/Connected.cpp
+    core/src/Object.cpp
+    core/src/LookWidget.cpp
+    core/src/Contours.cpp
+    core/src/Res.cpp
 
-    src/DrawWidget.cpp
-    src/GraphicsScene.cpp
-    src/BaseOperate.cpp
-    src/Showeffect.cpp
-    src/eventfilterobject.cpp
-    src/ShowImgWidget.cpp
-    src/CaptureWidget.cpp
-    src/NativeEventFilter.cpp
+    core/src/DrawWidget.cpp
+    core/src/GraphicsScene.cpp
+    core/src/BaseOperate.cpp
+    core/src/Showeffect.cpp
+    core/src/eventfilterobject.cpp
+    core/src/ShowImgWidget.cpp
+    core/src/CaptureWidget.cpp
+    core/src/NativeEventFilter.cpp
+    core/src/WidgetBuilder.cpp
 
 
-    include/assist/Common.h
-    include/assist/belongsToEnum.h 
-    include/assist/Mat2QImage.h
-    include/assist/Enums.h 
-    include/assist/Res.h 
-    include/assist/config.h
-    include/assist/QImage2Mat.h
+    core/include/assist/Common.h
+    core/include/assist/belongsToEnum.h 
+    core/include/assist/Mat2QImage.h
+    core/include/assist/Enums.h 
+    core/include/assist/Res.h 
+    core/include/assist/config.h
+    core/include/assist/QImage2Mat.h
 
-    include/opencv_functions/Blur.h
-    include/opencv_functions/Threshold.h 
-    include/opencv_functions/Morphology.h
-    include/opencv_functions/Connected.h
-    include/opencv_functions/Object.h 
-    include/opencv_functions/Contours.h
-    include/opencv_functions/BaseOperate.h
-    include/opencv_functions/Showeffect.h
+    core/include/opencv_functions/Blur.h
+    core/include/opencv_functions/Threshold.h 
+    core/include/opencv_functions/Morphology.h
+    core/include/opencv_functions/Connected.h
+    core/include/opencv_functions/Object.h 
+    core/include/opencv_functions/Contours.h
+    core/include/opencv_functions/BaseOperate.h
+    core/include/opencv_functions/Showeffect.h
 
-    include/other_functions/GraphicsScene.h
-    include/other_functions/eventfilterobject.h
+    core/include/other_functions/GraphicsScene.h
+    core/include/other_functions/eventfilterobject.h
 
-    "include/Widget/LookWidget.h" 
-    include/Widget/DrawWidget.h 
-    include/Widget/ShowImgWidget.h
-    include/Widget/CaptureWidget.h
+    core/include/Widget/LookWidget.h
+    core/include/Widget/DrawWidget.h 
+    core/include/Widget/ShowImgWidget.h
+    core/include/Widget/CaptureWidget.h
 
-    include/widget_include_files.h
-    include/widget.h
-  "include/Widget/WidgetBuilder.h" "src/WidgetBuilder.cpp")
+    core/include/widget_include_files.h
+    core/include/widget.h
+    core/include/Widget/WidgetBuilder.h 
+)
  add_executable(QtTest
-    QtTest/test1.cpp )
+    QtTest/test1.cpp 
+ )
 
 
 
@@ -96,6 +97,7 @@ target_link_libraries(QtTest
     ${OpenCV_LIBS}
 )
 
+    
 
 add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 add_definitions(-DUNICODE -D_UNICODE)

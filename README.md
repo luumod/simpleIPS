@@ -5,7 +5,7 @@
 主要是为了巩固 Qt 与学习 OpenCV 来做的这个软件。
 
 ### 点击下载此程序来体验
-[一个简单的体验版本](https://github.com/luumod/simpleIPS/releases/tag/v1.0)
+[一个简单的体验版本](https://github.com/luumod/simpleIPS/releases/tag/v1.1)
 
 ### 目前进度
 
@@ -28,12 +28,16 @@
 
 [使用opencv+Qt 自制的简易版图片处理软件](https://www.bilibili.com/video/BV1qN411t7jK/#reply188969413872)
 
-### 开发配置方法
+### CMake版本
+我使用的是VS2022配置的qt与opnecv环境，需要配置的内容如下：
 1. 配置好Qt6的环境变量。![image](https://github.com/luumod/myPhotoshopApp/assets/93420580/80b572f9-1e47-452b-b0dd-3ea942643346)
 2. 配置好OpenCV的环境变量。![image](https://github.com/luumod/myPhotoshopApp/assets/93420580/3098a71c-c7eb-41cd-8657-b3c5fb1cf5c0)
 4. CMakeLists文件中，设置你的OpenCV的安装路径。
 5. 删除CMakeLists的倒数后六行（如果你没有安装的话）
 6. 重新配置CMakeLists文件
+
+### qmake版本
+请查阅branch `qmake` 可以直接在QtCreator上运行。
 
 ### 待解决bug
 

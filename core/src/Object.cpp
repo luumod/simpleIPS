@@ -18,11 +18,6 @@ Widget* Object::get() {
 	return Widget::getInstance();
 }
 
-int Object::convertChoice()
-{
-	return 0;
-}
-
 void Object::initialize()
 {
 	return;

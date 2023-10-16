@@ -16,8 +16,8 @@ public:
 	Contours();
 	~Contours();
 
+protected:
 	void initialize()override;
-
 	//图像轮廓检测
 	void handle(cv::Mat& tMt, cv::Mat& tMt2,bool convexHull=false);
 	void findContours();

@@ -16,7 +16,6 @@ public:
 	Blur();
 	~Blur();
 
-	int convertChoice()override;
 	void initialize()override;
 	void avg_blur();//均值滤波
 	void Gaussian_blur();//高斯滤波

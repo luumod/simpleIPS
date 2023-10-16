@@ -179,21 +179,31 @@ QBoxLayout* Widget::init_layout_AdjArea()
 	connect(this, &Widget::signal_choiceToolButton, this, [=](const QString& name) {
 		groupBox_adj->setTitle("参数调整: " + name);
 		});
-	
-	AdjArea_StackedWidgets = new QStackedWidget;
-	for (int i = 0; i < MAX_OPTS; i++) {
-		AdjArea_StackedWidgets->insertWidget(i, choice_GUI_create(i));
-	}
-	//右上显示数值操作框
-	AdjArea_StackedWidgets->setCurrentIndex(0);
 
 	QHBoxLayout* lay_adj = new QHBoxLayout;
-	lay_adj->addWidget(AdjArea_StackedWidgets);
+	lay_adj->addWidget(choice_GUI_create(0)); //默认第一个窗口AvgBlur
 	groupBox_adj->setLayout(lay_adj);
 	connect(this, &Widget::signal_changeToolBoxPage_ButNoChoice, groupBox_adj, [=]() {
 		groupBox_adj->setVisible(false);
 		});
-	connect(this, &Widget::signal_choiceToolButton, groupBox_adj, [=]() {
+	connect(this, &Widget::signal_choiceToolButton, groupBox_adj, [=](const QString& name,int id) {
+		QHBoxLayout* hLayout = qobject_cast<QHBoxLayout*>(groupBox_adj->layout());//QHBoxLayout
+		QLayoutItem* item;
+		while ((item = hLayout->takeAt(0)) != nullptr) {
+			QWidget* wid = item->widget();
+			if (wid) {
+				delete wid;
+				wid = nullptr;
+			}
+		}
+		delete hLayout;
+		hLayout = nullptr;
+
+		//根据id来创建新的GUI
+		QHBoxLayout* lay_adj = new QHBoxLayout;
+		lay_adj->addWidget(choice_GUI_create(id));
+		groupBox_adj->setLayout(lay_adj);
+
 		groupBox_adj->setVisible(true);
 		});
 
@@ -431,15 +441,13 @@ void Widget::on_label_customContextMenuRequested__(const QPoint& pos) {
 }
 
 void Widget::on_buttonGroup_everyOpeartions_choice(Object*& op,QButtonGroup* btn_group,QAbstractButton* btn){
-	emit signal_choiceToolButton(btn->text());
 
-	AdjArea_StackedWidgets->setVisible(true);
 	op->current_choice = btn_group->id(btn);
 
 	choice_buttonGroupsBtns();
 
 	int id = switch_Dialog_id(op->current_choice);
-	AdjArea_StackedWidgets->setCurrentIndex(id);
+	emit signal_choiceToolButton(btn->text(),id);
 }
 
 void Widget::on_action_exit_triggered()
@@ -514,8 +522,6 @@ void Widget::on_action_allRestore_triggered()
 	for (auto& x : Opts) {
 		x->initialize();
 	}
-
-	clearAllWidgetValue();
 
 	updateFromRoot();
 }
@@ -773,7 +779,6 @@ void Widget::reload_Resources_ScrollArea(const QString& fileName, int mode)
 	for (auto& x : Opts) {
 		x->initialize();
 	}
-	clearAllWidgetValue();
 	//所有按钮置为未选中状态
 	for (auto& btnGps : btngroups) {
 		btnGps->setExclusive(false);
@@ -816,7 +821,6 @@ void Widget::choice_buttonGroupsBtns()
 	if (mode) {
 		//先恢复再保存
 		savePoint();
-		clearAllWidgetValue();
 	}
 	else {
 		restore_cutOperation();
@@ -825,7 +829,6 @@ void Widget::choice_buttonGroupsBtns()
 
 void Widget::restore_cutOperation()
 {
-	clearAllWidgetValue();
 	updateFromIntermediate();
 }
 
@@ -838,7 +841,6 @@ void Widget::on_action_changeMode_triggered(){
 	else {
 		emit signal_changeMode(false);
 	}
-	clearAllWidgetValue();
 	//数据清空
 	updateFromIntermediate();
 }
@@ -849,8 +851,6 @@ void Widget::on_action_undo_triggered()
 	if (mode) {
 		returnPoint();
 		update_Image(ori_scaledDelta);
-		//清除滑块的值
-		setIndexPageWidgetValue();
 	}
 	else {
 		on_action_allRestore_triggered();
@@ -874,45 +874,6 @@ void Widget::returnPoint()
 		res->curr_mt = undo_sta.top();
 		res->curr_img = Mat2QImage(res->curr_mt);
 		undo_sta.pop();
-	}
-}
-
-void Widget::setIndexPageWidgetValue(int index)
-{
-	//传递默认的index，则选择当前页
-	if (index == -1) {
-		clearAllWidgetValue();
-		return;
-	}
-
-	//否则就是第index页
-	QWidget* pageW = AdjArea_StackedWidgets->widget(index);
-	if (pageW) {
-		QList<QWidget*> childWidgets = pageW->findChildren<QWidget*>(); // 获取该页中的所有子部件
-		for (auto& x : childWidgets) {
-			if (QSlider* slider = qobject_cast<QSlider*>(x)) {
-				if (slider->objectName() == tr("threshold_value")) {
-					slider->setValue(128);
-				}
-				else if (x->objectName() == tr("maxValue")) {
-					slider->setValue(255);
-				}
-				else {
-					slider->setValue(slider->minimum());
-				}
-			}
-			else if (QComboBox* comb = qobject_cast<QComboBox*>(x)) {
-				comb->setCurrentIndex(0);
-			}
-		}
-	}
-}
-
-void Widget::clearAllWidgetValue()
-{
-	//清除所有的滑块的值
-	for (int i = 0; i < AdjArea_StackedWidgets->count(); i++) { // (0 1 2 3) 4 5 6 7 8
-		setIndexPageWidgetValue(i);
 	}
 }
 
@@ -1703,14 +1664,15 @@ QWidget* Widget::create_GUIbright()
 	};
 
 	auto w = new QWidget;
-	w->setLayout(createDialog_nSlider_GUItemplate<int, Blur*>(
+	w->setLayout(createDialog_nSlider_GUItemplate<int, Showeffect*>(
 		ls_slider_light,
 		QList<int>() << 1 << 1,
 		QList<int>() << 100 << 100,
 		QList<int>() << 1 << 1,
 		QList<QString>() << "bright_light_value" << "bright_dark_value",
 		QList<QString>() << "亮度增加" << "亮度降低",
-		QList< std::function<void(int)>>() << funcLight << funcDark)
+		QList< std::function<void(int)>>() << funcLight << funcDark,
+		true, "-?\\d+", "亮度值(负值表示降低)", &showeffect)
 	);
 	return w;
 }
@@ -1727,7 +1689,7 @@ QWidget* Widget::create_GUIgamma()
 	};
 
 	auto w = new QWidget;
-	w->setLayout(createDialog_nSlider_GUItemplate<int, Blur*>(
+	w->setLayout(createDialog_nSlider_GUItemplate<int, Showeffect*>(
 		ls_slider_gamma,
 		QList<int>() << 1,
 		QList<int>() << 50,
@@ -1735,7 +1697,7 @@ QWidget* Widget::create_GUIgamma()
 		QList<QString>() << "gamma_slider",
 		QList<QString>() << "γ矫正",
 		QList< std::function<void(int)>>() << funcGamma,
-		true)
+		true,"\\d+","γ值",&showeffect)
 	);
 	return w;
 }
@@ -1753,7 +1715,7 @@ QWidget* Widget::create_GUIContrast()
 	};
 
 	auto w = new QWidget;
-	w->setLayout(createDialog_nSlider_GUItemplate<int, Blur*>(
+	w->setLayout(createDialog_nSlider_GUItemplate<int, Showeffect*>(
 		ls_slider_linear,
 		QList<int>() << 0 << 0,
 		QList<int>() << 255 << 255,
@@ -1761,7 +1723,7 @@ QWidget* Widget::create_GUIContrast()
 		QList<QString>() << "linearG1_slider" << "linearG2_slider",
 		QList<QString>() << "仿射下限" <<"仿射上限",
 		QList< std::function<void(int)>>() << funcLinearG1 << funcLinearG2,
-		true)
+		true, "\\d+\\s\\d+","仿射下限 仿射上限",&showeffect)
 	);
 	// 获取QWidget的布局
 	//额外添加控件
@@ -1772,11 +1734,16 @@ QWidget* Widget::create_GUIContrast()
 		QRadioButton* r_btn1 = new QRadioButton("灰度图");
 		r_btn1->setChecked(true);
 		QRadioButton* r_btn2 = new QRadioButton("彩色图");
-		connect(r_btn1, &QRadioButton::toggled, this, [=](bool checked) {
-			showeffect->linear_mode = !checked;
-			});
-		connect(r_btn2, &QRadioButton::toggled, this, [=](bool checked) {
-			showeffect->linear_mode = checked;
+		QButtonGroup* group = new QButtonGroup(this);
+		group->addButton(r_btn1);
+		group->addButton(r_btn2);
+		connect(group, &QButtonGroup::buttonClicked, this, [=](QAbstractButton* btn) {
+			if (btn == r_btn1) {
+				showeffect->linear_mode = 0; //灰度图
+			}
+			else {
+				showeffect->linear_mode = 1;
+			}
 			});
 		hlayout->addWidget(r_btn1,0,Qt::AlignHCenter);
 		hlayout->addWidget(r_btn2,0, Qt::AlignHCenter);
@@ -1800,7 +1767,7 @@ QWidget* Widget::create_GUIGrayWindow()
 	};
 
 	auto w = new QWidget;
-	w->setLayout(createDialog_nSlider_GUItemplate<int, Blur*>(
+	w->setLayout(createDialog_nSlider_GUItemplate<int, Showeffect*>(
 		ls_slider_grayWindow,
 		QList<int>() << 0 << 0,
 		QList<int>() << 255 << 255,
@@ -1808,7 +1775,7 @@ QWidget* Widget::create_GUIGrayWindow()
 		QList<QString>() << "GreayF1_slider" << "GrayF2_slider",
 		QList<QString>() << "选择下限" << "选择上限",
 		QList< std::function<void(int)>>() << funcGrayG1 << funcGrayG2,
-		true)
+		true, "\\d+\\s\\d+", "选择下限 选择上限", &showeffect)
 	);
 	return w;
 }
@@ -1826,7 +1793,7 @@ QWidget* Widget::create_GUIDPLinear()
 	};
 
 	auto w = new QWidget;
-	w->setLayout(createDialog_nSlider_GUItemplate<int, Blur*>(
+	w->setLayout(createDialog_nSlider_GUItemplate<int, Showeffect*>(
 		ls_slider_dpLinear,
 		QList<int>() << 0 << 0,
 		QList<int>() << 255 << 255,
@@ -1834,7 +1801,7 @@ QWidget* Widget::create_GUIDPLinear()
 		QList<QString>() << "DPLinearA_slider" << "DPLinearB_slider",
 		QList<QString>() << "区域下限" << "区域上限",
 		QList< std::function<void(int)>>() << funcdpA << funcdpB,
-		true)
+		true,"\\d+\\s\\d+","区域下限 区域上限",&showeffect)
 	);
 	// 获取QWidget的布局
 	//额外添加控件
@@ -1845,11 +1812,16 @@ QWidget* Widget::create_GUIDPLinear()
 		QRadioButton* r_btn1 = new QRadioButton("灰度图");
 		r_btn1->setChecked(true);
 		QRadioButton* r_btn2 = new QRadioButton("彩色图");
-		connect(r_btn1, &QRadioButton::toggled, this, [=](bool checked) {
-			showeffect->DpLinear_mode = !checked;
-			});
-		connect(r_btn2, &QRadioButton::toggled, this, [=](bool checked) {
-			showeffect->DpLinear_mode = checked;
+		QButtonGroup* group = new QButtonGroup(this);
+		group->addButton(r_btn1);
+		group->addButton(r_btn2);
+		connect(group, &QButtonGroup::buttonClicked, this, [=](QAbstractButton* btn) {
+			if (btn == r_btn1) {
+				showeffect->DpLinear_mode = 0; //灰度图
+			}
+			else {
+				showeffect->DpLinear_mode = 1;
+			}
 			});
 		hlayout->addWidget(r_btn1, 0, Qt::AlignHCenter);
 		hlayout->addWidget(r_btn2, 0, Qt::AlignHCenter);
@@ -1868,7 +1840,7 @@ QWidget* Widget::create_GUINoneDpLinear()
 	};
 
 	auto w = new QWidget;
-	w->setLayout(createDialog_nSlider_GUItemplate<int, Blur*>(
+	w->setLayout(createDialog_nSlider_GUItemplate<int, Showeffect*>(
 		ls_slider_NoneDpLinear,
 		QList<int>() << 0,
 		QList<int>() << 80,
@@ -1876,7 +1848,7 @@ QWidget* Widget::create_GUINoneDpLinear()
 		QList<QString>() << "NoneDpLinearC_slider",
 		QList<QString>() << "增益常数",
 		QList< std::function<void(int)>>() << funcNoneDpC,
-		true)
+		true, "\\d+", "增益常数",&showeffect)
 	);
 	// 获取QWidget的布局
 	//额外添加控件
@@ -1887,15 +1859,19 @@ QWidget* Widget::create_GUINoneDpLinear()
 		QRadioButton* r_btn1 = new QRadioButton("灰度图");
 		r_btn1->setChecked(true);
 		QRadioButton* r_btn2 = new QRadioButton("彩色图");
-		connect(r_btn1, &QRadioButton::toggled, this, [=](bool checked) {
-			showeffect->NoneDpLinear_mode = !checked;
-			});
-		connect(r_btn2, &QRadioButton::toggled, this, [=](bool checked) {
-			showeffect->NoneDpLinear_mode = checked;
+		QButtonGroup* group = new QButtonGroup(this);
+		group->addButton(r_btn1);
+		group->addButton(r_btn2);
+		connect(group, &QButtonGroup::buttonClicked, this, [=](QAbstractButton* btn) {
+			if (btn == r_btn1) {
+				showeffect->NoneDpLinear_mode = 0; //灰度图
+			}
+			else {
+				showeffect->NoneDpLinear_mode = 1;
+			}
 			});
 		hlayout->addWidget(r_btn1, 0, Qt::AlignHCenter);
 		hlayout->addWidget(r_btn2, 0, Qt::AlignHCenter);
-
 		layout->insertLayout(0, hlayout);
 	}
 	return w;
@@ -1937,12 +1913,16 @@ QWidget* Widget::choice_GUI_create(int id)
 		break;
 	case 10:
 		return create_GUIContrast();
+		break;
 	case 11:
 		return create_GUIGrayWindow();
+		break;
 	case 12:
 		return create_GUIDPLinear();
+		break;
 	case 13:
 		return create_GUINoneDpLinear();
+		break;
 	default:
 		break;
 	}

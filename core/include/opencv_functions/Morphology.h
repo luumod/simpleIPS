@@ -17,7 +17,7 @@ public:
 	Morphology();
 	~Morphology();
 
-	int convertChoice()override;
+	int convertChoice();
 	void morphology();
 protected:
 	void initialize()override;

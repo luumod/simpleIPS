@@ -1,7 +1,7 @@
 ﻿#ifndef COMMON_H_
 #define COMMON_H_
 
-constexpr auto MAX_OPTS = 14;
+constexpr auto NUMS_MAX_OPTS = 14;
 
 constexpr auto SCROLLAREA_WIDTH = 420;
 constexpr auto SCROLLAREA_HEIGHT = 420;

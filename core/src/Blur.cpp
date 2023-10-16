@@ -22,23 +22,6 @@ Blur::Blur() :Object() {}
 
 Blur::~Blur() {}
 
-int Blur::convertChoice()
-{
-	switch (current_choice)
-	{
-	case BLUR::Average:
-		return BLUR::Average;
-	case BLUR::Gaussian:
-		return BLUR::Gaussian;
-	case BLUR::Median:
-		return BLUR::Median;
-	case BLUR::Bilateral:
-		return BLUR::Bilateral;
-	default:
-		return -1;
-	}
-	return -1;
-}
 void Blur::initialize()
 {
 	current_choice = 0;
@@ -179,22 +162,24 @@ void Blur::onTriggered_slider3_valueChange_bilateralBlur(int value)
 
 
 void Blur::onReturnPressed_Edit(QList<QString> strs) {
-	int types = -1;
-	if ((types = convertChoice()) == -1) {
+	switch (current_choice)
+	{
+	case BLUR::Average:
+		onReturnPressed_AvgBlur_Edit(strs);
+		return;
+	case BLUR::Gaussian:
+		onReturnPressed_Gaussian_Edit(strs);
+		return;
+	case BLUR::Median:
+		onReturnPressed_Median_Edit(strs);
+		return;
+	case BLUR::Bilateral:
+		onReturnPressed_Bilateral_Edit(strs);
+		return;
+	default:
 		return;
 	}
-	if (types == BLUR::Average) {
-		onReturnPressed_AvgBlur_Edit(strs);
-	}
-	else if (types == BLUR::Gaussian) {
-		onReturnPressed_Gaussian_Edit(strs);
-	}
-	else if (types == BLUR::Median) {
-		onReturnPressed_Median_Edit(strs);
-	}
-	else if (types == BLUR::Bilateral) {
-		onReturnPressed_Bilateral_Edit(strs);
-	}
+	return;
 }
 
 //自己输入

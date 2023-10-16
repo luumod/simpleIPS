@@ -255,7 +255,6 @@ void Showeffect::showBGRNoneDynamicLinearAdj()
 void Showeffect::choice_NoneDpLinearAlgorithm()
 {
 	if (!NoneDpLinear_mode) {
-		//灰度图
 		showNoneDynamicLinearAdj();
 	}
 	else {
@@ -267,7 +266,6 @@ void Showeffect::choice_NoneDpLinearAlgorithm()
 void Showeffect::choice_DpLinearAlgorithm()
 {
 	if (!DpLinear_mode) {
-		//灰度图
 		showDynamicLinearAdj();
 	}
 	else {
@@ -340,4 +338,72 @@ void Showeffect::onTriggered_slider_valueChange_NoneDynamicC(double value)
 {
 	this->n_dp_c = value;
 	choice_NoneDpLinearAlgorithm();
+}
+
+void Showeffect::onReturnPressed_Bright_Edit(QList<QString> strs)
+{
+	int val = strs[0].toInt();
+	this->bright_value = val;
+	Bright();
+}
+
+void Showeffect::onReturnPressed_Gamma_Edit(QList<QString> strs)
+{
+	this->gamma_value = strs[0].toInt();
+	Gamma();
+}
+
+void Showeffect::onReturnPressed_Linear_Edit(QList<QString> strs)
+{
+	this->linear_g1 = strs[0].toInt();
+	this->linear_g2 = strs[1].toInt();
+	choice_linearAlgorithm();
+}
+
+void Showeffect::onReturnPressed_Gray_Edit(QList<QString> strs)
+{
+	this->gray_f1 = strs[0].toInt();
+	this->gray_f2 = strs[1].toInt();
+	showGrayWindow();
+}
+
+void Showeffect::onReturnPressed_DpLinear_Edit(QList<QString> strs)
+{
+	this->dp_a = strs[0].toInt();
+	this->dp_b = strs[1].toInt();
+	choice_DpLinearAlgorithm();
+}
+
+void Showeffect::onReturnPressed_NDpLinear_Edit(QList<QString> strs)
+{
+	this->n_dp_c = strs[0].toInt();
+	choice_NoneDpLinearAlgorithm();
+}
+
+void Showeffect::onReturnPressed_Edit(QList<QString> strs)
+{
+	switch (current_choice)
+	{
+	case SHOW::LIGHT:
+		onReturnPressed_Bright_Edit(strs);
+		return;
+	case SHOW::GAMMA:
+		onReturnPressed_Gamma_Edit(strs);
+		return;
+	case SHOW::LINEAR:
+		onReturnPressed_Linear_Edit(strs);
+		return;
+	case SHOW::GRAYWINDOW:
+		onReturnPressed_Gray_Edit(strs);
+		return;
+	case SHOW::DPLINEAR:
+		onReturnPressed_DpLinear_Edit(strs);
+		return;
+	case SHOW::NON_DPLINEAR:
+		onReturnPressed_NDpLinear_Edit(strs);
+		return;
+	default:
+		return;
+	}
+	return;
 }

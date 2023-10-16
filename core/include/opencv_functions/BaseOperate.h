@@ -16,6 +16,7 @@ public:
 	BaseOperate();
 	~BaseOperate();
 
+protected:
 	void initialize()override;
 	
 public slots:

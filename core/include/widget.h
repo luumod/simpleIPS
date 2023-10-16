@@ -65,7 +65,16 @@ class QComboBox;
 
 /**
  * @class Widget
- * @brief 它的实现运用了单例设计模式，在整个程序中只有一个Widget实例。它的全部属性都是公开的，这样我们就可以很方便在任何操作中直接获取需要进行操作的图片，保证整个程序只有一个实例，因此Widget类具有很高的扩展性与简易性。
+ * @brief 程序主窗口。
+ * 
+ * 它的实现运用了单例设计模式，在整个程序中只有一个Widget实例。
+ * 它的全部属性都是公开的，保证整个程序只有一个实例。
+ * 在处理对图片的任何操作时，都可以使用getInstance函数（通常简化为get()）直接获取其实例。例如：
+ * @li get()->inter_mt：单次操作下对图片的修改。
+ * @li get()->flash_mt：混合模式下对快照图片的修改。
+ * 并且使用get因此Widget类具有很高的扩展性与简易性。
+ * 
+ * @see Object
  */
 class Widget :public QMainWindow {
 	Q_OBJECT
@@ -212,7 +221,7 @@ signals:
 	 * @brief 在某个ToolBox页中，选择一个按钮的时候触发此信号。
 	 * @param  optName 表示此时某个具体操作的名字
 	 */
-	void signal_choiceToolButton(const QString& optName = "");
+	void signal_choiceToolButton(const QString& optName = "",int id = -1);
 protected:
 	/**
 	 * @brief 窗口移动：移动窗口获取当前左上角坐标，保存在config.json配置文件中，使得下次打开程序位置不变。
@@ -647,7 +656,7 @@ public:
 	 * 
 	 * 每次都重置回原始图片
 	 * 
-	 * @see clearAllWidgetValue updateFromIntermediate
+	 * @see updateFromIntermediate
 	 */
 	void restore_cutOperation();
 
@@ -688,24 +697,6 @@ public:
 	void updateFromRoot();
 
 private FUNCTION_: //辅助函数
-	/**
-	 * @brief 清除指定页的参数调整框的控件数值。
-	 * 
-	 * 此函数是内部函数，不应该在外部被单独调用。
-	 * 
-	 * @param  index            第index页，其数量取决于 create_GUIXxxxx 的数量
-	 */
-	void setIndexPageWidgetValue(int index = -1);
-
-	/**
-	 * @brief 清除所有页面参数调整框的控件数值
-	 * 
-	 * 这个函数是 setIndexPageWidgetValue 函数封装。此函数是内部函数，不应该在外部被单独调用。
-	 * 
-	 * @see setIndexPageWidgetValue
-	 */
-	void clearAllWidgetValue();
-
 	/**
 	 * @brief 创建OptArea区域中的每个具体操作按钮ToolButton
 	 * 
@@ -788,23 +779,56 @@ private FUNCTION_: //辅助函数
 		QList< QString> lab_name,
 		QList<std::function<void(int)>> slotFunction);
 public:
-	//配置文件
+	/**
+	 * @brief 配置文件
+	 */
 	ExeConfig config;
-	//图片资源
+
+	/**
+	 * @brief 管理整个程序的图片资源
+	 */
 	Res* res = nullptr;
 
-	//主图片
+	/**
+	 * @brief 管理原图片的QLabel
+	 */
 	QLabel* lab_img_ori = nullptr;
+
+	/**
+	 * @brief 管理目标操作图片的QLabel
+	 */
 	QLabel* lab_img = nullptr;
 
-	//图像截取的预览图片
+	/**
+	 * @brief 显示截取的图片的Widget
+	 * 
+	 * @see on_action_jie_triggered
+	 */
 	LookWidget* look = nullptr;
 
-	//混合加工模式
+	/**
+	 * @brief 加工模式的标记
+	 * 
+	 * @li true：混合加工模式
+	 * @li false: 普通模式
+	 * 
+	 */
 	bool mode = false;
 
-	//鼠标滑轮控制
+	/**
+	 * @brief 记录图片铺满整个QLabel的完美缩放比例
+	 * 
+	 * @see update_Image
+	 */
 	double ori_scaledDelta = 1.0; //原始完美缩放比例
+
+	/**
+	 * @brief 用于在任何时候修改图片的缩放比例
+	 * 
+	 * 用于鼠标滑轮时缩放图片
+	 *   
+	 * @see wheelEvent
+	 */
 	double scaledDelta = 1.0;
 
 public:
@@ -816,6 +840,13 @@ public:
 	QButtonGroup* btngroup_connected = nullptr;
 	QButtonGroup* btngroup_contours = nullptr;
 	QButtonGroup* btngroup_show = nullptr;
+
+	/**
+	 * @brief 抽象操作的按钮组
+	 *   
+	 * @see btngroup_blur btngroup_threshold btngroup_form btngroup_connected btngroup_contours btngroup_show
+	 * 
+	 */
 	QList<QButtonGroup*> btngroups;
 
 	//---------------功能实现-----------------
@@ -826,17 +857,44 @@ public:
 	Contours* contours = nullptr;
 	Showeffect* showeffect = nullptr;
 	BaseOperate* img_base = nullptr; //图像基础操作
+
+	/**
+	 * @brief 抽象操作的具体操作类
+	 *   
+	 * @see blur threshold morphology connected contours showeffect img_base
+	 * 
+	 */
 	QList<Object*> Opts;
 
-	//---------------------
-	//撤销栈
+	
+	/**
+	 * @brief 具备撤销功能的撤销栈
+	 *   
+	 * @see returnPoint savePoint
+	 * 
+	 */
 	std::stack<cv::Mat> undo_sta;
 
-	//---------------------
-	//一个简单的绘图板
+	/**
+	 * @brief 简单的绘图板
+	 *   
+	 * @see on_action_drawBoard_triggered
+	 */
 	DrawWidget* widget_draw = nullptr;
 
+	/**
+	 * @brief 存储打开的工作区中的所有的图片路径
+	 *   
+	 * @see loadImagesFormFloder
+	 */
 	QStringList	work_files; //打开工作区的图片名称组
+
+	/**
+	 * @brief 用于实现工作区中切换图片
+	 *   
+	 * @see on_pushButton_prev_clicked on_pushButton_next_clicked
+	 * 
+	 */
 	int work_currentIndex = 0, work_prevIndex = 0;
 public: // GUI部分
 	//---------------------
@@ -925,7 +983,7 @@ public: // GUI部分
 
 	//-----------------
 	//AdjArea布局
-	QStackedWidget* AdjArea_StackedWidgets = nullptr; //所有参数调整GUI
+	//QStackedWidget* AdjArea_StackedWidgets = nullptr; //所有参数调整GUI
 	QTabWidget* AdjArea_TabWidget = nullptr;	//AdjArea Tab
 	QWidget* hor_AdjArea = nullptr; // 非隐藏时的底部栏
 	QWidget* ver_AdjArea = nullptr;	// 隐藏时的右侧栏

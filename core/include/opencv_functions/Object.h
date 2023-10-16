@@ -20,10 +20,8 @@ public:
 	Widget* get();
 	
 public:
-	//《可选择重写》根据当前current_choice来确定当前操作
-	virtual int convertChoice();
-	//《可选择重写》初始化参数值
-	virtual void initialize();
+	//初始化参数值
+	virtual void initialize() = 0;
 	void update(const cv::Mat& tMt);
 	void getMat(cv::Mat& res_mt);
 public:

@@ -1,7 +1,6 @@
 ﻿#ifndef NATIVEEVENTFILTER_H_
 #define NATIVEEVENTFILTER_H_
 
-
 /*
 设置全局快捷键
 */

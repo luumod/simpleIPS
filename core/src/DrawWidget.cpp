@@ -27,7 +27,7 @@ DrawWidget::DrawWidget(QWidget* parent) : QMainWindow(parent) {
 	scene = new GraphicsScene(this);
 
 	QGraphicsPixmapItem* pixItem = new QGraphicsPixmapItem;
-	QPixmap pixmap = QPixmap::fromImage(get()->res->curr_img);
+	QPixmap pixmap = QPixmap::fromImage(Widget::getInstance()->res->curr_img);
 	if (!pixmap.isNull()) {
 		// 非空
 		// 获取场景和图像的大小
@@ -81,11 +81,6 @@ QWidget* DrawWidget::createToolBtnItemWidget(const QString& text, int id, const 
 	wid->setLayout(grid);
 
 	return wid;
-}
-
-void DrawWidget::initialize()
-{
-	
 }
 
 void DrawWidget::createAction()

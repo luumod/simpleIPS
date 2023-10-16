@@ -19,7 +19,6 @@ public:
 	Connected();
 	~Connected();
 
-	int convertChoice()override;
 	void handle(cv::Mat& tMt, cv::Mat& tMt2);
 	void convert(const cv::Mat& src, cv::Mat& out, int nConAreas);
 	void connectedComponents();
@@ -29,8 +28,6 @@ protected:
 public slots:
 	void onTriggered_Comb1_currentTextChanged_connectivtiy(int index);
 	void onTriggered_Comb2_currentTextChanged_ccltype(int index);
-
-	
 
 	int connectivity = 8, ccltype = cv::CCL_DEFAULT;
 };

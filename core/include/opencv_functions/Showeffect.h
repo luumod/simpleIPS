@@ -16,8 +16,9 @@ public:
 	Showeffect();
 	~Showeffect();
 
+protected:
 	void initialize()override;
-
+public:
 	void Bright();
 	void Gamma();
 
@@ -52,6 +53,14 @@ public slots:
 	void onTriggered_slider_valueChange_NoneDynamicC(double);
 
 
+	void onReturnPressed_Bright_Edit(QList<QString> strs);
+	void onReturnPressed_Gamma_Edit(QList<QString> strs);
+	void onReturnPressed_Linear_Edit(QList<QString> strs);
+	void onReturnPressed_Gray_Edit(QList<QString> strs);
+	void onReturnPressed_DpLinear_Edit(QList<QString> strs);
+	void onReturnPressed_NDpLinear_Edit(QList<QString> strs);
+	void onReturnPressed_Edit(QList<QString> strs);
+public:
 	int bright_value = 0;
 	double gamma_value = 1.0;
 

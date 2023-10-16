@@ -16,13 +16,12 @@ class QScrollArea;
 绘图板Widget
 */
 
-class DrawWidget :public QMainWindow, public Object {
+class DrawWidget :public QMainWindow {
 	Q_OBJECT
 public:
 	DrawWidget(QWidget* parent = nullptr);
 	~DrawWidget();
 	QWidget* createToolBtnItemWidget(const QString& text, int id, const QString& fileName);
-	void initialize()override;
 
 	void createAction();
 	void createMenuBar();

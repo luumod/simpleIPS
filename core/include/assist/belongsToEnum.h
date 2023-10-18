@@ -1,7 +1,9 @@
 ﻿#ifndef BELONGSTOENUM_H_
 #define BELONGSTOENUM_H_
 
+#include <functional>
 #include "Enums.h"
+#include "../widget.h"
 template<typename T>
 inline bool belongsToEnum(int data) {
 	if constexpr (std::is_same_v<T, BLUR>) {
@@ -80,52 +82,41 @@ inline bool belongsToEnum(int data) {
 	return false;
 }
 
-int switch_Dialog_id(int id)
-{
-	switch (id)
-	{
-	case BLUR::Average:
-		return 0;
-	case BLUR::Gaussian:
-		return 1;
-	case BLUR::Median:
-		return 2;
-	case BLUR::Bilateral:
-		return 3;
-	case THRESHOLD::Binary:
-	case THRESHOLD::Binary_inv:
-	case THRESHOLD::Trunc:
-	case THRESHOLD::Tozero:
-	case THRESHOLD::Tozero_inv:
-		return 4;
-	case FORM::Erode:
-	case FORM::Dilate:
-	case FORM::Open:
-	case FORM::Close:
-	case FORM::Gradient:
-	case FORM::Tophat:
-	case FORM::Blackhat:
-	case FORM::Hitmiss:
-		return 5;
-	case CONNECTED::CONNECTED_TYPE1:
-	case CONNECTED::CONNECTED_TYPE2:
-		return 6;
-	case CONTOURS::CONTOURS_TYPE1:
-		return 7;
-	case SHOW::LIGHT:
-		return 8;
-	case SHOW::GAMMA:
-		return 9;
-	case SHOW::LINEAR:
-		return 10;
-	case SHOW::GRAYWINDOW:
-		return 11;
-	case SHOW::DPLINEAR:
-		return 12;
-	case SHOW::NON_DPLINEAR:
-		return 13;
-	default:
-		break;
+// 定义一个映射表，将枚举值与操作标识关联起来
+static std::map<int, int> operationMap = {
+	{BLUR::Average, 0},
+	{BLUR::Gaussian, 1},
+	{BLUR::Median, 2},
+	{BLUR::Bilateral, 3},
+	{THRESHOLD::Binary, 4},
+	{THRESHOLD::Binary_inv, 4},
+	{THRESHOLD::Trunc, 4},
+	{THRESHOLD::Tozero, 4},
+	{THRESHOLD::Tozero_inv, 4},
+	{FORM::Erode, 5},
+	{FORM::Dilate, 5},
+	{FORM::Open, 5},
+	{FORM::Close, 5},
+	{FORM::Gradient, 5},
+	{FORM::Tophat, 5},
+	{FORM::Blackhat, 5},
+	{FORM::Hitmiss, 5},
+	{CONNECTED::CONNECTED_TYPE1, 6},
+	{CONNECTED::CONNECTED_TYPE2, 6},
+	{CONTOURS::CONTOURS_TYPE1, 7},
+	{SHOW::LIGHT, 8},
+	{SHOW::GAMMA, 9},
+	{SHOW::LINEAR, 10},
+	{SHOW::GRAYWINDOW, 11},
+	{SHOW::DPLINEAR, 12},
+	{SHOW::NON_DPLINEAR, 13}
+};
+
+// 使用映射表进行操作查找
+static int switch_Dialog_id(int id) {
+	auto it = operationMap.find(id);
+	if (it != operationMap.end()) {
+		return it->second;
 	}
 	return 0;
 }

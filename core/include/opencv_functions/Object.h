@@ -14,16 +14,13 @@ class Widget;
 
 class Object{
 public:
-	explicit Object();
+	Object();
 	virtual ~Object();
-
-	Widget* get();
-	
-public:
-	//初始化参数值
-	virtual void initialize() = 0;
-	void update(const cv::Mat& tMt);
-	void getMat(cv::Mat& res_mt);
+protected:
+	virtual void initialize();
+	static Widget* get();
+	static void update(const cv::Mat& tMt);
+	static void getMat(cv::Mat& res_mt);
 public:
 	int current_choice = 0;
 };

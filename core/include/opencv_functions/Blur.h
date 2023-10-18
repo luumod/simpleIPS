@@ -43,7 +43,6 @@ public slots:
 
 	void onReturnPressed_Edit(QList<QString> strs);
 public:
-
 	//均值滤波
 	int avg_Ksize = 1, anchorX = -1, anchorY = -1; 
 	//高斯滤波

@@ -20,6 +20,7 @@ Widget* Object::get() {
 
 void Object::initialize()
 {
+	current_choice = 0;
 	return;
 }
 

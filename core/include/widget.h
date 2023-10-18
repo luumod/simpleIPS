@@ -401,7 +401,7 @@ public slots:
 	 *	});
 	 * @endcode 
 	 */
-	void on_buttonGroup_everyOpeartions_choice(Object*& op, QButtonGroup* btn_group, QAbstractButton* btn);
+	void on_buttonGroup_everyOpeartions_choice(Object* op, QButtonGroup* btn_group, QAbstractButton* btn);
 
 	/**
 	 * @brief 原图片的右键菜单
@@ -642,16 +642,6 @@ public:
 	bool loadImagesFormFloder(const QString& floderPath);
 
 	/**
-	 * @brief 进行不同具体操作之间时的行为
-	 * 
-	 * 当点击具体操作的时候，判断是否处于加工状态：
-	 * @li 不是：说明当前操作不会影响下一次操作的图片，因此直接重置图片
-	 * @li 是：则下一次操作时的原始图片会在当前操作后的图片上进行，不会重置，但是会进行入栈操作，以起到撤销的效果
-	 * 
-	 */
-	void choice_buttonGroupsBtns();
-
-	/**
 	 * @brief 非混合加工模式下：切换不同的操作时，清除原来的操作
 	 * 
 	 * 每次都重置回原始图片
@@ -849,23 +839,15 @@ public:
 	 */
 	QList<QButtonGroup*> btngroups;
 
-	//---------------功能实现-----------------
-	Blur* blur = nullptr; //模糊
-	Threshold* threshold = nullptr;
-	Morphology* morphology = nullptr;
-	Connected* connected = nullptr;
-	Contours* contours = nullptr;
-	Showeffect* showeffect = nullptr;
-	BaseOperate* img_base = nullptr; //图像基础操作
-
 	/**
 	 * @brief 抽象操作的具体操作类
-	 *   
+	 *
 	 * @see blur threshold morphology connected contours showeffect img_base
-	 * 
+	 *
 	 */
-	QList<Object*> Opts;
+	Object* op = nullptr;
 
+	BaseOperate* img_base = nullptr; //图像基础操作
 	
 	/**
 	 * @brief 具备撤销功能的撤销栈
@@ -898,7 +880,12 @@ public:
 	int work_currentIndex = 0, work_prevIndex = 0;
 public: // GUI部分
 	//---------------------
-	QAction* action_hide = nullptr;
+	/**
+	 * @brief  布局：隐藏原始图片
+	 *   
+	 * @see action_show 显示原始图片
+	 */
+	QAction* action_hide = nullptr; 
 	QAction* action_show = nullptr;
 
 	QAction* action_exit = nullptr;

@@ -47,13 +47,12 @@ Widget::Widget(QWidget* parent)
  */
 Widget::~Widget()
 {
-
-	//内存释放
-	for (auto& x : Opts) {
-		delete x;
-		x = nullptr;
+	delete img_base;
+	img_base = nullptr;
+	if (op) {
+		delete op;
+		op = nullptr;
 	}
-	Opts.clear();
 
 	if (all_screen) {
 		delete all_screen;
@@ -157,10 +156,10 @@ void Widget::init_WidgetLayout()
 	this->setMaximumSize(QSize(1215, 800));
 	this->setCentralWidget(WidgetLayout_mode1());
 
+	action_show->setEnabled(false);
 	connect(this, &Widget::signal_singleImageMode, this, [=]() {
 		action_show->setEnabled(true);
 		});
-	action_show->setEnabled(false);
 	connect(this, &Widget::signal_doubleImageMode, this, [=]() {
 		action_show->setEnabled(false);
 		});
@@ -173,7 +172,6 @@ QBoxLayout* Widget::init_layout_AdjArea()
 
 	AdjArea_TabWidget = new QTabWidget;
 	
-
 	//右上：调整框
 	QGroupBox* groupBox_adj = new QGroupBox("参数调整");
 	connect(this, &Widget::signal_choiceToolButton, this, [=](const QString& name) {
@@ -183,6 +181,7 @@ QBoxLayout* Widget::init_layout_AdjArea()
 	QHBoxLayout* lay_adj = new QHBoxLayout;
 	lay_adj->addWidget(choice_GUI_create(0)); //默认第一个窗口AvgBlur
 	groupBox_adj->setLayout(lay_adj);
+	groupBox_adj->setVisible(false);
 	connect(this, &Widget::signal_changeToolBoxPage_ButNoChoice, groupBox_adj, [=]() {
 		groupBox_adj->setVisible(false);
 		});
@@ -203,7 +202,6 @@ QBoxLayout* Widget::init_layout_AdjArea()
 		QHBoxLayout* lay_adj = new QHBoxLayout;
 		lay_adj->addWidget(choice_GUI_create(id));
 		groupBox_adj->setLayout(lay_adj);
-
 		groupBox_adj->setVisible(true);
 		});
 
@@ -215,6 +213,8 @@ QBoxLayout* Widget::init_layout_AdjArea()
 
 	btn_work_prev = new QPushButton("上一页");
 	btn_work_next = new QPushButton("下一页");
+	connect(btn_work_next, &QPushButton::clicked, this, &Widget::on_pushButton_next_clicked);
+	connect(btn_work_prev, &QPushButton::clicked, this, &Widget::on_pushButton_prev_clicked);
 	cbx_work_autoSave = new QCheckBox("离开时自动保存");
 
 	btn_work_layout = new QHBoxLayout;
@@ -296,9 +296,11 @@ QWidget* Widget::WidgetLayout_mode1()
 	lay_ShowArea->addWidget(lab_arrow);
 	lay_ShowArea->addLayout(v_lab_2);
 
+	//ShowArea图片显示区域
 	QWidget* wid_ShowArea = new QWidget;
 	wid_ShowArea->setLayout(lay_ShowArea);
 	wid_ShowArea->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
+
 	//--------------------------------------------------
 	//底部布局
 	if (!hor_AdjArea) {
@@ -392,13 +394,6 @@ QWidget* Widget::WidgetLayout_mode1()
 void Widget::init_OpencvFunctions()
 {
 	//初始化
-	Opts.push_back(blur = new Blur);
-	Opts.push_back(threshold = new Threshold);
-	Opts.push_back(morphology = new Morphology);
-	Opts.push_back(connected = new Connected);
-	Opts.push_back(contours = new Contours);
-	Opts.push_back(showeffect = new Showeffect);
-	Opts.push_back(img_base = new BaseOperate);
 }
 
 void Widget::moveEvent(QMoveEvent* ev)
@@ -440,11 +435,21 @@ void Widget::on_label_customContextMenuRequested__(const QPoint& pos) {
 	context_menu__->exec(QCursor::pos());
 }
 
-void Widget::on_buttonGroup_everyOpeartions_choice(Object*& op,QButtonGroup* btn_group,QAbstractButton* btn){
-
+void Widget::on_buttonGroup_everyOpeartions_choice(Object* op,QButtonGroup* btn_group,QAbstractButton* btn){
 	op->current_choice = btn_group->id(btn);
 
-	choice_buttonGroupsBtns();
+	/*
+	* 当点击具体操作的时候，判断是否处于加工状态：
+	* false：说明当前操作不会影响下一次操作的图片，因此直接重置图片
+	* true：则下一次操作时的原始图片会在当前操作后的图片上进行，不会重置，但是会进行入栈操作，以起到撤销的效果
+	* */
+	if (mode) {
+		//先恢复再保存
+		savePoint();
+	}
+	else {
+		restore_cutOperation();
+	}
 
 	int id = switch_Dialog_id(op->current_choice);
 	emit signal_choiceToolButton(btn->text(),id);
@@ -498,10 +503,6 @@ void Widget::on_action_openWorks_triggered()
 	}
 	// 即时加载图片
 	reload_Resources_ScrollArea(work_files[work_currentIndex], 1);
-	
-	//------------------------------
-	connect(btn_work_next, &QPushButton::clicked, this, &Widget::on_pushButton_next_clicked);
-	connect(btn_work_prev, &QPushButton::clicked, this, &Widget::on_pushButton_prev_clicked);
 }
 
 void Widget::on_action_saveFile_triggered()
@@ -518,11 +519,6 @@ void Widget::on_action_allRestore_triggered()
 	/*
 	重置所有操作至原始图片
 	*/
-	//清除所有的数据信息
-	for (auto& x : Opts) {
-		x->initialize();
-	}
-
 	updateFromRoot();
 }
 
@@ -535,6 +531,7 @@ void Widget::on_action_drawBoard_triggered()
 
 void Widget::on_colorDialog_choice_triggered(const QColor& color)
 {
+	Contours* contours = dynamic_cast<Contours*>(op);
 	//选择颜色
 	contours->onTriggered_Color_currentTextChanged_contoursColor(color);
 }
@@ -758,27 +755,18 @@ void Widget::reload_Resources_ScrollArea(const QString& fileName, int mode)
 {
 	res->reset(fileName.toLocal8Bit().data());
 
-	lab_img->setPixmap(QPixmap::fromImage(res->curr_img));
-
+	//对于操作图片窗口的更新
 	scrollArea->takeWidget();
 	scrollArea->setWidget(lab_img);
-
-	//图片尺寸预调整
-	scaledDelta = ori_scaledDelta = init_scaledImageOk();
-
-	// 原图片更新
-	lab_img_ori->setPixmap(QPixmap::fromImage(res->curr_img));
-
+	//对于原始图片窗口的更新
 	scrollArea_ori->takeWidget();
 	scrollArea_ori->setWidget(lab_img_ori);
 
-	//图片尺寸预调整
+	//操作图片尺寸更新
+	scaledDelta = ori_scaledDelta = init_scaledImageOk();
+	//原始图片尺寸更新
 	update_Image_1(ori_scaledDelta);
 
-	//更新数值
-	for (auto& x : Opts) {
-		x->initialize();
-	}
 	//所有按钮置为未选中状态
 	for (auto& btnGps : btngroups) {
 		btnGps->setExclusive(false);
@@ -786,6 +774,10 @@ void Widget::reload_Resources_ScrollArea(const QString& fileName, int mode)
 			x->setChecked(false);
 		}
 		btnGps->setExclusive(true);
+	}
+	//清除之前的保存的撤销图片
+	while (!undo_sta.empty()) {
+		undo_sta.pop();
 	}
 }
 
@@ -816,17 +808,6 @@ bool Widget::loadImagesFormFloder(const QString& floderPath)
 	return true;
 }
 
-void Widget::choice_buttonGroupsBtns()
-{
-	if (mode) {
-		//先恢复再保存
-		savePoint();
-	}
-	else {
-		restore_cutOperation();
-	}
-}
-
 void Widget::restore_cutOperation()
 {
 	updateFromIntermediate();
@@ -841,6 +822,7 @@ void Widget::on_action_changeMode_triggered(){
 	else {
 		emit signal_changeMode(false);
 	}
+	emit signal_changeToolBoxPage_ButNoChoice();
 	//数据清空
 	updateFromIntermediate();
 }
@@ -961,6 +943,7 @@ void Widget::createAction()
 		this, &Widget::on_colorDialog_choice_triggered);
 
 	//颜色转换
+	img_base = new BaseOperate();
 	action_cvtColor_group = new QActionGroup(this);
 	action_cvtColor_group->addAction(action_ori = new QAction("转换为原图", this));
 	action_cvtColor_group->addAction(action_hls = new QAction("转换为HLS格式",this));
@@ -1116,8 +1099,11 @@ void Widget::createToolBox()
 	btngroup_blur->setExclusive(true);
 	//连接信号
 	connect(btngroup_blur, &QButtonGroup::buttonClicked, this, [=](QAbstractButton* btn) {
-		Object* op = blur;
-		on_buttonGroup_everyOpeartions_choice(op,btngroup_blur,btn);
+		//点击按钮创建抽象操作类，运行时动态加载
+		if (!op) {
+			op = new Blur();
+		}
+		on_buttonGroup_everyOpeartions_choice(op, btngroup_blur, btn);
 		});
 
 	
@@ -1148,7 +1134,9 @@ void Widget::createToolBox()
 	btngroup_threshold->setExclusive(true);
 	//连接信号
 	connect(btngroup_threshold, &QButtonGroup::buttonClicked, this, [=](QAbstractButton* btn) {
-		Object* op = threshold;
+		if (!op) {
+			op = new Threshold();
+		}
 		on_buttonGroup_everyOpeartions_choice(op, btngroup_threshold, btn);
 		});
 
@@ -1185,7 +1173,9 @@ void Widget::createToolBox()
 	btngroup_form->setExclusive(true);
 	//连接信号
 	connect(btngroup_form, &QButtonGroup::buttonClicked, this, [=](QAbstractButton* btn) {
-		Object* op = morphology;
+		if (!op) {
+			op = new Morphology();
+		}
 		on_buttonGroup_everyOpeartions_choice(op, btngroup_form, btn);
 		});
 
@@ -1230,7 +1220,9 @@ void Widget::createToolBox()
 	btngroup_connected->setExclusive(true);//互斥
 
 	connect(btngroup_connected, &QButtonGroup::buttonClicked, this, [=](QAbstractButton* btn) {
-		Object* op = connected;
+		if (!op) {
+			op = new Connected();
+		}
 		on_buttonGroup_everyOpeartions_choice(op, btngroup_connected, btn);
 		});
 	
@@ -1254,7 +1246,9 @@ void Widget::createToolBox()
 	btngroup_contours->setExclusive(true);
 
 	connect(btngroup_contours, &QButtonGroup::buttonClicked, this, [=](QAbstractButton* btn) {
-		Object* op = contours;
+		if (!op) {
+			op = new Contours();
+		}
 		on_buttonGroup_everyOpeartions_choice(op, btngroup_contours, btn);
 		});
 
@@ -1275,7 +1269,9 @@ void Widget::createToolBox()
 	btngroup_show->setExclusive(true);
 
 	connect(btngroup_show, &QButtonGroup::buttonClicked, this, [=](QAbstractButton* btn) {
-		Object* op = showeffect;
+		if (!op) {
+			op = new Showeffect();
+		}
 		on_buttonGroup_everyOpeartions_choice(op, btngroup_show, btn);
 		});
 
@@ -1332,6 +1328,10 @@ void Widget::createToolBox()
 		curToolBoxIndex = value;
 		emit signal_changeToolBoxPage_ButNoChoice();
 
+		if (op) {
+			delete op;
+			op = nullptr;
+		}
 		//	清除之前页面上的选项
 		auto btns = btngroups[preToolBoxIndex]->buttons();
 		btngroups[preToolBoxIndex]->setExclusive(false);
@@ -1390,6 +1390,7 @@ void Widget::createStatusBar()
 QWidget* Widget::create_GUIAvgBlur()
 {
 	//----------------------------------------------------------
+	Blur* blur = dynamic_cast<Blur*>(op);
 	ls_slider_blur.resize(3);
 	std::function<void(int)> funAvgBlur_slider1 = [=](int value) {
 		if (ls_slider_blur[1]->value() == ls_slider_blur[1]->minimum() && ls_slider_blur[2]->value() == ls_slider_blur[2]->minimum()) {
@@ -1423,6 +1424,7 @@ QWidget* Widget::create_GUIAvgBlur()
 
 QWidget* Widget::create_GUIGaussian()
 {
+	Blur* blur = dynamic_cast<Blur*>(op);
 	//----------------------------------------------------------
 	//高斯滤波
 	ls_slider_gaussian.resize(3);
@@ -1462,6 +1464,7 @@ QWidget* Widget::create_GUIGaussian()
 
 QWidget* Widget::create_GUIMedian()
 {
+	Blur* blur = dynamic_cast<Blur*>(op);
 	//----------------------------------------------------------
 	//中值滤波
 	ls_slider_median.resize(1);
@@ -1486,6 +1489,7 @@ QWidget* Widget::create_GUIMedian()
 
 QWidget* Widget::create_GUIBilateral()
 {
+	Blur* blur = dynamic_cast<Blur*>(op);
 	//----------------------------------------------------------
 	//双边滤波
 	ls_slider_bilateral.resize(3);
@@ -1517,6 +1521,7 @@ QWidget* Widget::create_GUIBilateral()
 
 QWidget* Widget::create_GUIThreshold()
 {
+	Threshold* threshold = dynamic_cast<Threshold*>(op);
 	//----------------------------------------------------------
 	//阈值化
 	ls_slider_threshold.resize(2);
@@ -1544,6 +1549,7 @@ QWidget* Widget::create_GUIThreshold()
 
 QWidget* Widget::create_GUIMorphology()
 {
+	Morphology* morphology = dynamic_cast<Morphology*>(op);
 	//----------------------------------------------------------
 	//形态学
 	ls_slider_morphology.resize(3);
@@ -1575,6 +1581,7 @@ QWidget* Widget::create_GUIMorphology()
 
 QWidget* Widget::create_GUIConnected()
 {
+	Connected* connected = dynamic_cast<Connected*>(op);
 	//----------------------------------------------------------
 	//连通性
 	ls_combox_connected.resize(2);
@@ -1602,6 +1609,7 @@ QWidget* Widget::create_GUIConnected()
 
 QWidget* Widget::create_GUIContours()
 {
+	Contours* contours = dynamic_cast<Contours*>(op);
 	//----------------------------------------------------------
 	//轮廓
 	ls_combox_contours.resize(5);
@@ -1650,6 +1658,7 @@ QWidget* Widget::create_GUIContours()
 
 QWidget* Widget::create_GUIbright()
 {
+	Showeffect* showeffect = dynamic_cast<Showeffect*>(op);
 	//-----------------------------------------------------
 	//亮度调整
 	ls_slider_light.resize(2);
@@ -1679,6 +1688,7 @@ QWidget* Widget::create_GUIbright()
 
 QWidget* Widget::create_GUIgamma()
 {
+	Showeffect* showeffect = dynamic_cast<Showeffect*>(op);
 	//-----------------------------------------------------
 	//gamma矫正
 	ls_slider_gamma.resize(1);
@@ -1704,6 +1714,7 @@ QWidget* Widget::create_GUIgamma()
 
 QWidget* Widget::create_GUIContrast()
 {
+	Showeffect* showeffect = dynamic_cast<Showeffect*>(op);
 	ls_slider_linear.resize(2);
 	std::function<void(int)> funcLinearG1 = [=](int value) {
 		//将int映射为double
@@ -1756,6 +1767,7 @@ QWidget* Widget::create_GUIContrast()
 
 QWidget* Widget::create_GUIGrayWindow()
 {
+	Showeffect* showeffect = dynamic_cast<Showeffect*>(op);
 	ls_slider_grayWindow.resize(2);
 	std::function<void(int)> funcGrayG1 = [=](int value) {
 		//将int映射为double
@@ -1782,6 +1794,7 @@ QWidget* Widget::create_GUIGrayWindow()
 
 QWidget* Widget::create_GUIDPLinear()
 {
+	Showeffect* showeffect = dynamic_cast<Showeffect*>(op);
 	ls_slider_dpLinear.resize(2);
 	std::function<void(int)> funcdpA = [=](int value) {
 		//将int映射为double
@@ -1833,6 +1846,7 @@ QWidget* Widget::create_GUIDPLinear()
 
 QWidget* Widget::create_GUINoneDpLinear()
 {
+	Showeffect* showeffect = dynamic_cast<Showeffect*>(op);
 	ls_slider_NoneDpLinear.resize(1);
 	std::function<void(int)> funcNoneDpC = [=](int value) {
 		//将int映射为double

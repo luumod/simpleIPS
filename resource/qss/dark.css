@@ -1,0 +1,273 @@
+﻿*{
+    background-color: rgb(38,50,56); /* 全局背景色 */
+}
+
+/*
+ ---------------------- QToolBox ----------------------------
+*/
+
+/* QToolBox基本样式 */
+QToolBox {
+    background-color: rgb(24, 34, 40); /* 背景颜色，设置与全局背景一致 */
+    border: none;
+}
+
+/* 未选中的标题栏样式 */
+QToolBox::tab {
+    background-color: rgb(68, 172, 224); /* 未选中标题栏背景色 */
+    color: #333333; /* 未选中标题栏字体颜色 */
+    padding: 5px;
+    border: 2px solid rgb(14, 154, 224);
+    border-radius: 5px;
+}
+
+/* 鼠标悬停时的项样式 */
+QToolBox::tab:hover {
+    background-color: rgb(14, 115, 165); /* 鼠标悬停时的背景颜色 */
+}
+
+/* 选中的项样式 */
+QToolBox::tab:selected {
+    background-color: rgb(2, 67, 100); /* 选中项的背景颜色 */
+    color: white; /* 选中项的字体颜色 */
+}
+
+QToolBoxButton {
+    min-height: 30px;
+    font-family: Arial; /* 设置字体 */
+    font-size: 16px; /* 设置字体大小 */
+    font-weight: bold; /* 设置字体粗细 */
+    color: #4c71d5; /* 设置字体颜色 */
+}
+
+
+/*
+ ---------------------- QToolButton ----------------------------
+*/
+
+/* 设置QToolButton的背景颜色、文本颜色和字体样式 */
+QToolButton#function_tbtn {
+    background-color: #9ba6cd; /* 设置背景颜色 */
+    color: white; /* 设置文本颜色 */
+    font-size: 14px; /* 设置字体大小 */
+    font-weight: bold; /* 设置字体粗细 */
+    border-radius: 10px;
+}
+
+/* 设置QToolButton的鼠标悬停时的样式 */
+QToolButton#function_tbtn:hover {
+    background-color: #405ec7; /* 设置悬停时的背景颜色 */
+}
+
+/* 设置QToolButton的按下时的样式 */
+QToolButton#function_tbtn:pressed {
+    background-color: #405ec7; /* 设置按下时的背景颜色 */
+    color: #ffffff; /* 设置按下时的文本颜色 */
+}
+
+/* 设置QToolButton的选中状态下的背景颜色和文本颜色 */
+QToolButton#function_tbtn:checked {
+    background-color: #405ec7; /* 设置选中状态下的背景颜色 */
+    color: #ffffff; /* 设置选中状态下的文本颜色 */
+}
+
+/* 设置QToolButton的选中状态下的鼠标悬停样式 */
+QToolButton#function_tbtn:checked:hover {
+    background-color: #405ec7; /* 设置选中状态下悬停时的背景颜色 */
+}
+
+
+/*
+ ---------------------- ToolBar区域 ----------------------------
+*/
+
+QToolButton {
+    background-color: #7d95ef; /* 工具栏按钮背景颜色 */
+    color: #ffffff; /* 工具栏按钮字体颜色 */
+    border: 1px solid #035220; /* 工具栏按钮边框样式 */
+    border-radius: 5px; /* 工具栏按钮圆角边框 */
+}
+
+QToolButton:hover {
+    background-color: rgb(91, 119, 221); /* 工具栏按钮鼠标悬停时背景颜色 */
+    color: #ffffff; /* 工具栏按钮鼠标悬停时字体颜色 */
+}
+
+QToolButton:checked {
+    background-color: rgb(91, 119, 221); /* 工具栏按钮选中状态背景颜色 */
+    color: #ffffff; /* 工具栏按钮选中状态字体颜色 */
+}
+
+
+/*
+ ---------------------- QLabel ----------------------------
+*/
+
+/* 设置QLabel的文本颜色 */
+QLabel#function_tbtn_textLab,#dock_title_lab,#statusBar_lab {
+    color: white /* QLabel文本颜色 */
+}
+/* 设置QLabel的字体样式 */
+QLabel#function_tbtn_textLab {
+    font-family: Arial, sans-serif; /* QLabel字体 */
+    font-size: 14px; /* QLabel字体大小 */
+    font-weight: bold; /* QLabel字体粗细 */
+}
+
+/* 设置QLabel的文本居中 */
+QLabel#function_tbtn_textLab {
+    alignment: center; /* QLabel文本居中 */
+}
+
+
+
+
+/*
+ ---------------------- QPushButton ----------------------------
+*/
+
+/* 基本样式 */
+QPushButton {
+    background-color: #18231e; /* QPushButton背景颜色 */
+    color: white; /* QPushButton字体颜色 */
+    border: none; /* QPushButton边框样式 */
+    border-radius: 5px; /* QPushButton圆角边框 */
+    padding: 10px 20px; /* QPushButton内边距 */
+}
+
+/* 鼠标悬停时的样式 */
+QPushButton:hover {
+    background-color: #36b87e; /* QPushButton鼠标悬停时背景颜色 */
+}
+
+/* 鼠标按下时的样式 */
+QPushButton:pressed {
+    background-color: #09e4b4; /* QPushButton按下时背景颜色 */
+}
+
+
+/*
+ ---------------------- QScrollBar ----------------------------
+*/
+
+/* 设置QScrollBar的滑块样式（thumb） */
+QScrollBar {
+    margin: 3px;
+}
+
+/* 设置QScrollBar的滑块样式（thumb） */
+QScrollBar::handle {
+    background: rgb(63,76,81); /* QScrollBar滑块背景颜色 */
+    border-radius: 5px; /* QScrollBar滑块边角的圆角 */
+}
+
+/* 设置QScrollBar的悬停状态下滑块样式 */
+QScrollBar::handle:hover {
+    background: rgb(51,63,68); /* QScrollBar鼠标悬停时滑块背景颜色 */
+}
+
+/* 设置QScrollBar的滚动按钮样式 */
+QScrollBar::sub-line, QScrollBar::add-line {
+    background: none; /* QScrollBar滚动按钮背景颜色 */
+    border: none; /* QScrollBar滚动按钮边框样式 */
+}
+
+/* 设置QScrollBar的悬停状态下滚动按钮样式 */
+QScrollBar::sub-line:hover, QScrollBar::add-line:hover {
+    background: #024c89; /* QScrollBar鼠标悬停时滚动按钮背景颜色 */
+}
+
+
+/*
+ ---------------------- QDockWidget ----------------------------
+*/
+
+/* 设置QDockWidget的标题栏样式 */
+QDockWidget {
+    border: 1px solid white;
+}
+QDockWidget::title {
+    background: rgb(38,50,56);
+    font-weight: bold; /* QDockWidget标题栏文字粗体 */
+    padding: 4px; /* QDockWidget标题栏内边距 */
+}
+
+QDockWidget::close-button, QDockWidget::float-button {
+    color: white;
+}
+
+
+
+
+/*
+ ---------------------- QMenuBar ----------------------------
+*/
+
+
+
+QMenuBar {
+    background-color: rgb(38,50,56);
+    spacing: 3px; /* spacing between menu bar items */
+}
+
+QMenuBar::item {
+    padding: 1px 4px;
+    background: transparent;
+    border-radius: 4px;
+    color: white;
+}
+
+QMenuBar::item:selected { /* when selected using mouse or keyboard */
+    color: rgb(95,203,173);
+}
+
+/* 设置菜单项的悬停样式 */
+QMenuBar::item:hover {
+    background-color: #E0E0E0; /* 鼠标悬停时的背景颜色 */
+}
+
+QMenu {
+    background-color: rgb(38,50,56); /* sets background of the menu */
+    border: 1px solid white;
+}
+
+QMenu::item {
+    /* sets background of menu item. set this to something non-transparent
+        if you want menu color and menu item color to be different */
+    background-color: transparent;
+    color: white;
+}
+
+QMenu::item:selected { /* when user selects item using mouse or keyboard */
+    background-color: rgb(26,34,38);
+}
+
+/*
+ ---------------------- QStatusBar ----------------------------
+*/
+
+
+
+
+QStatusBar {
+    background: rgb(38,50,56);
+    color: white;
+}
+
+QStatusBar::item {
+    color: white;
+    border-radius: 3px;
+}
+
+QCheckBox{
+    color: white;
+}
+
+
+
+QMessageBox QLabel { color: white; }
+
+
+QMainWindow#CaptureWidget {
+    border: 3px solid red;
+}

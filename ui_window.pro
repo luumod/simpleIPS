@@ -68,7 +68,7 @@ else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../../Tools/openCV/o
 INCLUDEPATH += $$PWD/../../../Tools/openCV/openCV/build/include
 DEPENDPATH += $$PWD/../../../Tools/openCV/openCV/build/include
 
-DESTDIR = F:/code/simplePS_work/ui_window
+DESTDIR = F:/code/simplePS_work/simpleIPS
 
 DISTFILES += \
     resource/assert/0.png \

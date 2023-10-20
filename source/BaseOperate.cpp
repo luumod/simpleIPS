@@ -4,6 +4,7 @@
 #include "assist/Mat2QImage.h"
 #include "Widget/LookWidget.h"
 #include "Widget/ShowImgWidget.h"
+#include "ui_mainwindow.h"
 #include <QLabel>
 
 BaseOperate::BaseOperate()
@@ -31,17 +32,17 @@ void BaseOperate::cvtColor(QAction* action) {
 	cv::Mat _mt;
 	//每次都对原始根图片进行操作，然后获取一份副本，因为重复的cvtColor操作会导致图片重叠转换！！！
 	_mt = get()->res->root_mt; 
-	cv::Mat ori_mt_res;
-	if (action == get()->action_hsv) {
+    cv::Mat ori_mt_res;
+    if (action == get()->ui->action_hsv) {
 		cv::cvtColor(_mt, ori_mt_res, cv::COLOR_BGR2HSV);
 	}
-	else if (action == get()->action_hls) {
+    else if (action == get()->ui->action_hls) {
 		cv::cvtColor(_mt, ori_mt_res, cv::COLOR_BGR2HLS);
 	}
-	else if (action == get()->action_lab) {
+    else if (action == get()->ui->action_lab) {
 		cv::cvtColor(_mt, ori_mt_res, cv::COLOR_BGR2Lab);
 	}
-	else if (action == get()->action_rgb) {
+    else if (action == get()->ui->action_rgb) {
 		cv::cvtColor(_mt, ori_mt_res, cv::COLOR_BGR2RGB);
 	}
 	else {

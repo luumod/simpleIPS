@@ -32,17 +32,15 @@ Widget::Widget(QWidget* parent)
     createToolBox();		//创建左侧操作区域与GUI界面
     createStatusBar();		//创建状态栏
     init_Label();			//预处理图片显示
-    init_WidgetLayout();	//设置主窗口布局
     init_GroupBoxGUIAdjust();
-    init_GroupBoxCutImage();
 
 //    //加载主题
-//    if (config.win_theme == "light") {
-//        on_action_theme_triggered(0);
-//    }
-//    else if (config.win_theme == "dark") {
-//        on_action_theme_triggered(1);
-//    }
+    if (config.win_theme == "light") {
+        on_action_theme_triggered(0);
+    }
+    else if (config.win_theme == "dark") {
+        on_action_theme_triggered(1);
+    }
 }
 
 /**
@@ -142,16 +140,6 @@ void Widget::init_Label()
     ui->scrollArea_ori->setMinimumSize(SCROLLAREA_WIDTH,SCROLLAREA_HEIGHT);
 
 }
-void Widget::init_WidgetLayout()
-{
-	action_show->setEnabled(false);
-	connect(this, &Widget::signal_singleImageMode, this, [=]() {
-		action_show->setEnabled(true);
-		});
-	connect(this, &Widget::signal_doubleImageMode, this, [=]() {
-        action_show->setEnabled(false);
-    });
-}
 
 void Widget::init_GroupBoxCutImage()
 {
@@ -167,8 +155,8 @@ void Widget::init_GroupBoxCutImage()
         }
     });
 
-    connect(ui->btn_work_next, &QPushButton::clicked, this, &Widget::on_pushButton_next_clicked);
-    connect(ui->btn_work_prev, &QPushButton::clicked, this, &Widget::on_pushButton_prev_clicked);
+    connect(ui->btn_work_next, &QPushButton::clicked, this, &Widget::on_btn_work_next_clicked);
+    connect(ui->btn_work_prev, &QPushButton::clicked, this, &Widget::on_btn_work_prev_clicked);
 }
 
 void Widget::init_GroupBoxGUIAdjust()
@@ -180,11 +168,8 @@ void Widget::init_GroupBoxGUIAdjust()
     QHBoxLayout* lay_adj = new QHBoxLayout;
     lay_adj->addWidget(choice_GUI_create(0)); //默认第一个窗口AvgBlur
     ui->groupBox_adj->setLayout(lay_adj);
-    ui->groupBox_adj->setVisible(false);
-    connect(this, &Widget::signal_changeToolBoxPage_ButNoChoice, ui->groupBox_adj, [=]() {
-        ui->groupBox_adj->setVisible(false);
-    });
     connect(this, &Widget::signal_choiceToolButton, this, [=](const QString& name,int id) {
+        Q_UNUSED(name);
         QHBoxLayout* hLayout = qobject_cast<QHBoxLayout*>(ui->groupBox_adj->layout());//QHBoxLayout
         QLayoutItem* item;
         while ((item = hLayout->takeAt(0)) != nullptr) {
@@ -248,6 +233,7 @@ void Widget::on_label_customContextMenuRequested__(const QPoint& pos) {
 	context_menu__->exec(QCursor::pos());
 }
 
+
 void Widget::on_buttonGroup_everyOpeartions_choice(Object* op,QButtonGroup* btn_group,QAbstractButton* btn){
 	op->current_choice = btn_group->id(btn);
 
@@ -274,7 +260,7 @@ void Widget::on_action_exit_triggered()
 	this->close();
 }
 
-void Widget::on_action_openFile_triggered()
+void Widget::on_action_open_triggered()
 {
 	QString fileName = QFileDialog::getOpenFileName(nullptr, "选择文件", ".",	"图像文件(*.png *.jpg)");
 	if (!fileName.isEmpty()) {
@@ -284,7 +270,7 @@ void Widget::on_action_openFile_triggered()
 	}
 }
 
-void Widget::on_action_openWorks_triggered()
+void Widget::on_action_works_triggered()
 {
 	//清除原始内容
 	work_files.clear();
@@ -308,7 +294,7 @@ void Widget::on_action_openWorks_triggered()
 		// 根据用户的选择执行不同的操作
 		if (result == QMessageBox::AcceptRole) {
 			//重新选择文件夹
-			on_action_openWorks_triggered();
+            on_action_works_triggered();
 			return;
 		}
 		else if (result == QMessageBox::RejectRole) {
@@ -319,7 +305,7 @@ void Widget::on_action_openWorks_triggered()
 	reload_Resources_ScrollArea(work_files[work_currentIndex], 1);
 }
 
-void Widget::on_action_saveFile_triggered()
+void Widget::on_action_save_triggered()
 {
 	//保存加工后的图片
 	QString FileName = QFileDialog::getSaveFileName(nullptr, "save image", ".", "Images(*.png *.bmp *.jpg)");
@@ -328,7 +314,7 @@ void Widget::on_action_saveFile_triggered()
 	}
 }
 
-void Widget::on_action_allRestore_triggered()
+void Widget::on_action_restore_triggered()
 {
 	/*
 	重置所有操作至原始图片
@@ -336,26 +322,26 @@ void Widget::on_action_allRestore_triggered()
 	updateFromRoot();
 }
 
-void Widget::on_action_drawBoard_triggered()
+void Widget::on_action_draw_triggered()
 {
 	widget_draw = new DrawWidget;
 	widget_draw->show();
 	widget_draw->setAttribute(Qt::WA_DeleteOnClose);
 }
 
-void Widget::on_colorDialog_choice_triggered(const QColor& color)
+void Widget::on_colorDialog_triggered(const QColor& color)
 {
 	Contours* contours = dynamic_cast<Contours*>(op);
 	//选择颜色
 	contours->onTriggered_Color_currentTextChanged_contoursColor(color);
 }
 
-void Widget::on_actionGroup_cvtColor_triggered(QAction* action)
+void Widget::on_action_cvtColor_group_triggered(QAction* action)
 {
 	img_base->cvtColor(action);
 }
 
-void Widget::on_actionGroup_rotate_triggered(QAction* action)
+void Widget::on_action_rotate_group_triggered(QAction* action)
 {
     if (action == ui->action_right90) {
 		img_base->onTriggered_picture_rotate90();
@@ -368,7 +354,7 @@ void Widget::on_actionGroup_rotate_triggered(QAction* action)
 	}
 }
 
-void Widget::on_actionGroup_flip_triggered(QAction* action)
+void Widget::on_action_flip_group_triggered(QAction* action)
 {
     if (action == ui->action_flip0) {
 		img_base->onTriggered_picture_flip0();
@@ -423,78 +409,7 @@ void Widget::on_action_capture_triggered()
 	all_screen->show();
 }
 
-QWidget* Widget::create_GUIFileInfoWidget()
-{
-	auto edit_name = new QLineEdit(res->fileInfo.fileName());
-	auto edit_path = new QLineEdit(res->fileInfo.absolutePath()
-	 + "/");
-	edit_path->setReadOnly(true);
-	auto B = res->fileInfo.size() / 1024;
-	auto edit_size = new QLabel(QString::number(B) + " Bytes");
-	auto edit_rect = new QLabel(QString::number(res->root_mt.cols) + " * " + QString::number(res->root_mt.rows));
-	auto edit_mode = new QLabel(QVariant(res->curr_img.format()).toString());
-	auto edit_channels = new QLabel(QString::number(res->root_mt.channels()));
-	auto edit_geshi = new QLabel(QString(res->fileInfo.suffix().toLower()));
-
-	QFormLayout* form_name = new QFormLayout;
-	QFormLayout* form_path = new QFormLayout;
-	QFormLayout* form_size = new QFormLayout;
-	QFormLayout* form_rect = new QFormLayout;
-	QFormLayout* form_mode = new QFormLayout;
-	QFormLayout* form_channels = new QFormLayout;
-	QFormLayout* form_geshi = new QFormLayout;
-
-	form_name->addRow(new QLabel("文件名称："), edit_name);
-	connect(edit_name, &QLineEdit::editingFinished, this, [=]() {
-		//修改文件名字
-		QString oldPathName = res->fileInfo.absoluteFilePath();
-		QString newPathName = res->fileInfo.absolutePath() + "/" + edit_name->text();
-		QFile::rename(oldPathName, newPathName);
-		res->updateFileInfo(newPathName);
-		});
-
-	//文件路径
-	form_path->addRow(new QLabel("文件路径："), edit_path);
-
-	//文件大小
-	form_size->addRow(new QLabel("文件大小："), edit_size);
-
-	//图像尺寸
-	form_rect->addRow(new QLabel("图像尺寸："), edit_rect);
-
-	//图像色彩模式
-	form_mode->addRow(new QLabel("图像色彩模式："), edit_mode);
-
-	//图像通道数
-	form_channels->addRow(new QLabel("图像通道数："), edit_channels);
-
-	//图像文件格式
-	form_geshi->addRow(new QLabel("文件格式:"), edit_geshi);
-
-	connect(res, &Res::signal_updateImage, this, [=, &B]() {
-		edit_name->setText(res->fileInfo.fileName());
-		edit_path->setText(res->fileInfo.absolutePath() + "/");
-		B = res->fileInfo.size() / 1024;
-		edit_size->setText(QString::number(B) + " Bytes");
-		edit_rect->setText(QString::number(res->root_mt.cols) + " * " + QString::number(res->root_mt.rows));
-		edit_mode->setText(QVariant(res->curr_img.format()).toString());
-		edit_channels->setText(QString::number(res->root_mt.channels()));
-		edit_geshi->setText(QString(res->fileInfo.suffix().toLower()));
-		});
-
-	QVBoxLayout* v = new QVBoxLayout;
-	v->addLayout(form_name);
-	v->addLayout(form_path);
-	v->addLayout(form_size);
-	v->addLayout(form_rect);
-	v->addLayout(form_mode);
-	v->addLayout(form_channels);
-	v->addLayout(form_geshi);
-	QWidget* w = new QWidget;
-	w->setLayout(v);
-	return w;
-}
-void Widget::on_actionGroup_help_triggered(QAction* action)
+void Widget::on_actionGroupHelp_triggered(QAction* action)
 {
     if (action == ui->action_help) {
 		//打开帮助文档
@@ -537,11 +452,97 @@ void Widget::on_actionGroup_help_triggered(QAction* action)
 		aboutDialog.setLayout(&layout);
 
 		// 显示关于作者的对话框
-		aboutDialog.exec();
-	}	
+        aboutDialog.exec();
+    }
 }
 
-void Widget::on_pushButton_next_clicked()
+void Widget::on_action_hide_triggered()
+{
+    ui->action_hide->setEnabled(false);
+    ui->action_disp->setEnabled(true);
+    //单图片
+    ui->widget_img_ori->setVisible(false);
+    ui->right_arrow->setVisible(false);
+
+    QLayoutItem* item;
+    QVBoxLayout* ver_AdjArea_layout = new QVBoxLayout;
+    auto hor_AdjArea_layout = ui->adjArea->layout();
+
+    while ((item = hor_AdjArea_layout->takeAt(0))) {
+        ver_AdjArea_layout->addItem(item);
+    }
+    delete hor_AdjArea_layout;
+    hor_AdjArea_layout = nullptr;
+
+    ui->adjArea->setLayout(ver_AdjArea_layout);
+    ver_AdjArea_layout->setStretch(0,2);
+    ver_AdjArea_layout->setStretch(1,1);
+    ver_AdjArea_layout->setStretch(2,4);
+
+    item = nullptr;
+    QHBoxLayout* hor_central_layout = new QHBoxLayout;
+    auto ver_central_layout = ui->widget_central->layout();
+    while ((item = ver_central_layout->takeAt(0))){
+        hor_central_layout->addItem(item);
+    }
+    delete ver_central_layout;
+    ver_central_layout = nullptr;
+
+    ui->widget_central->setLayout(hor_central_layout);
+    hor_central_layout->setStretch(0,6);
+    hor_central_layout->setStretch(1,2);
+
+    ui->scrollArea->setMinimumSize(600,600);
+    ui->scrollArea->resize(ui->scrollArea->minimumSize());
+    scaledDelta = ori_scaledDelta = init_scaledImageOk();
+}
+
+void Widget::on_action_disp_triggered()
+{
+    ui->action_hide->setEnabled(true);
+    ui->action_disp->setEnabled(false);
+
+    ui->widget_img_ori->setVisible(true);
+    ui->right_arrow->setVisible(true);
+
+
+    QLayoutItem* item;
+    QHBoxLayout* hor_AdjArea_layout = new QHBoxLayout;
+    auto ver_AdjArea_layout = ui->adjArea->layout();
+    while ((item = ver_AdjArea_layout->takeAt(0))) {
+        hor_AdjArea_layout->addItem(item);
+    }
+    delete ver_AdjArea_layout;
+    ver_AdjArea_layout = nullptr;
+
+    ui->adjArea->setLayout(hor_AdjArea_layout);
+    hor_AdjArea_layout->setStretch(0,2);
+    hor_AdjArea_layout->setStretch(1,1);
+    hor_AdjArea_layout->setStretch(2,4);
+
+    item = nullptr;
+    QVBoxLayout* ver_central_layout = new QVBoxLayout;
+    auto hor_central_layout = ui->widget_central->layout();
+    while ((item = hor_central_layout->takeAt(0))){
+        ver_central_layout->addItem(item);
+    }
+    delete hor_central_layout;
+    hor_central_layout = nullptr;
+
+    ui->widget_central->setLayout(ver_central_layout);
+    ver_central_layout->setStretch(0,6);
+    ver_central_layout->setStretch(1,2);
+
+
+    ui->scrollArea->setMinimumSize(SCROLLAREA_WIDTH,SCROLLAREA_HEIGHT);
+    ui->scrollArea_ori->setMinimumSize(SCROLLAREA_WIDTH,SCROLLAREA_HEIGHT);
+    ui->scrollArea->resize(ui->scrollArea->minimumSize());
+    ui->scrollArea_ori->resize(ui->scrollArea_ori->minimumSize());
+    scaledDelta = ori_scaledDelta = init_scaledImageOk();
+    update_Image_1(scaledDelta);
+}
+
+void Widget::on_btn_work_next_clicked()
 {
 	work_prevIndex = work_currentIndex;
 	work_currentIndex++;
@@ -549,11 +550,11 @@ void Widget::on_pushButton_next_clicked()
 		work_currentIndex = 0;
 		work_prevIndex = work_files.count() - 1;
 	}
-	on_checkBox_LeaveAutoSave_clicked();
+    on_cbx_work_autoSave_clicked();
 	work_cutImage();
 }
 
-void Widget::on_pushButton_prev_clicked()
+void Widget::on_btn_work_prev_clicked()
 {
 	work_prevIndex = work_currentIndex;
 	work_currentIndex--;
@@ -561,7 +562,7 @@ void Widget::on_pushButton_prev_clicked()
 		work_prevIndex = 0;
 		work_currentIndex = work_files.count() - 1;
 	}
-	on_checkBox_LeaveAutoSave_clicked();
+    on_cbx_work_autoSave_clicked();
 	work_cutImage();
 }
 
@@ -596,11 +597,11 @@ void Widget::reload_Resources_ScrollArea(const QString& fileName, int mode)
 	}
 }
 
-void Widget::on_checkBox_LeaveAutoSave_clicked()
+void Widget::on_cbx_work_autoSave_clicked()
 {
     //在切换页面的时候弹出保存提示
     if (ui->cbx_work_autoSave->isChecked()) {
-		on_action_saveFile_triggered();
+        on_action_save_triggered();
 	}
 }
 
@@ -628,7 +629,7 @@ void Widget::restore_cutOperation()
 	updateFromIntermediate();
 }
 
-void Widget::on_action_changeMode_triggered(){
+void Widget::on_action_begin_triggered(){
 	//点击此开始创作模式
 	//图片清除，重新开始，所有滑块归零
 	if (!mode) {
@@ -636,13 +637,12 @@ void Widget::on_action_changeMode_triggered(){
 	}
 	else {
 		emit signal_changeMode(false);
-	}
-	emit signal_changeToolBoxPage_ButNoChoice();
+    }
 	//数据清空
 	updateFromIntermediate();
 }
 
-void Widget::on_action_undo_triggered()
+void Widget::on_action_return_triggered()
 {
 	//仅仅在创作者模式下生效：触发时会将图片置回到未操作前的位置
 	if (mode) {
@@ -650,7 +650,7 @@ void Widget::on_action_undo_triggered()
 		update_Image(ori_scaledDelta);
 	}
 	else {
-		on_action_allRestore_triggered();
+        on_action_restore_triggered();
 	}
 }
 
@@ -695,63 +695,54 @@ void Widget::updateFromRoot()
 
 void Widget::createAction()
 {
-	//隐藏
-    action_hide = new QAction(tr("隐藏原始图片"), this);
-	action_hide->setStatusTip(tr("隐藏图片"));
-    action_show = new QAction(tr("显示原始图片"), this);
-	action_show->setStatusTip(tr("显示图片"));
+    connect(res, &Res::signal_updateImage, this, [=]() {
+        ui->edit_name->setText(res->fileInfo.fileName());
+        ui->edit_path->setText(res->fileInfo.absolutePath() + "/");
+        auto B = res->fileInfo.size() / 1024;
+        ui->edit_size->setText(QString::number(B) + " Bytes");
+        ui->edit_rect->setText(QString::number(res->root_mt.cols) + " * " + QString::number(res->root_mt.rows));
+        ui->edit_mode->setText(QVariant(res->curr_img.format()).toString());
+        ui->edit_channels->setText(QString::number(res->root_mt.channels()));
+        ui->edit_geshi->setText(QString(res->fileInfo.suffix().toLower()));
+    });
+    emit res->signal_updateImage();
+
+    action_theme = new QAction(this);
 
     //关闭窗口
     ui->action_exit->setStatusTip(tr("退出程序"));
     ui->action_exit->setShortcut(tr("Ctrl+E"));
-    connect(ui->action_exit, &QAction::triggered, this,&Widget::on_action_exit_triggered);
 
     //打开文件
     ui->action_open->setStatusTip(tr("选择并且打开一个图片"));
     ui->action_open->setShortcut(tr("Ctrl+O"));
-    connect(ui->action_open, &QAction::triggered, this,&Widget::on_action_openFile_triggered);
-
     //打开文件夹
     ui->action_works->setStatusTip(tr("选择并且打开文件夹作为当前工作区域"));
     ui->action_works->setShortcut(tr("Ctrl+F"));
-    connect(ui->action_works, &QAction::triggered, this, &Widget::on_action_openWorks_triggered);
 
     //保存图片
     ui->action_save->setStatusTip(tr("保存此图片"));
     ui->action_save->setShortcut(tr("Ctrl+S"));
-    connect(ui->action_save, &QAction::triggered, this, &Widget::on_action_saveFile_triggered);
 
     //重置图片
-    action_restore = new QAction(tr("重置图片"), this);
-    action_restore->setStatusTip(tr("重置此图片，取消所有加工"));
-    action_restore->setIcon(QIcon("resource/assert/restore.png"));
-    action_restore->setShortcut(tr("Ctrl+Shift+Z"));
-    connect(action_restore, &QAction::triggered, this, &Widget::on_action_allRestore_triggered);
+    ui->action_restore->setStatusTip(tr("重置此图片，取消所有加工"));
+    ui->action_restore->setShortcut(tr("Ctrl+Shift+Z"));
 
-	//开始制作模式
-    action_begin = new QAction(tr("图片加工"),this);
-    action_begin->setStatusTip(tr("图片加工模式，可以混合修改图片"));
-    action_begin->setIcon(QIcon("resource/assert/begin.png"));
-    action_begin->setCheckable(true);
-    connect(action_begin, &QAction::triggered, this, &Widget::on_action_changeMode_triggered);
+    //开始制作模式
+    ui->action_begin->setStatusTip(tr("图片加工模式，可以混合修改图片"));
+    ui->action_begin->setCheckable(true);
 
-	//撤销
-    action_return = new QAction(tr("撤销"), this);
-    action_return->setShortcut(tr("Ctrl+Z"));
-    action_return->setStatusTip(tr("撤销此操作"));
-    action_return->setIcon(QIcon("resource/assert/return.png"));
-    connect(action_return, &QAction::triggered, this, &Widget::on_action_undo_triggered);
+    //撤销
+    ui->action_return->setShortcut(tr("Ctrl+Z"));
+    ui->action_return->setStatusTip(tr("撤销此操作"));
 
     //打开简单绘图板
-    action_draw = new QAction(tr("绘画"), this);
-    action_draw->setIcon(QIcon("resource/assert/draw.png"));
-    action_draw->setStatusTip(tr("绘图操作"));
-    connect(action_draw, &QAction::triggered, this,&Widget::on_action_drawBoard_triggered);
+    ui->action_draw->setStatusTip(tr("绘图操作"));
 
 	//轮廓操作时 选择颜色 自动更新
 	colorDialog = new QColorDialog(this);
-	connect(colorDialog, &QColorDialog::currentColorChanged,
-		this, &Widget::on_colorDialog_choice_triggered);
+    connect(colorDialog, &QColorDialog::currentColorChanged,
+            this, [=](const QColor &color){on_colorDialog_triggered(color);});
 
 	//颜色转换
 	img_base = new BaseOperate();
@@ -761,14 +752,14 @@ void Widget::createAction()
     action_cvtColor_group->addAction(ui->action_hsv);
     action_cvtColor_group->addAction(ui->action_rgb);
     action_cvtColor_group->addAction(ui->action_lab);
-	connect(action_cvtColor_group, &QActionGroup::triggered, this,&Widget::on_actionGroup_cvtColor_triggered);
+    connect(action_cvtColor_group, &QActionGroup::triggered, this,[=](QAction* action){on_action_cvtColor_group_triggered(action);});
 
 	//图片旋转菜单
 	action_rotate_group = new QActionGroup(this);
     action_rotate_group->addAction(ui->action_right90);
     action_rotate_group->addAction(ui->action_right180);
     action_rotate_group->addAction(ui->action_right270);
-	connect(action_rotate_group, &QActionGroup::triggered, this, &Widget::on_actionGroup_rotate_triggered);
+    connect(action_rotate_group, &QActionGroup::triggered, this,[=](QAction* action){on_action_rotate_group_triggered(action);});
 
 
 	//图片翻转菜单
@@ -776,7 +767,13 @@ void Widget::createAction()
     action_flip_group->addAction(ui->action_flip0);
     action_flip_group->addAction(ui->action_flip1);
     action_flip_group->addAction(ui->action_flip_1);
-	connect(action_flip_group, &QActionGroup::triggered, this, &Widget::on_actionGroup_flip_triggered);
+    connect(action_flip_group, &QActionGroup::triggered, this,[=](QAction* action){on_action_flip_group_triggered(action);});
+
+    //帮助菜单
+    actionGroupHelp = new QActionGroup(this);
+    actionGroupHelp->addAction(ui->action_help);
+    actionGroupHelp->addAction(ui->action_aboutme);
+    connect(actionGroupHelp, &QActionGroup::triggered, this, [=](QAction* action){on_actionGroupHelp_triggered(action);});
 
     //图片对比度提高
     connect(ui->action_mark, &QAction::triggered, this, [=]() {
@@ -805,11 +802,7 @@ void Widget::createAction()
     ui->action_capture->setShortcut(tr("Ctrl+Alt+A"));
     connect(ui->action_capture, &QAction::triggered, this, &Widget::on_action_capture_triggered);
 
-	//帮助菜单
-	action_help_group = new QActionGroup(this);
-    action_help_group->addAction(ui->action_help);
-    action_help_group->addAction(ui->action_aboutme);
-	connect(action_help_group, &QActionGroup::triggered, this, &Widget::on_actionGroup_help_triggered);
+
 
 }
 
@@ -817,14 +810,14 @@ void Widget::createMenu()
 {
 	//图片上下文菜单
 	//此处跟随滑动区域，滑动区域在整个窗口中作为主窗口不会消失。
-	context_menu = new QMenu(this); 
-    context_menu->addAction(action_show);
+    context_menu = new QMenu(this);
+    context_menu->addAction(ui->action_hide);
     context_menu->addAction(ui->action_save);
     context_menu->addAction(ui->action_exit);
-    context_menu->addAction(action_restore);
+    context_menu->addAction(ui->action_restore);
 
 	context_menu__ = new QMenu(this);
-    context_menu__->addAction(action_hide);
+    context_menu__->addAction(ui->action_hide);
     context_menu__->addAction(ui->action_exit);
 	
 	QMenu* menu_equalize = new QMenu("均衡化图像",this);
@@ -837,10 +830,10 @@ void Widget::createMenu()
 void Widget::createToolBar()
 {
     ui->toolBar = addToolBar(tr("file"));
-    ui->toolBar->addAction(action_begin);
-    ui->toolBar->addAction(action_restore);
-    ui->toolBar->addAction(action_return);
-    ui->toolBar->addAction(action_draw);
+    ui->toolBar->addAction(ui->action_begin);
+    ui->toolBar->addAction(ui->action_restore);
+    ui->toolBar->addAction(ui->action_return);
+    ui->toolBar->addAction(ui->action_draw);
 }
 
 void Widget::createToolBox()
@@ -947,8 +940,7 @@ void Widget::createToolBox()
     ////获取切换后的toolbox索引
     connect(ui->toolbox_side, &QToolBox::currentChanged, this, [=](int value) {
 		preToolBoxIndex = curToolBoxIndex;
-		curToolBoxIndex = value;
-		emit signal_changeToolBoxPage_ButNoChoice();
+        curToolBoxIndex = value;
 
 		if (op) {
 			delete op;

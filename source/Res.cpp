@@ -30,8 +30,8 @@ void Res::updateFileInfo(const QString& filePath) {
 
 
 Res::Res(const std::string& filePath,QObject* parent)
-	:root_mt(cv::imread(filePath))
-	,QObject(parent)
+    :QObject(parent)
+    ,root_mt(cv::imread(filePath))
 {
 	if (filePath == "")return;
 	update();
@@ -48,8 +48,8 @@ void Res::reset(const std::string& filePath)
 }
 
 Res::Res(const cv::Mat& mat, QObject* parent)
-	:root_mt(mat) 
-	, QObject(parent)
+    : QObject(parent)
+    ,root_mt(mat)
 {
 	update();
 	if (get()->work_files.isEmpty()) {

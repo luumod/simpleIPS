@@ -129,11 +129,6 @@ public:
      */
     void init_OpencvFunctions();
 
-    /**
-     * @brief 设置窗口的主布局。目前只有一页，第一页的主布局由 OptArea AdjArea ShowArea 三部分组成
-     * @todo 往后可能会增加窗口的页数，以实现不同的工作
-     */
-    void init_WidgetLayout();
 
     void init_GroupBoxCutImage();
     void init_GroupBoxGUIAdjust();
@@ -172,9 +167,11 @@ signals:
     /**
      * @brief 当处于 “单图片模式” 的情况下触发此信号
      *
+     * @li number = 1：单图片
+     * @li number = 2：双图片
      * “单图片模式” 为用户选择隐藏原始图片，即切换到 “专注模式”，只需要专注对于目标图片的操作。
      */
-    void signal_singleImageMode();
+    void signal_singleImageMode(int number);
 
     /**
      * @brief 当处于 “双图片模式” 的情况下触发此信号
@@ -193,15 +190,10 @@ signals:
 
     /**
      * @brief 以不同方式打开图片时触发此信号
-     * @li on_action_openFile_triggered：从文件夹中选择单张图片。
-     * @li on_action_openWorks_triggered：打开整个文件夹的所有图片，相当于打开了一个工作区。
+     * @li on_action_open_triggered：从文件夹中选择单张图片。
+     * @li on_action_works_triggered：打开整个文件夹的所有图片，相当于打开了一个工作区。
      */
     void signal_changeTo_FileOrWork();
-
-    /**
-     * @brief 左侧ToolBox切换不同页面的时候触发此信号
-     */
-    void signal_changeToolBoxPage_ButNoChoice();
 
     /**
      * @brief 在某个ToolBox页中，选择一个按钮的时候触发此信号。
@@ -364,12 +356,7 @@ public:
      */
     QWidget* choice_GUI_create(int id);
 
-    /**
-     * @brief 创建AdjArea中 图片信息 的显示窗口
-     * @return QWidget*：表示返回的窗口
-     */
-    QWidget* create_GUIFileInfoWidget();
-public slots:
+
     /**
      * @brief  响应某个具体操作的槽函数。
      *
@@ -416,90 +403,6 @@ public slots:
      */
     void on_label_customContextMenuRequested(const QPoint& pos);
 
-    /**
-     * @brief 响应关闭窗口
-     *
-     * @see action_exit
-     */
-    void on_action_exit_triggered();
-
-    /**
-     * @brief 响应从文件夹中打开一张新图片
-     *
-     * @see action_open
-     */
-    void on_action_openFile_triggered();
-
-    /**
-     * @brief 响应选择整个文件夹中的所有图片作为一个工作区
-     *
-     * @see action_works
-     */
-    void on_action_openWorks_triggered();
-
-    /**
-     * @brief 保存当前图片到文件夹
-     *
-     * @see action_save
-     */
-    void on_action_saveFile_triggered();
-
-    //重置所有操作至原始状态
-    /**
-     * @brief 重置所有
-     *
-     * @see action_restore
-     */
-    void on_action_allRestore_triggered();
-
-    /**
-     * @brief 响应打开绘图板
-     *
-     * @see action_draw
-     */
-    void on_action_drawBoard_triggered();
-
-    //开启图片加工模式
-
-    /**
-     * @brief 响应打开图片混合加工模式
-     *
-     * @see action_begin
-     */
-    void on_action_changeMode_triggered();
-
-    /**
-     * @brief 响应撤销当前操作，返回到上一次保存时的操作
-     *
-     * @see action_return
-     */
-    void on_action_undo_triggered();
-
-    /**
-     * @brief 响应不同主题之间的切换
-     *
-     * @param  type            表示主题代码
-     * @li 0：白色主题
-     * @li 1：黑色主题
-     *
-     * @see action_light action_dark
-     */
-    void on_action_theme_triggered(int type);
-
-    /**
-     * @brief 响应图片的截取功能
-     *
-     * @see	action_jie
-     */
-    void on_action_jie_triggered();
-
-    /**
-     * @brief 响应桌面截图功能
-     *
-     * @see action_capture
-     */
-    void on_action_capture_triggered();
-
     //选择颜色
     /**
      * @brief 响应进行轮廓操作时，切换颜色时也应当进行轮廓检测。
@@ -510,7 +413,18 @@ public slots:
      *
      * @see colorDialog
      */
-    void on_colorDialog_choice_triggered(const QColor& color);
+    void on_colorDialog_triggered(const QColor& color);
+
+    /**
+     * @brief 响应不同主题之间的切换
+     *
+     * @param  type            表示主题代码
+     * @li 0：白色主题
+     * @li 1：黑色主题
+     *
+     * @see action_theme
+     */
+    void on_action_theme_triggered(int type);
 
     //切换图片的格式：LAB  HSV 等格式
     /**
@@ -526,7 +440,7 @@ public slots:
      *
      * @see action_cvtColor_group
      */
-    void on_actionGroup_cvtColor_triggered(QAction* action);
+    void on_action_cvtColor_group_triggered(QAction* action);
 
     /**
      * @brief 响应图片的不同旋转方式
@@ -539,7 +453,7 @@ public slots:
      *
      * @see	action_rotate_group
      */
-    void on_actionGroup_rotate_triggered(QAction* action);
+    void on_action_rotate_group_triggered(QAction* action);
 
     /**
      * @brief 响应图片的不同翻转方式
@@ -552,16 +466,102 @@ public slots:
      *
      * @see action_flip_group
      */
-    void on_actionGroup_flip_triggered(QAction* action);
+    void on_action_flip_group_triggered(QAction* action);
 
     /**
      * @brief 响应帮助菜单
      *
      * @param  action           按钮组中被选择的某个按钮
      *
-     * @see	action_help_group
+     * @see	actionGroupHelp
      */
-    void on_actionGroup_help_triggered(QAction* action);
+    void on_actionGroupHelp_triggered(QAction* action);
+public slots:
+    /**
+     * @brief on_action_hide_triggered
+     *
+     * @see action_hide
+     */
+    void on_action_hide_triggered();
+
+    /**
+     * @brief on_action_disp_triggered
+     */
+    void on_action_disp_triggered();
+
+    /**
+     * @brief 响应关闭窗口
+     *
+     * @see action_exit
+     */
+    void on_action_exit_triggered();
+
+    /**
+     * @brief 响应从文件夹中打开一张新图片
+     *
+     * @see action_open
+     */
+    void on_action_open_triggered();
+
+    /**
+     * @brief 响应选择整个文件夹中的所有图片作为一个工作区
+     *
+     * @see action_works
+     */
+    void on_action_works_triggered();
+
+    /**
+     * @brief 保存当前图片到文件夹
+     *
+     * @see action_save
+     */
+    void on_action_save_triggered();
+
+    //重置所有操作至原始状态
+    /**
+     * @brief 重置所有
+     *
+     * @see action_restore
+     */
+    void on_action_restore_triggered();
+
+    /**
+     * @brief 响应打开绘图板
+     *
+     * @see action_draw
+     */
+    void on_action_draw_triggered();
+
+    //开启图片加工模式
+
+    /**
+     * @brief 响应打开图片混合加工模式
+     *
+     * @see action_begin
+     */
+    void on_action_begin_triggered();
+
+    /**
+     * @brief 响应撤销当前操作，返回到上一次保存时的操作
+     *
+     * @see action_return
+     */
+    void on_action_return_triggered();
+
+
+    /**
+     * @brief 响应图片的截取功能
+     *
+     * @see	action_jie
+     */
+    void on_action_jie_triggered();
+
+    /**
+     * @brief 响应桌面截图功能
+     *
+     * @see action_capture
+     */
+    void on_action_capture_triggered();
 
     /**
      * @brief 响应按钮的下一页切换操作
@@ -570,7 +570,7 @@ public slots:
      *
      * @see btn_work_next
      */
-    void on_pushButton_next_clicked();
+    void on_btn_work_next_clicked();
 
     /**
      * @brief 响应按钮的上一页切换操作
@@ -579,7 +579,7 @@ public slots:
      *
      * @see btn_work_prev
      */
-    void on_pushButton_prev_clicked();
+    void on_btn_work_prev_clicked();
 
     //工作区：自动保存
     /**
@@ -589,7 +589,7 @@ public slots:
      *
      * @see cbx_work_autoSave
      */
-    void on_checkBox_LeaveAutoSave_clicked();
+    void on_cbx_work_autoSave_clicked();
 public:
     //加载/重新加载图片资源并且重置场景
     //
@@ -837,7 +837,7 @@ public:
     /**
      * @brief 简单的绘图板
      *
-     * @see on_action_drawBoard_triggered
+     * @see on_action_draw_triggered
      */
     DrawWidget* widget_draw = nullptr;
 
@@ -851,112 +851,36 @@ public:
     /**
      * @brief 用于实现工作区中切换图片
      *
-     * @see on_pushButton_prev_clicked on_pushButton_next_clicked
+     * @see on_pushButton_prev_clicked on_btn_work_next_clicked
      *
      */
     int work_currentIndex = 0, work_prevIndex = 0;
 public: // GUI部分
     //---------------------
-    /**
-     * @brief  布局：隐藏原始图片
-     *
-     * @see action_show 显示原始图片
-     */
-    QAction* action_hide = nullptr;
-    QAction* action_show = nullptr;
-
-//    QAction* action_exit = nullptr;
-//    QAction* action_open = nullptr;
-//    QAction* action_works = nullptr;
-//    QAction* action_save = nullptr;
-    QAction* action_restore = nullptr;
-    QAction* action_begin = nullptr;
-    QAction* action_return = nullptr;
-
-//    QAction* action_ori = nullptr;
-//    QAction* action_hls = nullptr;
-//    QAction* action_rgb = nullptr;
-//    QAction* action_hsv = nullptr;
-//    QAction* action_lab = nullptr;
     QActionGroup* action_cvtColor_group = nullptr;
 
-    QAction* action_draw = nullptr;
-    //翻转
-//    QAction* action_flip0 = nullptr;
-//    QAction* action_flip1 = nullptr;
-//    QAction* action_flip_1 = nullptr;
     QActionGroup* action_flip_group = nullptr;
 
-    //旋转
-//    QAction* action_right90 = nullptr;
-//    QAction* action_right180 = nullptr;
-//    QAction* action_right270 = nullptr;
     QActionGroup* action_rotate_group = nullptr;
 
-    //掩膜
-//    QAction* action_mark = nullptr;
-
-    //功能
-//    QAction* action_hist = nullptr;
-
-    //扩展
-//    QAction* action_light = nullptr;
-//    QAction* action_dark = nullptr;
-//    QAction* action_jie = nullptr;
-//    QAction* action_capture = nullptr;
-
-    //帮助
-    /*QAction* action_help = nullptr;
-    QAction* action_aboutme = nullptr*/;
-    QActionGroup* action_help_group = nullptr;
-
-    //---------------------
-    //控制label的滚动页面
- //   QScrollArea* scrollArea_ori = nullptr;
-//    QScrollArea* scrollArea = nullptr;
+    QActionGroup* actionGroupHelp = nullptr;
 
     //上下文菜单
     QMenu* context_menu__ = nullptr; //原图片的
     QMenu* context_menu = nullptr;	 //目标图片的
 
-    //主菜单
-//    QMenu* menu_file = nullptr;
-//    QMenu* menu_convert = nullptr;
-//    QMenu* menu_reverse = nullptr;
-//    QMenu* menu_flip = nullptr;
-//    QMenu* menu_mark = nullptr;
-//    QMenu* menu_func = nullptr;
-//    QMenu* menu_tools = nullptr;
-//    QMenu* menu_help = nullptr;
+    QAction* action_theme = nullptr;
 
-    //---------------------
-    //工具栏
-    //QToolBar* toolBar = nullptr;
-
-    //---------------------
-    //左侧操作选择栏
-    //QToolBox* toolbox_side = nullptr;
     int preToolBoxIndex = 0, curToolBoxIndex = 0; //切换toolbox页面时清除选择状态
 
     //---------------------
     //底部状态栏
     QLabel* statusLab = nullptr;
 
-    //-----------------
-    //AdjArea布局
-    //QStackedWidget* AdjArea_StackedWidgets = nullptr; //所有参数调整GUI
-    //QTabWidget* AdjArea_TabWidget = nullptr;	//AdjArea Tab
-    QWidget* hor_AdjArea = nullptr; // 非隐藏时的底部栏
-    QWidget* ver_AdjArea = nullptr;	// 隐藏时的右侧栏
-
     //-------------------------
     //选择颜色
     QColorDialog* colorDialog = nullptr;
 
-    //打开文件夹
-//    QPushButton* btn_work_next = nullptr;
-//    QPushButton* btn_work_prev = nullptr;
-//    QCheckBox* cbx_work_autoSave = nullptr;
     QHBoxLayout* btn_work_layout;
 
     //桌面截图

@@ -1,23 +1,57 @@
-## 这是对于QtCreator的运行支持
+﻿## 简易版图片加工软件
 
-可能会有少许Bug，具体配置请查看 pro_simpleIPS.pro 文件。
+基于 opencv + Qt6.2.4 来完成的。
 
-1. 删除 `.pro` 文件以下的内容，并且添加你自己的opencv环境。
-```
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../../Tools/openCV/openCV/build/x64/vc16/lib/ -lopencv_world470
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../../Tools/openCV/openCV/build/x64/vc16/lib/ -lopencv_world470d
+主要是为了巩固 Qt 与学习 OpenCV 来做的这个软件。
 
-INCLUDEPATH += $$PWD/../../../Tools/openCV/openCV/build/include
-DEPENDPATH += $$PWD/../../../Tools/openCV/openCV/build/include
-```
-2. opencv添加方法: 首先添加你的opencv `bin` 环境变量，然后右击项目，选择 `添加库`
-   ![image](https://github.com/luumod/simpleIPS/assets/93420580/4f088d7c-d72b-4894-9b6b-261c18fb1953)
-`外部库`，然后配置 `库文件`和 `包含文件`的路径
-![image](https://github.com/luumod/simpleIPS/assets/93420580/ff086c36-4be7-40f3-9c3f-6e51602bddc7)
-取消勾选 linux macos，并且选择 `后缀自动添加d`
+### 点击下载此程序来体验
+[一个简单的体验版本](https://github.com/luumod/simpleIPS/releases/tag/v1.1)
 
-3. 关键步骤：
-需要把 `DESTDIR = F:/code/simplePS_work/pro_simpleIPS` 改为你自己的QtCreator的项目主文件目录
-例如，就是改成这个位置：
-![image](https://github.com/luumod/simpleIPS/assets/93420580/7ce976cf-73ed-4f54-b6b9-87b2c211c7f8)
-因为exe文件需要**直接读取** resource文件夹下的资源，如图标等等，如果不修改则无法加载图标资源
+### 目前进度
+
+* 图像基础操作
+* 图像模糊操作
+* 图像阈值化操作
+* 图像形态学操作
+* 图像连通块分析
+* 图像轮廓检测
+* 图像直方图操作
+
+###  项目特色
+
+* 功能齐全，基本涵盖了上述的所有操作
+* 可视化操作，基于QSlider或者QComboBox，允许用户可以随时指定不同参数的不同数值，以便更好的观察某个操作的具体效果。
+* 混合加工模式，允许对同一张图片执行可控制，可视化的混合操作（具体行为因人而异）。
+
+### 项目demo
+视频演示地址：
+
+[使用opencv+Qt 自制的简易版图片处理软件](https://www.bilibili.com/video/BV1qN411t7jK/#reply188969413872)
+
+### CMake版本
+1. 配置好Qt6的环境变量。![image](https://github.com/luumod/myPhotoshopApp/assets/93420580/80b572f9-1e47-452b-b0dd-3ea942643346)
+2. 配置好OpenCV的环境变量。![image](https://github.com/luumod/myPhotoshopApp/assets/93420580/3098a71c-c7eb-41cd-8657-b3c5fb1cf5c0)
+4. CMakeLists文件中，设置你的OpenCV的安装路径。
+5. 删除CMakeLists的倒数后六行（如果你没有安装的话）
+6. 重新配置CMakeLists文件
+
+### qmake版本
+
+### 待解决bug
+
+* 在create_GUIAdvancedLight中对滑块设置位置无效，但是setValue值有效，因此引入了两个滑块分别控制亮度升高和降低。
+* 图像的掩膜操作的Kernel的设置。
+* 在打开工作区的时候，QScrollArea的处理有点太过于复杂，包括work_cutImage函数。
+
+### 联系作者
+
+QQ： 1173012900
+
+邮箱： 
+
+* 1173012900@qq.com
+* lyu198691@gmali.com
+
+
+
+ 

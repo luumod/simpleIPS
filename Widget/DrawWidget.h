@@ -24,8 +24,7 @@ public:
 
 	void createAction();
 	void createMenuBar();
-	QWidget* createChoice();
-	QWidget* createTools();
+    QWidget* createChoice();
 public slots:
 	void onClicked_choiceShape(QAbstractButton* btn);
 private:

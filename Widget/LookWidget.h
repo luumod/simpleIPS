@@ -18,8 +18,6 @@ class QAction;
 class HandleJieWidget;
 class ShowImgWidget;
 
-Widget* get();
-
 /*
 截取图片的Widget
 */

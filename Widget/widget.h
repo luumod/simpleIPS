@@ -117,21 +117,8 @@ public:
      */
     void init_Label();
 
-    /**
-     * @brief 初始化所有OpenCV操作的主对象
-     * @li Blur 模糊操作
-     * @li Threshold 阈值化操作
-     * @li Morphology 形态学操作
-     * @li Connected 连通性分析
-     * @li Contours 轮廓检测
-     * @li Showeffect 图像增强操作
-     * @li BaseOperate 图像基础操作
-     */
-    void init_OpencvFunctions();
 
-
-    void init_GroupBoxCutImage();
-    void init_GroupBoxGUIAdjust();
+    void init_specialConnect();
 
     /**
      * @brief 这是一个特化函数，具体函数功能请查阅下方 "参见"
@@ -224,27 +211,22 @@ public:
     /**
      * @brief 创建程序中所有的行为
      */
-    void createAction();
+    void init_CustomAction();
 
     /**
      * @brief 创建程序的菜单项
      */
-    void createMenu();
-
-    /**
-     * @brief 创建程序的工具栏
-     */
-    void createToolBar();
+    void init_CustomMenu();
 
     /**
      * @brief 创建程序左侧 OptArea 区域
      */
-    void createToolBox();
+    void init_ToolBoxSide();
 
     /**
      * @brief 创建程序的底部状态栏
      */
-    void createStatusBar();
+    void init_CustomStatusBar();
 
     /**
      * @brief 创建 Blur 操作中“均值模糊”的参数调整栏。其调整栏布局如下：
@@ -415,17 +397,6 @@ public:
      */
     void on_colorDialog_triggered(const QColor& color);
 
-    /**
-     * @brief 响应不同主题之间的切换
-     *
-     * @param  type            表示主题代码
-     * @li 0：白色主题
-     * @li 1：黑色主题
-     *
-     * @see action_theme
-     */
-    void on_action_theme_triggered(int type);
-
     //切换图片的格式：LAB  HSV 等格式
     /**
      * @brief 响应切换图片的不同格式
@@ -477,6 +448,52 @@ public:
      */
     void on_actionGroupHelp_triggered(QAction* action);
 public slots:
+
+    void on_tbtn_allScreenHist_clicked(bool clicked);
+
+    void on_tbtn_updateHist_clicked(bool clicked);
+
+    /**
+     * @brief on_action_equColor_triggered
+     */
+    void on_action_equColor_triggered();
+
+    /**
+     * @brief on_action_equGray_triggered
+     */
+    void on_action_equGray_triggered();
+
+    /**
+     * @brief 左侧ToolBox操作栏切换页面时触发此信号
+     * @param value：当前页面索引
+     */
+    void on_toolbox_side_currentChanged(int value);
+
+    /**
+     * @brief 图像掩膜提高对比度操作
+     */
+    void on_action_mark_triggered();
+
+    /**
+     * @brief 显示灰度直方图
+     */
+    void on_action_hist_triggered();
+
+    /**
+     * @brief 切换主题
+     *
+     * @li theme = 0：亮色
+     * @li theme = 1：暗色
+     */
+    void on_action_light_triggered();
+
+    /**
+     * @brief 切换主题分支函数
+     *
+     * @see on_action_light_triggered
+     */
+    void on_action_dark_triggered();
+
     /**
      * @brief on_action_hide_triggered
      *
@@ -570,7 +587,7 @@ public slots:
      *
      * @see btn_work_next
      */
-    void on_btn_work_next_clicked();
+    void on_btnWork_next_clicked(bool clicked);
 
     /**
      * @brief 响应按钮的上一页切换操作
@@ -579,7 +596,14 @@ public slots:
      *
      * @see btn_work_prev
      */
-    void on_btn_work_prev_clicked();
+    void on_btnWork_prev_clicked(bool clicked);
+
+public:
+
+    /**
+     * @brief 重置所有按钮为未选中状态
+     */
+    void clear_allButtonClicked();
 
     //工作区：自动保存
     /**
@@ -589,8 +613,8 @@ public slots:
      *
      * @see cbx_work_autoSave
      */
-    void on_cbx_work_autoSave_clicked();
-public:
+    void on_cbx_work_autoSave();
+
     //加载/重新加载图片资源并且重置场景
     //
     /**

@@ -2,7 +2,6 @@
 #include "assist/Res.h"
 #include "opencv_functions/BaseOperate.h"
 #include "assist/Mat2QImage.h"
-#include "Widget/LookWidget.h"
 #include "Widget/ShowImgWidget.h"
 #include "ui_mainwindow.h"
 #include <QLabel>
@@ -150,7 +149,36 @@ void BaseOperate::drawGrayHist(const QString& title, cv::Mat mt) {
 
 	show_wid->lab_img->setPixmap(QPixmap::fromImage(Mat2QImage(histogram)));
     show_wid->setWindowTitle(title);
-	show_wid->show();
+    show_wid->show();
+}
+
+QImage BaseOperate::showGrayHist_AdjArea(const QString &title,int height,int width, cv::Mat mt)
+{
+    cv::Mat hist;
+    cv::Mat grayMt;
+    cv::cvtColor(get()->res->curr_mt, grayMt, cv::ColorConversionCodes::COLOR_BGR2GRAY);
+    if (mt.empty()) {
+        hist = getHist(grayMt); //其GRAY
+    }
+    else {
+        hist = getHist(mt); //传入的图片
+    }
+
+    auto histHeight = height;
+    auto histWidth = width;
+    //创建直方图
+    cv::Mat histogram(histHeight, histWidth, CV_8UC3, cv::Scalar(255, 255, 255));
+
+    auto x_oneWidth = cvRound((double)histWidth / 256);
+
+    //归一化直方图
+    cv::normalize(hist, hist, 0, histHeight, cv::NORM_MINMAX);
+    //[0,255]
+    for (int i = 0; i < 256; i++) {
+        auto x_oneHeight = cvRound(hist.at<float>(i));
+        cv::rectangle(histogram, cv::Point(i * x_oneWidth, histHeight), cv::Point(i * x_oneWidth + x_oneWidth - 1, histHeight - x_oneHeight), cv::Scalar(0, 0, 0));
+    }
+    return Mat2QImage(histogram);
 }
 
 

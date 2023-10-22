@@ -127,12 +127,6 @@ QWidget* DrawWidget::createChoice()
 	return widget_choice;
 }
 
-QWidget* DrawWidget::createTools()
-{
-	QWidget* widget_tools = new QWidget;
-	return widget_tools;
-}
-
 void DrawWidget::onClicked_choiceShape(QAbstractButton* btn) {
 	scene->type = SHAPE(group->id(btn));
 }

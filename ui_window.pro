@@ -128,3 +128,9 @@ DISTFILES += \
     resource/窗口结构.png
 
 
+
+win32:CONFIG(release, debug|release): LIBS += -L$$PWD/'../../../vld/Visual Leak Detector/lib/Win64/' -lvl
+else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/'../../../vld/Visual Leak Detector/lib/Win64/' -lvld
+
+INCLUDEPATH += $$PWD/'../../../vld/Visual Leak Detector/include'
+DEPENDPATH += $$PWD/'../../../vld/Visual Leak Detector/include'

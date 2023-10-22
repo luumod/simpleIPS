@@ -97,7 +97,7 @@
                    <x>0</x>
                    <y>0</y>
                    <width>269</width>
-                   <height>254</height>
+                   <height>232</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -188,25 +188,10 @@
                    <x>0</x>
                    <y>0</y>
                    <width>269</width>
-                   <height>254</height>
+                   <height>232</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_4">
-                  <property name="spacing">
-                   <number>0</number>
-                  </property>
-                  <property name="leftMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="topMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="rightMargin">
-                   <number>0</number>
-                  </property>
-                  <property name="bottomMargin">
-                   <number>0</number>
-                  </property>
                   <item>
                    <widget class="QLabel" name="lab_img">
                     <property name="text">
@@ -244,21 +229,21 @@
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_6">
               <item>
-               <widget class="QPushButton" name="btn_work_next">
+               <widget class="QPushButton" name="btnWork_prev">
                 <property name="text">
                  <string>上一页</string>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="btn_work_prev">
+               <widget class="QPushButton" name="btnWork_next">
                 <property name="text">
                  <string>下一页</string>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QCheckBox" name="cbx_work_autoSave">
+               <widget class="QCheckBox" name="cbxWork_autoSave">
                 <property name="text">
                  <string>离开时自动保存</string>
                 </property>
@@ -269,13 +254,49 @@
            </item>
            <item>
             <widget class="QGroupBox" name="groupBox_11">
-             <layout class="QVBoxLayout" name="verticalLayout_7">
+             <property name="title">
+              <string>灰度直方图</string>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_7" stretch="10,0">
+              <property name="spacing">
+               <number>0</number>
+              </property>
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>0</number>
+              </property>
               <item>
-               <widget class="QLabel" name="label">
+               <widget class="QLabel" name="lab_hist">
                 <property name="text">
                  <string>TextLabel</string>
                 </property>
                </widget>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_8">
+                <item>
+                 <widget class="QToolButton" name="tbtn_updateHist">
+                  <property name="text">
+                   <string>更新</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QToolButton" name="tbtn_allScreenHist">
+                  <property name="text">
+                   <string>全屏</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
               </item>
              </layout>
             </widget>
@@ -291,11 +312,11 @@
               </attribute>
               <layout class="QVBoxLayout" name="verticalLayout_8">
                <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0">
+                <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,5">
                  <item>
                   <widget class="QLabel" name="label_2">
                    <property name="text">
-                    <string>图像名称</string>
+                    <string>图像名称：</string>
                    </property>
                   </widget>
                  </item>
@@ -305,11 +326,11 @@
                 </layout>
                </item>
                <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,0">
+                <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="1,5">
                  <item>
                   <widget class="QLabel" name="label_5">
                    <property name="text">
-                    <string>图像路径</string>
+                    <string>图像路径：</string>
                    </property>
                   </widget>
                  </item>
@@ -323,14 +344,14 @@
                 </layout>
                </item>
                <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="0,0">
+                <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="1,5">
                  <property name="spacing">
-                  <number>0</number>
+                  <number>6</number>
                  </property>
                  <item>
                   <widget class="QLabel" name="label_14">
                    <property name="text">
-                    <string>图像尺寸</string>
+                    <string>图像尺寸：</string>
                    </property>
                   </widget>
                  </item>
@@ -348,7 +369,7 @@
                  <item>
                   <widget class="QLabel" name="label_43">
                    <property name="text">
-                    <string>图像大小</string>
+                    <string>图像大小：</string>
                    </property>
                   </widget>
                  </item>
@@ -366,7 +387,7 @@
                  <item>
                   <widget class="QLabel" name="label_40">
                    <property name="text">
-                    <string>图像格式</string>
+                    <string>图像格式：</string>
                    </property>
                   </widget>
                  </item>
@@ -380,11 +401,11 @@
                 </layout>
                </item>
                <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="0,5">
+                <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="1,5">
                  <item>
                   <widget class="QLabel" name="label_38">
                    <property name="text">
-                    <string>图像色彩</string>
+                    <string>图像色彩：</string>
                    </property>
                   </widget>
                  </item>
@@ -402,7 +423,7 @@
                  <item>
                   <widget class="QLabel" name="label_36">
                    <property name="text">
-                    <string>图像通道</string>
+                    <string>图像通道：</string>
                    </property>
                   </widget>
                  </item>
@@ -495,18 +516,18 @@
     <property name="title">
      <string>功能</string>
     </property>
-    <widget class="QMenu" name="menu_8">
+    <widget class="QMenu" name="menu_equ">
      <property name="title">
       <string>均衡化图像</string>
      </property>
-     <addaction name="action_12"/>
-     <addaction name="action_13"/>
+     <addaction name="action_equGray"/>
+     <addaction name="action_equColor"/>
     </widget>
     <addaction name="action_hide"/>
     <addaction name="action_disp"/>
     <addaction name="action_begin"/>
     <addaction name="action_hist"/>
-    <addaction name="menu_8"/>
+    <addaction name="menu_equ"/>
    </widget>
    <widget class="QMenu" name="menu_tools">
     <property name="title">
@@ -551,6 +572,10 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="action_begin"/>
+   <addaction name="action_return"/>
+   <addaction name="action_restore"/>
+   <addaction name="action_draw"/>
    <addaction name="separator"/>
   </widget>
   <widget class="QDockWidget" name="dockWidget">
@@ -577,7 +602,7 @@
         </size>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>5</number>
        </property>
        <widget class="QWidget" name="page">
         <property name="geometry">
@@ -585,7 +610,7 @@
           <x>0</x>
           <y>0</y>
           <width>200</width>
-          <height>362</height>
+          <height>340</height>
          </rect>
         </property>
         <attribute name="label">
@@ -621,7 +646,7 @@
                <string>&quot;均值滤波：取周围像素平均值进行滤波，可以帮助消除图像尖锐噪声，实现图像平滑，模糊等功能&quot;</string>
               </property>
               <property name="text">
-               <string/>
+               <string>模糊操作：均值滤波</string>
               </property>
               <property name="icon">
                <iconset>
@@ -688,7 +713,7 @@
                <string>&quot;中值滤波：非线性平滑滤波，它将每一像素点的灰度值设置为该点某邻域窗口内的所有像素点灰度值的中值。&quot;</string>
               </property>
               <property name="text">
-               <string>...</string>
+               <string>模糊操作：中值滤波</string>
               </property>
               <property name="icon">
                <iconset>
@@ -755,7 +780,7 @@
                <string>&quot;双边滤波：有很好的边缘保护效果，即可以在去噪的同时，保护图像的边缘特性。&quot;</string>
               </property>
               <property name="text">
-               <string>...</string>
+               <string>模糊操作：双边滤波</string>
               </property>
               <property name="icon">
                <iconset>
@@ -822,7 +847,7 @@
                <string>&quot;高斯滤波：线性平滑滤波，适用于消除高斯噪声，广泛应用于图像处理的减噪过程。&quot;</string>
               </property>
               <property name="text">
-               <string>...</string>
+               <string>模糊操作：高斯滤波</string>
               </property>
               <property name="icon">
                <iconset>
@@ -866,7 +891,7 @@
           <x>0</x>
           <y>0</y>
           <width>200</width>
-          <height>362</height>
+          <height>340</height>
          </rect>
         </property>
         <attribute name="label">
@@ -915,7 +940,7 @@
                <string>&quot;反二进制阈值化：大变0，小变最大&quot;</string>
               </property>
               <property name="text">
-               <string>...</string>
+               <string>阈值化操作：反二进制为零</string>
               </property>
               <property name="icon">
                <iconset>
@@ -969,7 +994,7 @@
                <string>&quot;阈值化为0：大不变，小变0&quot;</string>
               </property>
               <property name="text">
-               <string>...</string>
+               <string>阈值化操作：阈值化为零</string>
               </property>
               <property name="icon">
                <iconset>
@@ -1036,7 +1061,7 @@
                <string>&quot;反阈值化为0：大变0，小不变&quot;</string>
               </property>
               <property name="text">
-               <string>...</string>
+               <string>阈值化操作：反阈值化为零</string>
               </property>
               <property name="icon">
                <iconset>
@@ -1103,7 +1128,7 @@
                <string>&quot;二进制阈值化：大变最大，小变0&quot;</string>
               </property>
               <property name="text">
-               <string>...</string>
+               <string>阈值化操作：二进制为零</string>
               </property>
               <property name="icon">
                <iconset>
@@ -1149,56 +1174,7 @@
            <height>91</height>
           </rect>
          </property>
-         <layout class="QHBoxLayout" name="horizontalLayout_16">
-          <item>
-           <layout class="QGridLayout" name="gridLayout_12">
-            <item row="1" column="0">
-             <widget class="QLabel" name="label_13">
-              <property name="text">
-               <string>TextLabel</string>
-              </property>
-              <property name="scaledContents">
-               <bool>false</bool>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignHCenter|Qt::AlignTop</set>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="0">
-             <widget class="QToolButton" name="place">
-              <property name="minimumSize">
-               <size>
-                <width>48</width>
-                <height>48</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>48</width>
-                <height>48</height>
-               </size>
-              </property>
-              <property name="text">
-               <string>...</string>
-              </property>
-              <property name="iconSize">
-               <size>
-                <width>48</width>
-                <height>48</height>
-               </size>
-              </property>
-              <property name="checkable">
-               <bool>true</bool>
-              </property>
-              <property name="checked">
-               <bool>false</bool>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-         </layout>
+         <layout class="QHBoxLayout" name="horizontalLayout_16"/>
         </widget>
         <widget class="QWidget" name="widget_10" native="true">
          <property name="geometry">
@@ -1241,7 +1217,7 @@
                <string>&quot;截断阈值化：大变阈值，小不变&quot;</string>
               </property>
               <property name="text">
-               <string>...</string>
+               <string>阈值化操作：截断</string>
               </property>
               <property name="icon">
                <iconset>
@@ -1285,7 +1261,7 @@
           <x>0</x>
           <y>0</y>
           <width>200</width>
-          <height>362</height>
+          <height>340</height>
          </rect>
         </property>
         <attribute name="label">
@@ -1321,7 +1297,7 @@
                <string>&quot;膨胀：取每个位置领域内最大值，膨胀后输出图像的总体亮度的平均值比起原图会有所升高&quot;</string>
               </property>
               <property name="text">
-               <string>...</string>
+               <string>形态学操作：膨胀</string>
               </property>
               <property name="icon">
                <iconset>
@@ -1385,7 +1361,7 @@
                </size>
               </property>
               <property name="text">
-               <string>...</string>
+               <string>形态学操作：腐蚀</string>
               </property>
               <property name="icon">
                <iconset>
@@ -1449,7 +1425,7 @@
                </size>
               </property>
               <property name="text">
-               <string>...</string>
+               <string>形态学操作：开运算</string>
               </property>
               <property name="icon">
                <iconset>
@@ -1513,7 +1489,7 @@
                </size>
               </property>
               <property name="text">
-               <string>...</string>
+               <string>形态学操作：闭运算</string>
               </property>
               <property name="icon">
                <iconset>
@@ -1580,7 +1556,7 @@
                <string>&quot;梯度运算：膨胀图与腐蚀图之差，可以用于保留目标物体的边缘轮廓&quot;</string>
               </property>
               <property name="text">
-               <string>...</string>
+               <string>形态学操作：梯度运算</string>
               </property>
               <property name="icon">
                <iconset>
@@ -1647,7 +1623,7 @@
                <string>&quot;顶帽运算：原图与开运算图之差，分离比邻近点亮的斑块，用于突出原图像中比周围亮的区域&quot;</string>
               </property>
               <property name="text">
-               <string>...</string>
+               <string>形态学操作：顶帽运算</string>
               </property>
               <property name="icon">
                <iconset>
@@ -1714,7 +1690,7 @@
                <string>&quot;黑帽运算：闭运算图与原图差，分离比邻近点暗的斑块，突出原图像中比周围暗的区域&quot;</string>
               </property>
               <property name="text">
-               <string>...</string>
+               <string>形态学操作：黑帽运算</string>
               </property>
               <property name="icon">
                <iconset>
@@ -1758,7 +1734,7 @@
           <x>0</x>
           <y>0</y>
           <width>200</width>
-          <height>362</height>
+          <height>340</height>
          </rect>
         </property>
         <attribute name="label">
@@ -1794,7 +1770,7 @@
                <string>&quot;连通区域：找到图片之间的连通块，并且用不同颜色标记。&quot;</string>
               </property>
               <property name="text">
-               <string>...</string>
+               <string>连通性分析：简略版</string>
               </property>
               <property name="icon">
                <iconset>
@@ -1861,7 +1837,7 @@
                <string>&quot;连通区域：找到图片之间的连通块，并且使用方框进行标记。&quot;</string>
               </property>
               <property name="text">
-               <string>...</string>
+               <string>连通性分析：详细版</string>
               </property>
               <property name="icon">
                <iconset>
@@ -1905,7 +1881,7 @@
           <x>0</x>
           <y>0</y>
           <width>200</width>
-          <height>362</height>
+          <height>340</height>
          </rect>
         </property>
         <attribute name="label">
@@ -1941,7 +1917,7 @@
                <string>&quot;轮廓绘制：绘制图像的轮廓信息&quot;</string>
               </property>
               <property name="text">
-               <string>...</string>
+               <string>轮廓检测操作</string>
               </property>
               <property name="icon">
                <iconset>
@@ -1985,7 +1961,7 @@
           <x>0</x>
           <y>0</y>
           <width>200</width>
-          <height>362</height>
+          <height>340</height>
          </rect>
         </property>
         <attribute name="label">
@@ -2021,7 +1997,7 @@
                <string>&quot;图像亮度调整：增强图像的亮度&quot;</string>
               </property>
               <property name="text">
-               <string>...</string>
+               <string>效果增强：亮度调整</string>
               </property>
               <property name="icon">
                <iconset>
@@ -2088,7 +2064,7 @@
                <string>&quot;γ矫正&quot;</string>
               </property>
               <property name="text">
-               <string>...</string>
+               <string>效果增强：gamma矫正</string>
               </property>
               <property name="icon">
                <iconset>
@@ -2152,7 +2128,7 @@
                </size>
               </property>
               <property name="text">
-               <string>...</string>
+               <string>效果增强：灰级窗处理</string>
               </property>
               <property name="icon">
                <iconset>
@@ -2216,7 +2192,7 @@
                </size>
               </property>
               <property name="text">
-               <string>...</string>
+               <string>效果增强：对比度线性展宽</string>
               </property>
               <property name="icon">
                <iconset>
@@ -2280,7 +2256,7 @@
                </size>
               </property>
               <property name="text">
-               <string>...</string>
+               <string>效果增强：非线性动态范围调整</string>
               </property>
               <property name="icon">
                <iconset>
@@ -2344,7 +2320,7 @@
                </size>
               </property>
               <property name="text">
-               <string>...</string>
+               <string>效果增强：线性动态范围调整</string>
               </property>
               <property name="icon">
                <iconset>
@@ -2388,23 +2364,84 @@
    </widget>
   </widget>
   <action name="action_open">
+   <property name="icon">
+    <iconset>
+     <normaloff>resource/assert/open.png</normaloff>resource/assert/open.png</iconset>
+   </property>
    <property name="text">
     <string>打开文件</string>
    </property>
+   <property name="toolTip">
+    <string>选择并且打开一个图片</string>
+   </property>
+   <property name="statusTip">
+    <string>选择并且打开一个图片</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
   </action>
   <action name="action_works">
+   <property name="icon">
+    <iconset>
+     <normaloff>resource/assert/open_works.png</normaloff>resource/assert/open_works.png</iconset>
+   </property>
    <property name="text">
     <string>打开文件夹/工作区</string>
    </property>
+   <property name="toolTip">
+    <string>选择并且打开文件夹作为当前工作区域</string>
+   </property>
+   <property name="statusTip">
+    <string>选择并且打开文件夹作为当前工作区域</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+W</string>
+   </property>
   </action>
   <action name="action_save">
+   <property name="icon">
+    <iconset>
+     <normaloff>resource/assert/save.png</normaloff>resource/assert/save.png</iconset>
+   </property>
    <property name="text">
     <string>保存图片</string>
    </property>
+   <property name="toolTip">
+    <string>保存此图片</string>
+   </property>
+   <property name="statusTip">
+    <string>保存此图片</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
   </action>
   <action name="action_exit">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normaloff>resource/assert/exit.png</normaloff>resource/assert/exit.png</iconset>
+   </property>
    <property name="text">
     <string>退出</string>
+   </property>
+   <property name="toolTip">
+    <string>退出程序</string>
+   </property>
+   <property name="statusTip">
+    <string>退出程序</string>
+   </property>
+   <property name="whatsThis">
+    <string/>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+E</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::WindowShortcut</enum>
    </property>
   </action>
   <action name="action_ori">
@@ -2468,16 +2505,20 @@
    </property>
   </action>
   <action name="action_hist">
+   <property name="icon">
+    <iconset>
+     <normaloff>resource/assert/histogram.png</normaloff>resource/assert/histogram.png</iconset>
+   </property>
    <property name="text">
     <string>计算灰度直方图</string>
    </property>
   </action>
-  <action name="action_12">
+  <action name="action_equGray">
    <property name="text">
     <string>灰度图</string>
    </property>
   </action>
-  <action name="action_13">
+  <action name="action_equColor">
    <property name="text">
     <string>彩色图</string>
    </property>
@@ -2498,17 +2539,38 @@
    </property>
   </action>
   <action name="action_capture">
+   <property name="icon">
+    <iconset>
+     <normaloff>resource/assert/capture.png</normaloff>resource/assert/capture.png</iconset>
+   </property>
    <property name="text">
     <string>屏幕截图</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+Alt+Q</string>
+   </property>
   </action>
   <action name="action_help">
+   <property name="icon">
+    <iconset>
+     <normaloff>resource/assert/about.png</normaloff>resource/assert/about.png</iconset>
+   </property>
    <property name="text">
+    <string>查看帮助</string>
+   </property>
+   <property name="statusTip">
     <string>查看帮助</string>
    </property>
   </action>
   <action name="action_aboutme">
+   <property name="icon">
+    <iconset>
+     <normaloff>resource/assert/aboutme.png</normaloff>resource/assert/aboutme.png</iconset>
+   </property>
    <property name="text">
+    <string>关于作者</string>
+   </property>
+   <property name="statusTip">
     <string>关于作者</string>
    </property>
   </action>
@@ -2520,14 +2582,35 @@
    <property name="text">
     <string>重置图片</string>
    </property>
+   <property name="toolTip">
+    <string>重置此图片，取消所有加工</string>
+   </property>
+   <property name="statusTip">
+    <string>重置此图片，取消所有加工</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+Z</string>
+   </property>
   </action>
   <action name="action_begin">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset>
      <normaloff>resource/assert/begin.png</normaloff>resource/assert/begin.png</iconset>
    </property>
    <property name="text">
     <string>混合加工模式</string>
+   </property>
+   <property name="toolTip">
+    <string>图片加工模式，可以混合修改图片</string>
+   </property>
+   <property name="statusTip">
+    <string>图片加工模式，可以混合修改图片</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+G</string>
    </property>
   </action>
   <action name="action_return">
@@ -2538,14 +2621,32 @@
    <property name="text">
     <string>撤销</string>
    </property>
+   <property name="toolTip">
+    <string>撤销上一次的操作</string>
+   </property>
+   <property name="statusTip">
+    <string>撤销上一次的操作</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Z</string>
+   </property>
   </action>
   <action name="action_draw">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset>
      <normaloff>resource/assert/draw.png</normaloff>resource/assert/draw.png</iconset>
    </property>
    <property name="text">
     <string>打开绘图板</string>
+   </property>
+   <property name="toolTip">
+    <string>绘图操作，打开绘图板</string>
+   </property>
+   <property name="statusTip">
+    <string>绘图操作，打开绘图板</string>
    </property>
   </action>
   <action name="action_show">
@@ -2557,6 +2658,10 @@
    </property>
   </action>
   <action name="action_hide">
+   <property name="icon">
+    <iconset>
+     <normaloff>resource/assert/hide.png</normaloff>resource/assert/hide.png</iconset>
+   </property>
    <property name="text">
     <string>隐藏原始图片</string>
    </property>
@@ -2567,6 +2672,10 @@
    </property>
   </action>
   <action name="action_disp">
+   <property name="icon">
+    <iconset>
+     <normaloff>resource/assert/disp.png</normaloff>resource/assert/disp.png</iconset>
+   </property>
    <property name="text">
     <string>显示原始图片</string>
    </property>

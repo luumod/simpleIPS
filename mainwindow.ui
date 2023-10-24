@@ -49,12 +49,12 @@
       </property>
       <widget class="QWidget" name="widget_central">
        <attribute name="title">
-        <string>Tab 1</string>
+        <string>图片处理</string>
        </attribute>
        <layout class="QVBoxLayout" name="widget_central_layout" stretch="5,1">
         <item>
          <widget class="QWidget" name="showArea" native="true">
-          <layout class="QHBoxLayout" name="showArea_layout" stretch="5,1,5">
+          <layout class="QHBoxLayout" name="showArea_layout" stretch="8,1,8">
            <property name="topMargin">
             <number>0</number>
            </property>
@@ -96,7 +96,7 @@
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>269</width>
+                   <width>270</width>
                    <height>232</height>
                   </rect>
                  </property>
@@ -141,8 +141,38 @@
            </item>
            <item>
             <widget class="QToolButton" name="right_arrow">
+             <property name="styleSheet">
+              <string notr="true">QToolButton{
+	border: 0px;
+}</string>
+             </property>
              <property name="text">
-              <string>...</string>
+              <string>转变为</string>
+             </property>
+             <property name="icon">
+              <iconset>
+               <normaloff>resource/assert/right_arrow.png</normaloff>resource/assert/right_arrow.png</iconset>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>20</width>
+               <height>20</height>
+              </size>
+             </property>
+             <property name="checkable">
+              <bool>false</bool>
+             </property>
+             <property name="autoRepeat">
+              <bool>false</bool>
+             </property>
+             <property name="toolButtonStyle">
+              <enum>Qt::ToolButtonIconOnly</enum>
+             </property>
+             <property name="autoRaise">
+              <bool>false</bool>
+             </property>
+             <property name="arrowType">
+              <enum>Qt::NoArrow</enum>
              </property>
             </widget>
            </item>
@@ -579,6 +609,12 @@
    <addaction name="separator"/>
   </widget>
   <widget class="QDockWidget" name="dockWidget">
+   <property name="floating">
+    <bool>false</bool>
+   </property>
+   <property name="windowTitle">
+    <string>图像操作选择</string>
+   </property>
    <attribute name="dockWidgetArea">
     <number>1</number>
    </attribute>
@@ -602,7 +638,7 @@
         </size>
        </property>
        <property name="currentIndex">
-        <number>5</number>
+        <number>0</number>
        </property>
        <widget class="QWidget" name="page">
         <property name="geometry">
@@ -643,6 +679,9 @@
                </size>
               </property>
               <property name="toolTip">
+               <string>&quot;均值滤波：取周围像素平均值进行滤波，可以帮助消除图像尖锐噪声，实现图像平滑，模糊等功能&quot;</string>
+              </property>
+              <property name="statusTip">
                <string>&quot;均值滤波：取周围像素平均值进行滤波，可以帮助消除图像尖锐噪声，实现图像平滑，模糊等功能&quot;</string>
               </property>
               <property name="text">
@@ -712,6 +751,9 @@
               <property name="toolTip">
                <string>&quot;中值滤波：非线性平滑滤波，它将每一像素点的灰度值设置为该点某邻域窗口内的所有像素点灰度值的中值。&quot;</string>
               </property>
+              <property name="statusTip">
+               <string>&quot;中值滤波：非线性平滑滤波，它将每一像素点的灰度值设置为该点某邻域窗口内的所有像素点灰度值的中值。&quot;</string>
+              </property>
               <property name="text">
                <string>模糊操作：中值滤波</string>
               </property>
@@ -779,6 +821,9 @@
               <property name="toolTip">
                <string>&quot;双边滤波：有很好的边缘保护效果，即可以在去噪的同时，保护图像的边缘特性。&quot;</string>
               </property>
+              <property name="statusTip">
+               <string>&quot;双边滤波：有很好的边缘保护效果，即可以在去噪的同时，保护图像的边缘特性。&quot;</string>
+              </property>
               <property name="text">
                <string>模糊操作：双边滤波</string>
               </property>
@@ -844,6 +889,9 @@
                </size>
               </property>
               <property name="toolTip">
+               <string>&quot;高斯滤波：线性平滑滤波，适用于消除高斯噪声，广泛应用于图像处理的减噪过程。&quot;</string>
+              </property>
+              <property name="statusTip">
                <string>&quot;高斯滤波：线性平滑滤波，适用于消除高斯噪声，广泛应用于图像处理的减噪过程。&quot;</string>
               </property>
               <property name="text">
@@ -939,6 +987,9 @@
               <property name="toolTip">
                <string>&quot;反二进制阈值化：大变0，小变最大&quot;</string>
               </property>
+              <property name="statusTip">
+               <string>&quot;反二进制阈值化：大变0，小变最大&quot;</string>
+              </property>
               <property name="text">
                <string>阈值化操作：反二进制为零</string>
               </property>
@@ -991,6 +1042,9 @@
                </size>
               </property>
               <property name="toolTip">
+               <string>&quot;阈值化为0：大不变，小变0&quot;</string>
+              </property>
+              <property name="statusTip">
                <string>&quot;阈值化为0：大不变，小变0&quot;</string>
               </property>
               <property name="text">
@@ -1060,6 +1114,9 @@
               <property name="toolTip">
                <string>&quot;反阈值化为0：大变0，小不变&quot;</string>
               </property>
+              <property name="statusTip">
+               <string>&quot;反阈值化为0：大变0，小不变&quot;</string>
+              </property>
               <property name="text">
                <string>阈值化操作：反阈值化为零</string>
               </property>
@@ -1125,6 +1182,9 @@
                </size>
               </property>
               <property name="toolTip">
+               <string>&quot;二进制阈值化：大变最大，小变0&quot;</string>
+              </property>
+              <property name="statusTip">
                <string>&quot;二进制阈值化：大变最大，小变0&quot;</string>
               </property>
               <property name="text">
@@ -1216,6 +1276,9 @@
               <property name="toolTip">
                <string>&quot;截断阈值化：大变阈值，小不变&quot;</string>
               </property>
+              <property name="statusTip">
+               <string>&quot;截断阈值化：大变阈值，小不变&quot;</string>
+              </property>
               <property name="text">
                <string>阈值化操作：截断</string>
               </property>
@@ -1296,6 +1359,9 @@
               <property name="toolTip">
                <string>&quot;膨胀：取每个位置领域内最大值，膨胀后输出图像的总体亮度的平均值比起原图会有所升高&quot;</string>
               </property>
+              <property name="statusTip">
+               <string>&quot;膨胀：取每个位置领域内最大值，膨胀后输出图像的总体亮度的平均值比起原图会有所升高&quot;</string>
+              </property>
               <property name="text">
                <string>形态学操作：膨胀</string>
               </property>
@@ -1359,6 +1425,12 @@
                 <width>48</width>
                 <height>48</height>
                </size>
+              </property>
+              <property name="toolTip">
+               <string>&quot;腐蚀：取每个位置领域内最小值，腐蚀后输出图像的总体亮度的平均值比起原图会有所降低&quot;</string>
+              </property>
+              <property name="statusTip">
+               <string>&quot;腐蚀：取每个位置领域内最小值，腐蚀后输出图像的总体亮度的平均值比起原图会有所降低&quot;</string>
               </property>
               <property name="text">
                <string>形态学操作：腐蚀</string>
@@ -1424,6 +1496,12 @@
                 <height>48</height>
                </size>
               </property>
+              <property name="toolTip">
+               <string>&quot;开运算：可在纤细点出分离物体。有助于消除噪音&quot;</string>
+              </property>
+              <property name="statusTip">
+               <string>&quot;开运算：可在纤细点出分离物体。有助于消除噪音&quot;</string>
+              </property>
               <property name="text">
                <string>形态学操作：开运算</string>
               </property>
@@ -1487,6 +1565,12 @@
                 <width>48</width>
                 <height>48</height>
                </size>
+              </property>
+              <property name="toolTip">
+               <string>“闭运算：用于排除前景对象中的小孔或对象上的小黑点”</string>
+              </property>
+              <property name="statusTip">
+               <string>“闭运算：用于排除前景对象中的小孔或对象上的小黑点”</string>
               </property>
               <property name="text">
                <string>形态学操作：闭运算</string>
@@ -1553,6 +1637,9 @@
                </size>
               </property>
               <property name="toolTip">
+               <string>&quot;梯度运算：膨胀图与腐蚀图之差，可以用于保留目标物体的边缘轮廓&quot;</string>
+              </property>
+              <property name="statusTip">
                <string>&quot;梯度运算：膨胀图与腐蚀图之差，可以用于保留目标物体的边缘轮廓&quot;</string>
               </property>
               <property name="text">
@@ -1622,6 +1709,9 @@
               <property name="toolTip">
                <string>&quot;顶帽运算：原图与开运算图之差，分离比邻近点亮的斑块，用于突出原图像中比周围亮的区域&quot;</string>
               </property>
+              <property name="statusTip">
+               <string>&quot;顶帽运算：原图与开运算图之差，分离比邻近点亮的斑块，用于突出原图像中比周围亮的区域&quot;</string>
+              </property>
               <property name="text">
                <string>形态学操作：顶帽运算</string>
               </property>
@@ -1687,6 +1777,9 @@
                </size>
               </property>
               <property name="toolTip">
+               <string>&quot;黑帽运算：闭运算图与原图差，分离比邻近点暗的斑块，突出原图像中比周围暗的区域&quot;</string>
+              </property>
+              <property name="statusTip">
                <string>&quot;黑帽运算：闭运算图与原图差，分离比邻近点暗的斑块，突出原图像中比周围暗的区域&quot;</string>
               </property>
               <property name="text">
@@ -1769,6 +1862,9 @@
               <property name="toolTip">
                <string>&quot;连通区域：找到图片之间的连通块，并且用不同颜色标记。&quot;</string>
               </property>
+              <property name="statusTip">
+               <string>&quot;连通区域：找到图片之间的连通块，并且用不同颜色标记。&quot;</string>
+              </property>
               <property name="text">
                <string>连通性分析：简略版</string>
               </property>
@@ -1834,6 +1930,9 @@
                </size>
               </property>
               <property name="toolTip">
+               <string>&quot;连通区域：找到图片之间的连通块，并且使用方框进行标记。&quot;</string>
+              </property>
+              <property name="statusTip">
                <string>&quot;连通区域：找到图片之间的连通块，并且使用方框进行标记。&quot;</string>
               </property>
               <property name="text">
@@ -1916,6 +2015,9 @@
               <property name="toolTip">
                <string>&quot;轮廓绘制：绘制图像的轮廓信息&quot;</string>
               </property>
+              <property name="statusTip">
+               <string>&quot;轮廓绘制：绘制图像的轮廓信息&quot;</string>
+              </property>
               <property name="text">
                <string>轮廓检测操作</string>
               </property>
@@ -1996,6 +2098,9 @@
               <property name="toolTip">
                <string>&quot;图像亮度调整：增强图像的亮度&quot;</string>
               </property>
+              <property name="statusTip">
+               <string>&quot;图像亮度调整：增强图像的亮度&quot;</string>
+              </property>
               <property name="text">
                <string>效果增强：亮度调整</string>
               </property>
@@ -2063,6 +2168,9 @@
               <property name="toolTip">
                <string>&quot;γ矫正&quot;</string>
               </property>
+              <property name="statusTip">
+               <string>&quot;γ矫正&quot;</string>
+              </property>
               <property name="text">
                <string>效果增强：gamma矫正</string>
               </property>
@@ -2126,6 +2234,12 @@
                 <width>48</width>
                 <height>48</height>
                </size>
+              </property>
+              <property name="toolTip">
+               <string>“图像灰级窗处理”</string>
+              </property>
+              <property name="statusTip">
+               <string>“图像灰级窗处理”</string>
               </property>
               <property name="text">
                <string>效果增强：灰级窗处理</string>
@@ -2191,6 +2305,12 @@
                 <height>48</height>
                </size>
               </property>
+              <property name="toolTip">
+               <string>“图像对比度线性展宽”</string>
+              </property>
+              <property name="statusTip">
+               <string>“图像对比度线性展宽”</string>
+              </property>
               <property name="text">
                <string>效果增强：对比度线性展宽</string>
               </property>
@@ -2255,6 +2375,12 @@
                 <height>48</height>
                </size>
               </property>
+              <property name="toolTip">
+               <string>“图像非线性动态范围调整”</string>
+              </property>
+              <property name="statusTip">
+               <string>“图像非线性动态范围调整”</string>
+              </property>
               <property name="text">
                <string>效果增强：非线性动态范围调整</string>
               </property>
@@ -2318,6 +2444,12 @@
                 <width>48</width>
                 <height>48</height>
                </size>
+              </property>
+              <property name="toolTip">
+               <string>“图像线性动态范围调整”</string>
+              </property>
+              <property name="statusTip">
+               <string>“图像线性动态范围调整”</string>
               </property>
               <property name="text">
                <string>效果增强：线性动态范围调整</string>

@@ -23,14 +23,14 @@ Widget::Widget(QWidget* parent)
     ,res(new Res("resource/Images/113.png", this))
 {
     ui->setupUi(this);
-    init_readJson();		//读取配置文件
-    init_WidgetInfo();		//设置主窗口信息
+    init_readJson();		        //读取配置文件
+    init_WidgetInfo();		        //设置主窗口信息
     init_CustomAction();			//创建行为
-    init_CustomMenu();			//创建菜单
-    init_ToolBoxSide();		//创建左侧操作区域与GUI界面
-    init_CustomStatusBar();		//创建状态栏
-    init_Label();			//预处理图片显示
-    init_specialConnect(); //处理特殊的信号与槽的链接
+    init_CustomMenu();			    //创建菜单
+    init_ToolBoxSide();		        //创建左侧操作区域与GUI界面
+    init_CustomStatusBar();		    //创建状态栏
+    init_Label();			        //预处理图片显示
+    init_specialConnect();          //处理特殊的信号与槽的链接
 
     QFile qssFile;
     if (config.win_theme == "light"){
@@ -125,20 +125,18 @@ void Widget::init_readJson()
 void Widget::init_WidgetInfo()
 {
 	installEventFilter(this);
-
 	this->setWindowTitle(config.win_title);
     this->move(config.win_location_x, config.win_location_y);
 }
 
 void Widget::init_Label()
 {
-    ui->lab_img->setPixmap(QPixmap::fromImage(res->curr_img));
-	//图片上下文菜单
-    connect(ui->lab_img, &QLabel::customContextMenuRequested, this, &Widget::on_label_customContextMenuRequested);
+    //设置显式弹出菜单
+    ui->lab_img->setContextMenuPolicy(Qt::CustomContextMenu);
+    ui->lab_img_ori->setContextMenuPolicy(Qt::CustomContextMenu);
 
+    ui->lab_img->setPixmap(QPixmap::fromImage(res->curr_img));
     ui->lab_img_ori->setPixmap(QPixmap::fromImage(res->curr_img));
-    //图片上下文菜单
-    connect(ui->lab_img_ori, &QLabel::customContextMenuRequested, this, &Widget::on_label_customContextMenuRequested__);
 
     ui->scrollArea->setMinimumSize(SCROLLAREA_WIDTH,SCROLLAREA_HEIGHT);
     ui->scrollArea_ori->setMinimumSize(SCROLLAREA_WIDTH,SCROLLAREA_HEIGHT);
@@ -188,7 +186,6 @@ void Widget::init_specialConnect()
         ui->edit_channels->setText(QString::number(res->root_mt.channels()) + "通道图片");
     });
     emit res->signal_updateImage();
-
 }
 
 void Widget::moveEvent(QMoveEvent* ev)
@@ -222,16 +219,6 @@ void Widget::resizeEvent(QResizeEvent* ev)
     Q_UNUSED(ev);
     scaledDelta = ori_scaledDelta = init_scaledImageOk();
     update_Image_1(scaledDelta);
-}
-
-void Widget::on_label_customContextMenuRequested(const QPoint& pos) {
-    Q_UNUSED(pos);
-	context_menu->exec(QCursor::pos());
-}
-
-void Widget::on_label_customContextMenuRequested__(const QPoint& pos) {
-    Q_UNUSED(pos);
-	context_menu__->exec(QCursor::pos());
 }
 
 
@@ -444,6 +431,11 @@ void Widget::on_actionGroupHelp_triggered(QAction* action)
     }
 }
 
+void Widget::on_right_arrow_clicked(bool clicked)
+{
+    ui->lab_img_ori->setPixmap(ui->lab_img->pixmap());
+}
+
 void Widget::on_tbtn_allScreenHist_clicked(bool clicked)
 {
     QMainWindow* w = new QMainWindow;
@@ -631,6 +623,18 @@ void Widget::on_btnWork_prev_clicked(bool clicked)
     work_cutImage();
 }
 
+void Widget::on_lab_img_customContextMenuRequested(const QPoint &pos)
+{
+    Q_UNUSED(pos);
+    context_menu->exec(QCursor::pos());
+}
+
+void Widget::on_lab_img_ori_customContextMenuRequested(const QPoint &pos)
+{
+    Q_UNUSED(pos);
+    context_menu__->exec(QCursor::pos());
+}
+
 void Widget::clear_allButtonClicked()
 {
     for (auto& btnGps : btngroups) {
@@ -804,7 +808,7 @@ void Widget::init_CustomMenu()
 	//图片上下文菜单
 	//此处跟随滑动区域，滑动区域在整个窗口中作为主窗口不会消失。
     context_menu = new QMenu(this);
-    context_menu->addAction(ui->action_hide);
+    context_menu->addAction(ui->action_disp);
     context_menu->addAction(ui->action_save);
     context_menu->addAction(ui->action_exit);
     context_menu->addAction(ui->action_restore);

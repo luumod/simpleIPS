@@ -358,33 +358,6 @@ public:
      */
     void on_buttonGroup_everyOpeartions_choice(Object* op, QButtonGroup* btn_group, QAbstractButton* btn);
 
-    /**
-     * @brief 原图片的右键菜单
-     *
-     * 菜单项如下：
-     * @li 隐藏原图片，即转换为”专注模式“
-     * @li 退出程序
-     * @param  pos              鼠标的点击位置
-     *
-     * @see context_menu__
-     */
-    void on_label_customContextMenuRequested__(const QPoint& pos);
-
-    /**
-     * @brief 目标操作图片的右键菜单
-     *
-     * 菜单项如下：
-     * @li 只有在”专注模式“下：显示原图片，切换为 ”对比模式“。
-     * @li 保存图片
-     * @li 退出程序
-     * @li 重置所有操作，恢复至原始图片
-     * @li 显示图片信息（已废弃，待移除）
-     * @param  pos          	鼠标的点击位置
-     *
-     * @see context_menu
-     */
-    void on_label_customContextMenuRequested(const QPoint& pos);
-
     //选择颜色
     /**
      * @brief 响应进行轮廓操作时，切换颜色时也应当进行轮廓检测。
@@ -448,6 +421,12 @@ public:
      */
     void on_actionGroupHelp_triggered(QAction* action);
 public slots:
+
+    /**
+     * @brief 点击转换按钮，原始图片转换为操作后的图片
+     * @param action 行为对象
+     */
+    void on_right_arrow_clicked(bool clicked);
 
     void on_tbtn_allScreenHist_clicked(bool clicked);
 
@@ -597,6 +576,33 @@ public slots:
      * @see btn_work_prev
      */
     void on_btnWork_prev_clicked(bool clicked);
+
+    /**
+     * @brief 原图片的右键菜单
+     *
+     * 菜单项如下：
+     * @li 隐藏原图片，即转换为”专注模式“
+     * @li 退出程序
+     * @param  pos              鼠标的点击位置
+     *
+     * @see context_menu__
+     */
+    void on_lab_img_customContextMenuRequested(const QPoint& pos);
+
+    /**
+     * @brief 目标操作图片的右键菜单
+     *
+     * 菜单项如下：
+     * @li 只有在”专注模式“下：显示原图片，切换为 ”对比模式“。
+     * @li 保存图片
+     * @li 退出程序
+     * @li 重置所有操作，恢复至原始图片
+     * @li 显示图片信息（已废弃，待移除）
+     * @param  pos          	鼠标的点击位置
+     *
+     * @see context_menu
+     */
+    void on_lab_img_ori_customContextMenuRequested(const QPoint& pos);
 
 public:
 

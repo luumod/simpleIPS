@@ -9,13 +9,17 @@
 
 ### 目前进度
 
-* 图像基础操作
-* 图像模糊操作
-* 图像阈值化操作
-* 图像形态学操作
-* 图像连通块分析
-* 图像轮廓检测
-* 图像直方图操作
+- [x] 图像基础操作
+- [x] 图像模糊操作
+- [x] 图像阈值化操作
+- [x] 图像形态学操作
+- [x] 图像连通块分析
+- [x] 图像轮廓检测
+- [x] 图像直方图操作
+- [x] 图像增强操作
+- [ ] 更多的图片操作功能
+- [ ] 增加视频的操作
+- [ ] 界面美化
 
 ###  项目特色
 
@@ -28,20 +32,9 @@
 
 [使用opencv+Qt 自制的简易版图片处理软件](https://www.bilibili.com/video/BV1qN411t7jK/#reply188969413872)
 
-### CMake版本
-1. 配置好Qt6的环境变量。![image](https://github.com/luumod/myPhotoshopApp/assets/93420580/80b572f9-1e47-452b-b0dd-3ea942643346)
-2. 配置好OpenCV的环境变量。![image](https://github.com/luumod/myPhotoshopApp/assets/93420580/3098a71c-c7eb-41cd-8657-b3c5fb1cf5c0)
-4. CMakeLists文件中，设置你的OpenCV的安装路径。
-5. 删除CMakeLists的倒数后六行（如果你没有安装的话）
-6. 重新配置CMakeLists文件
-
-### qmake版本
-
-### 待解决bug
-
-* 在create_GUIAdvancedLight中对滑块设置位置无效，但是setValue值有效，因此引入了两个滑块分别控制亮度升高和降低。
-* 图像的掩膜操作的Kernel的设置。
-* 在打开工作区的时候，QScrollArea的处理有点太过于复杂，包括work_cutImage函数。
+### qmake配置
+* OpenCV：在QtCreator中右键项目名称，选择`添加库`，配置好OpenCV的路径即可
+* 由于此项目之前是在Visual Studio 2022中写的，不知道为啥QtCreator中`警告与错误`一栏会出现乱码，但是`输出窗口`中是正常的，有知道的可以告诉我一下怎么改。
 
 ### 联系作者
 

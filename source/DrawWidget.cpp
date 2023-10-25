@@ -18,16 +18,18 @@
 #include <QMenuBar>
 #include <QScrollArea>
 
+DrawWidget* DrawWidget::draw = nullptr;
+
 DrawWidget::DrawWidget(QWidget* parent) : QMainWindow(parent) {
 
 	createAction();
 	createMenuBar();
 
 	//添加场景
-	scene = new GraphicsScene(this);
+    scene = new GraphicsScene(this);
 
-	QGraphicsPixmapItem* pixItem = new QGraphicsPixmapItem;
-	QPixmap pixmap = QPixmap::fromImage(Widget::getInstance()->res->curr_img);
+    pixItem = new QGraphicsPixmapItem;
+    pixmap = QPixmap::fromImage(Widget::getInstance()->res->curr_img);
 	if (!pixmap.isNull()) {
 		// 非空
 		// 获取场景和图像的大小
@@ -37,7 +39,7 @@ DrawWidget::DrawWidget(QWidget* parent) : QMainWindow(parent) {
 		scene->addItem(pixItem);
 	}
 
-	QGraphicsView* view = new QGraphicsView(scene);
+    view = new QGraphicsView(scene);
 	view->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 	view->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 	view->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
@@ -51,12 +53,39 @@ DrawWidget::DrawWidget(QWidget* parent) : QMainWindow(parent) {
 	QWidget* mainWindow = new QWidget;
 	mainWindow->setLayout(vlayout);
 
-	// 设置主窗口为应用程序的主窗口
-	this->setCentralWidget(mainWindow);
+    // 设置主窗口为应用程序的主窗口
+    this->setCentralWidget(mainWindow);
+}
+
+DrawWidget *DrawWidget::get(QWidget* parent)
+{
+    if (!draw){
+        draw = new DrawWidget(parent);
+    }
+    return draw;
 }
 
 DrawWidget::~DrawWidget()
 {
+}
+
+void DrawWidget::reset()
+{
+//    scene->removeItem();
+////    if (pixItem){
+////        delete pixItem;
+////        pixItem = nullptr;
+////    }
+////    pixItem = new QGraphicsPixmapItem;
+    this->pixmap = QPixmap::fromImage(Widget::getInstance()->res->curr_img);
+//    if (!pixmap.isNull()) {
+//        // 非空
+//        // 获取场景和图像的大小
+//        scene->setSceneRect(pixmap.rect());
+
+//        scene->addItem(pixItem);
+//    }
+    pixItem->setPixmap(pixmap);
 }
 
 QWidget* DrawWidget::createToolBtnItemWidget(const QString& text, int id, const QString& fileName)

@@ -10,6 +10,9 @@
 #include <QFileDialog>
 #include <QMessageBox>
 
+
+CaptureWidget* CaptureWidget::capture = nullptr;
+
 CaptureWidget::CaptureWidget(QWidget* parent)
 	:QMainWindow(parent)
 {
@@ -19,8 +22,16 @@ CaptureWidget::CaptureWidget(QWidget* parent)
 
 	lab_img = new QLabel(this);
 	this->setCentralWidget(lab_img);
-	rubber = new QRubberBand(QRubberBand::Line, lab_img);
-	update();
+    rubber = new QRubberBand(QRubberBand::Line, lab_img);
+    update();
+}
+
+CaptureWidget *CaptureWidget::get(QWidget* parent)
+{
+    if (!capture){
+        capture = new CaptureWidget(parent);
+    }
+    return capture;
 }
 
 CaptureWidget::~CaptureWidget()

@@ -56,10 +56,11 @@ Widget::~Widget()
 		op = nullptr;
 	}
 
-	if (all_screen) {
-		delete all_screen;
-		all_screen = nullptr;
-	}
+//    auto capture_Widget = CaptureWidget::get();
+//    if (capture_Widget) {
+//        delete capture_Widget;
+//        capture_Widget = nullptr;
+//    }
 
 	while (!undo_sta.empty()) {
 		undo_sta.pop();
@@ -74,7 +75,7 @@ Widget::~Widget()
 void Widget::init_readJson()
 {
 	//读取json文件
-	QFile jsonFile("config.json");
+    QFile jsonFile("config.json");
 	if (!jsonFile.open(QIODevice::ReadOnly)) {
 		//没有这个json配置文件，则创建一个
 		QJsonObject jsonObj;
@@ -86,8 +87,8 @@ void Widget::init_readJson()
 		// 创建JSON文档
 		QJsonDocument jsonDoc(jsonObj);
 		// 将JSON文档写入文件
-		QFile file("config.json");
-		if (file.open(QFile::WriteOnly | QFile::Text)) {
+        QFile file("config.json");
+        if (file.open(QFile::WriteOnly | QFile::Text)) {
 			QTextStream out(&file);
 			out << jsonDoc.toJson();
 			file.close();
@@ -312,9 +313,9 @@ void Widget::on_action_restore_triggered()
 
 void Widget::on_action_draw_triggered()
 {
-	widget_draw = new DrawWidget;
-	widget_draw->show();
-	widget_draw->setAttribute(Qt::WA_DeleteOnClose);
+    auto widget_draw = DrawWidget::get(this);
+    widget_draw->reset();
+    widget_draw->show();
 }
 
 void Widget::on_colorDialog_triggered(const QColor& color)
@@ -355,13 +356,10 @@ void Widget::on_action_flip_group_triggered(QAction* action)
 	}
 }
 
-
 void Widget::on_action_jie_triggered()
 {
-	//图片截取Widget
-	if (!look) {
-		look = new LookWidget(this);
-	}
+    //图片截取Widget
+    look = LookWidget::get(this);
 	look->reset(QPixmap::fromImage(res->curr_img));
 	look->show();
 }
@@ -374,14 +372,11 @@ void Widget::on_action_capture_triggered()
 	//获取缩放比例
 	config.win_screen_scale = screen->devicePixelRatio();
 
-	if (!all_screen) {
-		//需要单独释放
-		all_screen = new CaptureWidget;
-	}
-	all_screen->scale = config.win_screen_scale;
+    auto all_screen = CaptureWidget::get(this);
+    all_screen->scale = config.win_screen_scale;
 	all_screen->lab_img->setPixmap(screen_lab);
 	all_screen->showFullScreen();
-	all_screen->show();
+    all_screen->show();
 }
 
 void Widget::on_actionGroupHelp_triggered(QAction* action)

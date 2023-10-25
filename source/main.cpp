@@ -6,19 +6,19 @@
 #include <QFile>
 #include <Windows.h>
 //未安装vld的话可以直接删除
-//#include <vld.h>
+#include <vld.h>
 class Widget;
 
 int main(int argc,char* argv[])
 {
-	QApplication a(argc, argv);
+    QApplication a(argc, argv);
 
     Widget* w = Widget::getInstance();
     w->show();
-    
-	//释放单例对象
-	QObject::connect(&a, &QApplication::aboutToQuit, [=]() {
-		//写入json
+
+    //释放单例对象
+    QObject::connect(&a, &QApplication::aboutToQuit, [=]() {
+        //写入json
         // 创建一个JSON对象并添加数据
         QJsonObject jsonObj;
         jsonObj["win_title"] = w->config.win_title;
@@ -41,7 +41,7 @@ int main(int argc,char* argv[])
         else {
             qWarning() << "打开json文件写入失败!" << file.errorString();
         }
-		delete w;
-	});
-	return a.exec();
+        delete w;
+    });
+    return a.exec();
 }

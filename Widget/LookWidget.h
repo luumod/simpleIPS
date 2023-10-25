@@ -19,15 +19,19 @@ class HandleJieWidget;
 class ShowImgWidget;
 
 /*
-截取图片的Widget
+截取图片的Widget: static
 */
 
 class LookWidget :public QMainWindow {
 	Q_OBJECT
+    //带菜单栏的独立Widget
+private:
+    LookWidget(QWidget* parent = nullptr);
+    static LookWidget* look;
+
 public:
-	//带菜单栏的独立Widget
-	LookWidget(QWidget* parent = nullptr);
-	~LookWidget();
+    ~LookWidget();
+    static LookWidget* get(QWidget* parent = nullptr);
 
 	void reset(const QPixmap& pixmap);
 protected:

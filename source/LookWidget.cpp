@@ -20,6 +20,8 @@
 
 #define DEBUG 0
 
+LookWidget* LookWidget::look = nullptr;
+
 Widget* get() {
 	return Widget::getInstance();
 }
@@ -47,8 +49,16 @@ LookWidget::LookWidget(QWidget* parent)
 LookWidget::~LookWidget() {
 	if (handle_widget) {
 		delete handle_widget;
-		handle_widget = nullptr;
-	}
+        handle_widget = nullptr;
+    }
+}
+
+LookWidget *LookWidget::get(QWidget* parent)
+{
+    if (!look){
+        look = new LookWidget(parent);
+    }
+    return look;
 }
 
 void LookWidget::reset(const QPixmap& pixmap)

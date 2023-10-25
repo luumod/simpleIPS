@@ -785,7 +785,12 @@ private FUNCTION_: //辅助函数
         QList< QString> lab_name,
         QList<std::function<void(int)>> slotFunction);
 public:
+
+    /**
+     * @brief ui界面
+     */
     Ui::MainWindow *ui = nullptr;
+
     /**
      * @brief 配置文件
      */
@@ -865,13 +870,6 @@ public:
     std::stack<cv::Mat> undo_sta;
 
     /**
-     * @brief 简单的绘图板
-     *
-     * @see on_action_draw_triggered
-     */
-    DrawWidget* widget_draw = nullptr;
-
-    /**
      * @brief 存储打开的工作区中的所有的图片路径
      *
      * @see loadImagesFormFloder
@@ -899,22 +897,15 @@ public: // GUI部分
     QMenu* context_menu__ = nullptr; //原图片的
     QMenu* context_menu = nullptr;	 //目标图片的
 
-    QAction* action_theme = nullptr;
-
     int preToolBoxIndex = 0, curToolBoxIndex = 0; //切换toolbox页面时清除选择状态
-
     //---------------------
-    //底部状态栏
+
+    //底部状态栏:显示模式信息
     QLabel* statusLab = nullptr;
 
     //-------------------------
     //选择颜色
     QColorDialog* colorDialog = nullptr;
-
-    QHBoxLayout* btn_work_layout;
-
-    //桌面截图
-    CaptureWidget* all_screen = nullptr;
 
     //gamma
     QList<QSlider*> ls_slider_blur;

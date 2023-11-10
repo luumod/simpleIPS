@@ -37,8 +37,14 @@ public:
 	cv::Mat showNoneDynamicLinearAdj(cv::Mat mat = cv::Mat());
 	void showBGRNoneDynamicLinearAdj();
 	void choice_NoneDpLinearAlgorithm();
+
+    cv::Mat showNormalNoneDynamicLinearAdj(cv::Mat mat = cv::Mat());
+    void show_NormalNoneDpLinearAlgorithm(); //255*f*f
+    void choice_NormalNoneDpLinearAlgorithm();
 public slots:
 	void onTriggered_slider_valueChange_brighten(int); //亮度
+
+    void onTriggered_slider_valueChange_gamma_C(double); //Gamma
 	void onTriggered_slider_valueChange_gamma(double); //Gamma
 
 	void onTriggered_slider_valueChange_linearg1(double); //g1
@@ -62,22 +68,27 @@ public slots:
 	void onReturnPressed_Edit(QList<QString> strs);
 public:
 	int bright_value = 0;
-	double gamma_value = 1.0;
+
+    float gamma_c = 1.0f;
+    float gamma_value = 1.0;
 
 	//对比度线性展宽
-	double linear_g1 = 0.0, linear_g2 = 0.0;//假定目标区域
+    float linear_g1 = 0.0, linear_g2 = 0.0;//假定目标区域
 	int linear_mode = 0; //灰度还是彩色
 
 	//灰级窗
-	double gray_f1 = 0.0, gray_f2 = 0.0;
+    float gray_f1 = 0.0, gray_f2 = 0.0;
 
 	//线性动态范围调整
-	double dp_a = 0.0, dp_b = 0.0;
+    float dp_a = 0.0, dp_b = 0.0;
 	int DpLinear_mode = 0; //灰度还是彩色
 
 	//非线性动态范围调整
-	double n_dp_c = 1.0;
+    float n_dp_c = 1.0;
 	int NoneDpLinear_mode = 0;  //灰度还是彩色
+
+    //常规非线性变换
+    int NormalNoneDpLinear_mode = 0; //灰度还是彩色
 };
 
 

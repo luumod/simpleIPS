@@ -430,7 +430,7 @@ public slots:
 
     void on_tbtn_allScreenHist_clicked(bool clicked);
 
-    void on_tbtn_updateHist_clicked(bool clicked);
+    void on_tbtn_updateHist_clicked(bool clicked = false);
 
     /**
      * @brief on_action_equColor_triggered
@@ -655,8 +655,9 @@ public slots:
     void on_Bright_slider2_sliderMoved(int value);
     void on_Bright_edit_returnPressed();
 
-    void on_gamma_slider1_sliderMoved(int value);
-    void on_gamma_edit_returnPressed();
+    void on_Gamma_slider1_sliderMoved(int value);
+    void on_Gamma_slider2_sliderMoved(int value);
+    void on_Gamma_edit_returnPressed();
 
     void on_Contrast_slider1_sliderMoved(int value);
     void on_Contrast_slider2_sliderMoved(int value);
@@ -678,6 +679,9 @@ public slots:
     void on_NdpLinear_edit_returnPressed();
     void on_NdpLinear_rbtn1_clicked(bool clicked);
     void on_NdpLinear_rbtn2_clicked(bool clicked);
+
+    void on_NdpNormal_tbtn1_clicked(bool clicked);
+    void on_NdpNormal_tbtn2_clicked(bool clicked);
 
 public:
 
@@ -816,49 +820,7 @@ private FUNCTION_: //辅助函数
      */
     void work_cutImage();
 
-    //Dialog: 创建n个滑块和输入框
-    /**
-     * @brief 对于GUI窗口的封装：可以创建n个QSlider
-     * @tparam T 				最小值，最大值，步长的数据类型
-     * @tparam Type 			create_Edit_hLayout 的模板类型
-     * @param  ls_slider       	窗口中所有的QSlider实体，把这些QSlider放到一个QList中进行管理
-     * @param  low              n个QSlider分别对应的最小值
-     * @param  high             n个QSlider分别对应的最大值
-     * @param  step            	n个QSlider分别对应的步长
-     * @param  objectName       n个QSlider分别对应的类名
-     * @param  lab_name         n个QSlider分别对应的提示标签的名字
-     * @param  slotFunction     n个QSlider分别对应槽函数，连接其 SliderMoved 信号
-     * @param  edit            	true：表示允许有输入功能 ，false表示不允许输入
-     * @param  filter          	参见 create_Edit_hLayout
-     * @param  text             参见 create_Edit_hLayout
-     * @param  t                参见 create_Edit_hLayout
-     * @return QBoxLayout* 		返回的是包含n个QSlider的窗口布局
-     *
-     * @todo 实际上直接返回QWidget就行
-     */
-    template <typename T, typename Type>
-    QBoxLayout* createDialog_nSlider_GUItemplate(
-        QList<QSlider*>& ls_slider,
-        QList<T> low, QList<T> high, QList<T> step,
-        QList< QString> objectName,
-        QList< QString> lab_name,
-        QList<std::function<void(int)>> slotFunction,
-        bool edit = false,
-        const QString& filter = "",
-        const QString& text = "",
-        Type* t = nullptr);
 
-    /**
-     * @brief 对于GUI窗口的封装：可以创建n个QComboBox
-     *
-     * @see 具体内容请参见：createDialog_nSlider_GUItemplate 其实现基本一致
-     */
-    QBoxLayout* createDialog_nComBox_GUItemplate(
-        QList<QComboBox*>& ls_combox,
-        QList<QStringList> ls_item,
-        QList< QString> objectName,
-        QList< QString> lab_name,
-        QList<std::function<void(int)>> slotFunction);
 public:
 
     /**

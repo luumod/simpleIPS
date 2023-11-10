@@ -22,6 +22,7 @@
 #include <QBoxLayout>
 #include <QGridLayout>
 #include <QLabel>
+#include <QTimer>
 #include <opencv2/core/utils/logger.hpp>
 #include <QToolButton>
 #include <QButtonGroup>

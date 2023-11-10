@@ -37,7 +37,7 @@ public slots:
 
 	//显示灰度直方图
     void drawGrayHist(const QString& title, cv::Mat mt = cv::Mat());
-    QImage showGrayHist_AdjArea(const QString& title,int height,int width, cv::Mat mt = cv::Mat());
+    QImage showGrayHist_AdjArea(const QString& title,int height,int width);
 
 	//显示均衡化后的图像
 	void showEqualizedBGRImage();

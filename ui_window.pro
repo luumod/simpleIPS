@@ -51,7 +51,7 @@ HEADERS += \
     opencv_functions/Showeffect.h \
     opencv_functions/Threshold.h \
     other_functions/GraphicsScene.h \
-    other_functions/eventfilterobject.h
+    other_functions/eventfilterobject.h\
 
 FORMS += \
     mainwindow.ui
@@ -70,6 +70,7 @@ DEPENDPATH += $$PWD/../../../Tools/openCV/openCV/build/include
 DESTDIR = F:/code/simplePS_work/simpleIPS
 
 DISTFILES += \
+    other_functions/deprecated.hpp.txt \
     resource/Images/103.png \
     resource/Images/104.png \
     resource/Images/105.png \

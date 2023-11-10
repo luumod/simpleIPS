@@ -52,20 +52,25 @@ void Showeffect::Bright()
 void Showeffect::Gamma()
 {
 	cv::Mat _mt;
-	getMat(_mt);
-	//标准化为 0-255之间
-	cv::Mat normalizedImage;
-	cv::normalize(_mt, normalizedImage, 0, 255, cv::NormTypes::NORM_MINMAX);
+    getMat(_mt);
+    cv::Mat tMt = _mt.clone();
 
-	//转换为浮点型
-	cv::Mat tMt;
-	normalizedImage.convertTo(tMt, CV_32FC3);
-
-	//γ矫正
-	cv::Mat GammaMat;
-	cv::pow(tMt / 255.0, gamma_value, GammaMat);
+    //彩色图
+    for (int i =0;i<_mt.rows;i++){
+        for (int j =0;j<_mt.cols;j++){
+            float pix1 = cv::saturate_cast<float>(_mt.at<cv::Vec3b>(i,j)[0]) / 255.0;
+            float pix2 = cv::saturate_cast<float>(_mt.at<cv::Vec3b>(i,j)[1]) / 255.0;
+            float pix3 = cv::saturate_cast<float>(_mt.at<cv::Vec3b>(i,j)[2]) / 255.0;
+            float res1 = gamma_c * pow(pix1,gamma_value) * 255.0;
+            float res2 = gamma_c * pow(pix2,gamma_value) * 255.0;
+            float res3 = gamma_c * pow(pix3,gamma_value) * 255.0;
+            tMt.at<cv::Vec3b>(i,j)[0] = cv::saturate_cast<uchar>(res1);
+            tMt.at<cv::Vec3b>(i,j)[1] = cv::saturate_cast<uchar>(res2);
+            tMt.at<cv::Vec3b>(i,j)[2] = cv::saturate_cast<uchar>(res3);
+        }
+    }
 	//CV_32FC3类型需要进一步转换为CV_8UC3
-	Object::update(GammaMat);
+    Object::update(tMt);
 }
 
 cv::Mat Showeffect::showContrastLinearBroaden(cv::Mat mat)
@@ -94,8 +99,8 @@ cv::Mat Showeffect::showContrastLinearBroaden(cv::Mat mat)
 	double k3 = (255 - g2) / (255 - f2);
 
 	for (int i = 0; i < grayMat.rows; i++) {
-		for (int j = 0; j < grayMat.cols; j++) {
-			uchar pix = grayMat.at<uchar>(i, j);
+        for (int j = 0; j < grayMat.cols; j++) {
+            float pix =cv::saturate_cast<float>( grayMat.at<uchar>(i, j));
 			if (pix >= 0 && pix < f1) {
 				grayMat.at<uchar>(i, j) = cv::saturate_cast<uchar>(k1 * pix);
 			}
@@ -119,9 +124,9 @@ void Showeffect::showBGRContrastLinearBroaden()
 	cv::Mat _mt;
 	getMat(_mt);
 	cv::split(_mt, channels);
-	cv::Mat ch1 = showContrastLinearBroaden(channels[0]);
-	cv::Mat ch2 = showContrastLinearBroaden(channels[1]);
-	cv::Mat ch3 = showContrastLinearBroaden(channels[2]);
+    channels[0] = showContrastLinearBroaden(channels[0]);
+    channels[1] = showContrastLinearBroaden(channels[1]);
+    channels[2] = showContrastLinearBroaden(channels[2]);
 	cv::Mat res;
 	cv::merge(channels, res);
 
@@ -139,9 +144,9 @@ void Showeffect::showGrayWindow()
 	double k = 255 / (gray_f2 - gray_f1);
 
 	for (int i = 0; i < grayMat.rows; i++) {
-		for (int j = 0; j < grayMat.cols; j++) {
-			uchar pix = grayMat.at<uchar>(i, j);
-			if (pix >= 0 && pix < gray_f1) {
+        for (int j = 0; j < grayMat.cols; j++) {
+            float pix = cv::saturate_cast<float>(grayMat.at<uchar>(i, j));
+            if (pix >= 0 && pix < gray_f1) {
 				grayMat.at<uchar>(i, j) = 0;
 			}
 			else if (pix >= gray_f1 && pix < gray_f2) {
@@ -173,23 +178,23 @@ cv::Mat Showeffect::showDynamicLinearAdj(cv::Mat mat)
 	double f1, f2;
 	cv::minMaxLoc(grayMat, &f1, &f2);
 
-	double k = 255 / (dp_b - dp_a);
+    float k = 255 / (dp_b - dp_a);
 
 	for (int i = 0; i < grayMat.rows; i++) {
-		for (int j = 0; j < grayMat.cols; j++) {
-			uchar pix = grayMat.at<uchar>(i, j);
-			if (pix >= 0 && pix < f1) {
-				grayMat.at<uchar>(i, j) = 0;
+        for (int j = 0; j < grayMat.cols; j++) {
+            float pix =cv::saturate_cast<float>(grayMat.at<uchar>(i, j));
+            if (pix >= 0 && pix < f1) {
+                grayMat.at<uchar>(i, j) = cv::saturate_cast<uchar>(0);
 			}
 			else if (pix >= f1 && pix < f2) {
 				grayMat.at<uchar>(i, j) = cv::saturate_cast<uchar>(k * (pix - dp_a));
 			}
-			else if (pix >= f2 && pix <= 255) {
-				grayMat.at<uchar>(i, j) = 255;
+            else if (pix >= f2 && pix <= 255) {
+                grayMat.at<uchar>(i, j) = cv::saturate_cast<uchar>(255);
 			}
 		}
 	}
-	if (!linear_mode) { // !=0 彩色无须更新
+    if (!DpLinear_mode) { // !=0 彩色无须更新
 		Object::update(grayMat);
 	}
 	return grayMat;
@@ -201,9 +206,9 @@ void Showeffect::showBGRDynamicLinearAdj()
 	cv::Mat _mt;
 	getMat(_mt);
 	cv::split(_mt, channels);
-	cv::Mat ch1 = showDynamicLinearAdj(channels[0]);
-	cv::Mat ch2 = showDynamicLinearAdj(channels[1]);
-	cv::Mat ch3 = showDynamicLinearAdj(channels[2]);
+    channels[0] = showDynamicLinearAdj(channels[0]);
+    channels[1] = showDynamicLinearAdj(channels[1]);
+    channels[2] = showDynamicLinearAdj(channels[2]);
 	cv::Mat res;
 	cv::merge(channels, res);
 
@@ -227,11 +232,13 @@ cv::Mat Showeffect::showNoneDynamicLinearAdj(cv::Mat mat)
 
 	for (int i = 0; i < grayMat.rows; i++) {
 		for (int j = 0; j < grayMat.cols; j++) {
-			uchar pix = grayMat.at<uchar>(i, j);
-			grayMat.at<uchar>(i, j) = cv::saturate_cast<uchar>(n_dp_c * cv::log(1+pix));
+            float pix = cv::saturate_cast<float>(grayMat.at<uchar>(i, j));
+            float trans = cv::saturate_cast<float>(n_dp_c * std::log10(1+pix));
+            grayMat.at<uchar>(i, j) = cv::saturate_cast<uchar>(trans);
 		}
-	}
-	if (!linear_mode) { // !=0 彩色无须更新
+    }
+
+    if (!NoneDpLinear_mode) { // !=0 彩色无须更新
 		Object::update(grayMat);
 	}
 	return grayMat;
@@ -243,9 +250,9 @@ void Showeffect::showBGRNoneDynamicLinearAdj()
 	cv::Mat _mt;
 	getMat(_mt);
 	cv::split(_mt, channels);
-	cv::Mat ch1 = showNoneDynamicLinearAdj(channels[0]);
-	cv::Mat ch2 = showNoneDynamicLinearAdj(channels[1]);
-	cv::Mat ch3 = showNoneDynamicLinearAdj(channels[2]);
+    channels[0] = showNoneDynamicLinearAdj(channels[0]);
+    channels[1] = showNoneDynamicLinearAdj(channels[1]);
+    channels[2] = showNoneDynamicLinearAdj(channels[2]);
 	cv::Mat res;
 	cv::merge(channels, res);
 
@@ -258,18 +265,71 @@ void Showeffect::choice_NoneDpLinearAlgorithm()
 		showNoneDynamicLinearAdj();
 	}
 	else {
-		showBGRNoneDynamicLinearAdj();
-	}
+        showBGRNoneDynamicLinearAdj();
+    }
+}
+
+cv::Mat Showeffect::showNormalNoneDynamicLinearAdj(cv::Mat mat)
+{
+    cv::Mat grayMat;
+
+    cv::Mat _mt;
+    getMat(_mt);
+    if (mat.empty()) {
+        //转换为灰度图
+        cv::cvtColor(_mt, grayMat, cv::COLOR_BGR2GRAY);
+    }
+    else {
+        grayMat = mat;
+    }
+
+    for (int i = 0; i < grayMat.rows; i++) {
+        for (int j = 0; j < grayMat.cols; j++) {
+            float pix = cv::saturate_cast<float>(grayMat.at<uchar>(i, j));
+            float trans = cv::saturate_cast<float>(pix * pix / 255);
+            grayMat.at<uchar>(i, j) = cv::saturate_cast<uchar>(trans);
+        }
+    }
+
+    if (!NormalNoneDpLinear_mode) { // !=0 彩色无须更新
+        Object::update(grayMat);
+    }
+    return grayMat;
+}
+
+void Showeffect::show_NormalNoneDpLinearAlgorithm()
+{
+    std::vector<cv::Mat> channels;
+    cv::Mat _mt;
+    getMat(_mt);
+    cv::split(_mt, channels);
+    channels[0]= showNormalNoneDynamicLinearAdj(channels[0]);
+    channels[1]= showNormalNoneDynamicLinearAdj(channels[1]);
+    channels[2] = showNormalNoneDynamicLinearAdj(channels[2]);
+    cv::Mat res;
+    cv::merge(channels, res);
+
+    Object::update(res);//彩色图
+}
+
+void Showeffect::choice_NormalNoneDpLinearAlgorithm()
+{
+    if (!NormalNoneDpLinear_mode) {
+        showNormalNoneDynamicLinearAdj();
+    }
+    else {
+        show_NormalNoneDpLinearAlgorithm();
+    }
 }
 
 
 void Showeffect::choice_DpLinearAlgorithm()
 {
 	if (!DpLinear_mode) {
-		showDynamicLinearAdj();
-	}
+        showDynamicLinearAdj();
+    }
 	else {
-		showBGRDynamicLinearAdj();
+        showBGRDynamicLinearAdj();
 	}
 }
 
@@ -289,6 +349,11 @@ void Showeffect::onTriggered_slider_valueChange_brighten(int bright_value)
 {
 	this->bright_value = bright_value;
 	Bright();
+}
+
+void Showeffect::onTriggered_slider_valueChange_gamma_C(double gamma_C){
+    this->gamma_c = gamma_C;
+    Gamma();
 }
 
 void Showeffect::onTriggered_slider_valueChange_gamma(double gamma_value)

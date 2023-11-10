@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>959</width>
-    <height>640</height>
+    <height>642</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -97,7 +97,7 @@
                    <x>0</x>
                    <y>0</y>
                    <width>301</width>
-                   <height>235</height>
+                   <height>237</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -218,7 +218,7 @@
                    <x>0</x>
                    <y>0</y>
                    <width>301</width>
-                   <height>235</height>
+                   <height>237</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -278,7 +278,7 @@
                  <enum>QFrame::Plain</enum>
                 </property>
                 <property name="currentIndex">
-                 <number>14</number>
+                 <number>13</number>
                 </property>
                 <widget class="QWidget" name="adjPage_avgBlur">
                  <layout class="QVBoxLayout" name="verticalLayout_12">
@@ -1427,37 +1427,57 @@
                     <property name="bottomMargin">
                      <number>3</number>
                     </property>
-                    <item row="0" column="0">
-                     <widget class="QLabel" name="gamma_lab1">
+                    <item row="1" column="0">
+                     <widget class="QLabel" name="Gamma_lab1">
                       <property name="text">
-                       <string>γ矫正</string>
+                       <string>gamma值</string>
                       </property>
                      </widget>
                     </item>
-                    <item row="0" column="1">
-                     <widget class="QSlider" name="gamma_slider1">
+                    <item row="1" column="1">
+                     <widget class="QSlider" name="Gamma_slider1">
                       <property name="minimum">
                        <number>1</number>
                       </property>
                       <property name="maximum">
-                       <number>50</number>
+                       <number>20</number>
                       </property>
                       <property name="orientation">
                        <enum>Qt::Horizontal</enum>
                       </property>
                      </widget>
                     </item>
-                    <item row="1" column="0">
-                     <widget class="QLabel" name="gamma_lab2">
+                    <item row="2" column="0">
+                     <widget class="QLabel" name="Gamma_lab2">
                       <property name="text">
                        <string>自定义</string>
                       </property>
                      </widget>
                     </item>
-                    <item row="1" column="1">
-                     <widget class="QLineEdit" name="gamma_edit">
+                    <item row="2" column="1">
+                     <widget class="QLineEdit" name="Gamma_edit">
                       <property name="placeholderText">
-                       <string>γ值</string>
+                       <string>gamma值（放大倍数为1.0）</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="0" column="0">
+                     <widget class="QLabel" name="Gamma_lab3">
+                      <property name="text">
+                       <string>放大倍数</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="0" column="1">
+                     <widget class="QSlider" name="Gamma_slider2">
+                      <property name="minimum">
+                       <number>1</number>
+                      </property>
+                      <property name="maximum">
+                       <number>5</number>
+                      </property>
+                      <property name="orientation">
+                       <enum>Qt::Horizontal</enum>
                       </property>
                      </widget>
                     </item>
@@ -1840,6 +1860,24 @@
                      <widget class="QRadioButton" name="NdpLinear_rbtn2">
                       <property name="text">
                        <string>彩色图</string>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </item>
+                  <item>
+                   <layout class="QHBoxLayout" name="horizontalLayout_38">
+                    <item>
+                     <widget class="QToolButton" name="NdpNormal_tbtn1">
+                      <property name="text">
+                       <string>常规非线性变换：灰色</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QToolButton" name="NdpNormal_tbtn2">
+                      <property name="text">
+                       <string>常规非线性变换：彩色</string>
                       </property>
                      </widget>
                     </item>
@@ -2357,7 +2395,7 @@ QLabel {
         </size>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>5</number>
        </property>
        <widget class="QWidget" name="page">
         <property name="geometry">
@@ -2365,7 +2403,7 @@ QLabel {
           <x>0</x>
           <y>0</y>
           <width>200</width>
-          <height>343</height>
+          <height>345</height>
          </rect>
         </property>
         <attribute name="label">
@@ -2658,7 +2696,7 @@ QLabel {
           <x>0</x>
           <y>0</y>
           <width>200</width>
-          <height>343</height>
+          <height>345</height>
          </rect>
         </property>
         <attribute name="label">
@@ -3043,7 +3081,7 @@ QLabel {
           <x>0</x>
           <y>0</y>
           <width>200</width>
-          <height>343</height>
+          <height>345</height>
          </rect>
         </property>
         <attribute name="label">
@@ -3546,7 +3584,7 @@ QLabel {
           <x>0</x>
           <y>0</y>
           <width>200</width>
-          <height>343</height>
+          <height>345</height>
          </rect>
         </property>
         <attribute name="label">
@@ -3699,7 +3737,7 @@ QLabel {
           <x>0</x>
           <y>0</y>
           <width>200</width>
-          <height>343</height>
+          <height>345</height>
          </rect>
         </property>
         <attribute name="label">
@@ -3782,7 +3820,7 @@ QLabel {
           <x>0</x>
           <y>0</y>
           <width>200</width>
-          <height>343</height>
+          <height>345</height>
          </rect>
         </property>
         <attribute name="label">

@@ -32,6 +32,10 @@ Widget::Widget(QWidget* parent)
     init_Label();			        //预处理图片显示
     init_specialConnect();          //处理特殊的信号与槽的链接
 
+    //暂时禁用图片显示与隐藏按钮
+    ui->action_hide->setDisabled(true);
+    ui->action_disp->setDisabled(true);
+
     QFile qssFile;
     if (config.win_theme == "light"){
         qssFile.setFileName("resource/qss/light.css");
@@ -137,6 +141,13 @@ void Widget::init_Label()
     ui->scrollArea->setMinimumSize(SCROLLAREA_WIDTH,SCROLLAREA_HEIGHT);
     ui->scrollArea_ori->setMinimumSize(SCROLLAREA_WIDTH,SCROLLAREA_HEIGHT);
 
+    //定时更新灰度直方图
+    QTimer::singleShot(0,this,[=](){on_tbtn_updateHist_clicked(false);});
+    QTimer* timer_grayUpdate = new QTimer(this);
+    timer_grayUpdate->setInterval(1000);
+    connect(timer_grayUpdate,&QTimer::timeout,this,[=](){on_tbtn_updateHist_clicked(false);});
+    timer_grayUpdate->start();
+
 }
 void Widget::init_specialConnect()
 {
@@ -147,6 +158,8 @@ void Widget::init_specialConnect()
     ls_opts.push_back(connected = new Connected);
     ls_opts.push_back(contours = new Contours);
     ls_opts.push_back(showeffect = new Showeffect);
+    ui->groupBox_cut->setDisabled(true);
+
 
     for (int i =0;i<14;i++){
         choice_GUI_create(i);
@@ -253,7 +266,8 @@ void Widget::on_action_open_triggered()
     QString fileName = QFileDialog::getOpenFileName(nullptr, "选择文件", ".",	"图像文件(*.png *.jpg *.jpeg *.bmp *.webp)");
 	if (!fileName.isEmpty()) {
         work_files.clear();
-		reload_Resources_ScrollArea(fileName);		
+        reload_Resources_ScrollArea(fileName);
+        ui->groupBox_cut->setDisabled(true);
 	}
 }
 
@@ -288,6 +302,7 @@ void Widget::on_action_works_triggered()
 			return; //取消选择
 		}
 	}
+    ui->groupBox_cut->setDisabled(false);
 	// 即时加载图片
 	reload_Resources_ScrollArea(work_files[work_currentIndex], 1);
 }
@@ -306,7 +321,7 @@ void Widget::on_action_restore_triggered()
 	/*
 	重置所有操作至原始图片
 	*/
-	updateFromRoot();
+    updateFromRoot();
 
     clear_allButtonClicked();
 }
@@ -345,8 +360,8 @@ void Widget::on_action_rotate_group_triggered(QAction* action)
 void Widget::on_action_flip_group_triggered(QAction* action)
 {
     if (action == ui->action_flip0) {
-		img_base->onTriggered_picture_flip0();
-	}
+        img_base->onTriggered_picture_flip0();
+    }
     else if (action == ui->action_flip1) {
 		img_base->onTriggered_picture_flip1();
 	}
@@ -427,11 +442,13 @@ void Widget::on_actionGroupHelp_triggered(QAction* action)
 
 void Widget::on_right_arrow_clicked(bool clicked)
 {
+    Q_UNUSED(clicked);
     ui->lab_img_ori->setPixmap(ui->lab_img->pixmap());
 }
 
 void Widget::on_tbtn_allScreenHist_clicked(bool clicked)
 {
+    Q_UNUSED(clicked);
     QMainWindow* w = new QMainWindow;
     QLabel* lab = new QLabel;
     lab->setPixmap(QPixmap::fromImage(img_base->showGrayHist_AdjArea("灰度直方图",w->height(),w->width())));
@@ -443,6 +460,7 @@ void Widget::on_tbtn_allScreenHist_clicked(bool clicked)
 
 void Widget::on_tbtn_updateHist_clicked(bool clicked)
 {
+    Q_UNUSED(clicked);
     ui->lab_hist->setPixmap(QPixmap::fromImage(img_base->showGrayHist_AdjArea("灰度直方图",ui->lab_hist->height(),ui->lab_hist->width())));
 }
 
@@ -589,6 +607,7 @@ void Widget::on_action_disp_triggered()
 
 void Widget::on_btnWork_next_clicked(bool clicked)
 {
+    Q_UNUSED(clicked);
 	work_prevIndex = work_currentIndex;
 	work_currentIndex++;
 	if (work_currentIndex >= work_files.count()) {
@@ -601,6 +620,7 @@ void Widget::on_btnWork_next_clicked(bool clicked)
 
 void Widget::on_btnWork_prev_clicked(bool clicked)
 {
+    Q_UNUSED(clicked);
 	work_prevIndex = work_currentIndex;
 	work_currentIndex--;
 	if (work_currentIndex < 0) {
@@ -665,6 +685,7 @@ void Widget::on_AvgBlur_edit_returnPressed()
 
 void Widget::on_AvgBlur_btn_clicked(bool clicked)
 {
+    Q_UNUSED(clicked);
     QString str = ui->AvgBlur_edit->text();
     int pos = 0;
     auto state = ui->AvgBlur_edit->validator()->validate(str, pos);
@@ -703,6 +724,7 @@ void Widget::on_GaussBlur_edit_returnPressed()
 
 void Widget::on_GaussBlur_btn_clicked(bool clicked)
 {
+    Q_UNUSED(clicked);
     QString str = ui->GaussBlur_edit->text();
     int pos = 0;
     auto state = ui->GaussBlur_edit->validator()->validate(str, pos);
@@ -727,6 +749,7 @@ void Widget::on_MedianBlur_edit_returnPressed()
 
 void Widget::on_MedianBlur_btn_clicked(bool clicked)
 {
+    Q_UNUSED(clicked);
     QString str = ui->MedianBlur_edit->text();
     int pos = 0;
     auto state = ui->MedianBlur_edit->validator()->validate(str, pos);
@@ -759,6 +782,7 @@ void Widget::on_BiltBlur_edit_returnPressed()
 
 void Widget::on_BiltBlur_btn_clicked(bool clicked)
 {
+    Q_UNUSED(clicked);
     QString str = ui->BiltBlur_edit->text();
     int pos = 0;
     auto state = ui->BiltBlur_edit->validator()->validate(str, pos);
@@ -770,13 +794,11 @@ void Widget::on_BiltBlur_btn_clicked(bool clicked)
 
 void Widget::on_Threshold_slider1_sliderMoved(int value)
 {
-    qInfo()<<"yes 1" << value;
     threshold->onTriggered_slider1_valueChanged_thresholdValue(value);
 }
 
 void Widget::on_Threshold_slider2_sliderMoved(int value)
 {
-    qInfo()<<"yes 2" << value;
     threshold->onTriggered_slider2_valueChanged_maxValue(value);
 }
 
@@ -788,6 +810,7 @@ void Widget::on_Threshold_edit_returnPressed()
 
 void Widget::on_Threshold_btn_clicked(bool clicked)
 {
+    Q_UNUSED(clicked);
     QString str = ui->Threshold_edit->text();
     int pos = 0;
     auto state = ui->Threshold_edit->validator()->validate(str, pos);
@@ -820,6 +843,7 @@ void Widget::on_Morphology_edit_returnPressed()
 
 void Widget::on_Morphology_btn_clicked(bool clicked)
 {
+    Q_UNUSED(clicked);
     QString str = ui->Morphology_edit->text();
     int pos = 0;
     auto state = ui->Morphology_edit->validator()->validate(str, pos);
@@ -873,16 +897,22 @@ void Widget::on_Bright_edit_returnPressed()
     showeffect->onReturnPressed_Edit(lStr);
 }
 
-void Widget::on_gamma_slider1_sliderMoved(int value)
+void Widget::on_Gamma_slider2_sliderMoved(int value)
+{
+    double d_val = value * 1.0 / 10.0;
+    showeffect->onTriggered_slider_valueChange_gamma_C(d_val);
+}
+
+void Widget::on_Gamma_slider1_sliderMoved(int value)
 {
     //将int映射为double
     double d_val = value * 1.0 / 10.0;
     showeffect->onTriggered_slider_valueChange_gamma(d_val);
 }
 
-void Widget::on_gamma_edit_returnPressed()
+void Widget::on_Gamma_edit_returnPressed()
 {
-    QList<QString> lStr = ui->gamma_edit->text().split(" ");
+    QList<QString> lStr = ui->Gamma_edit->text().split(" ");
     showeffect->onReturnPressed_Edit(lStr);
 }
 
@@ -904,11 +934,13 @@ void Widget::on_Contrast_edit_returnPressed()
 
 void Widget::on_Contrast_rbtn1_clicked(bool clicked)
 {
+    Q_UNUSED(clicked);
     showeffect->linear_mode = 0; //灰度图
 }
 
 void Widget::on_Contrast_rbtn2_clicked(bool clicked)
 {
+    Q_UNUSED(clicked);
     showeffect->linear_mode = 1;
 }
 
@@ -973,6 +1005,20 @@ void Widget::on_NdpLinear_rbtn1_clicked(bool clicked)
 void Widget::on_NdpLinear_rbtn2_clicked(bool clicked)
 {
     showeffect->NoneDpLinear_mode = 1;
+}
+
+void Widget::on_NdpNormal_tbtn1_clicked(bool clicked)
+{
+    //常规非线性变换
+    showeffect->NormalNoneDpLinear_mode = 0;
+    showeffect->choice_NormalNoneDpLinearAlgorithm();
+
+}
+
+void Widget::on_NdpNormal_tbtn2_clicked(bool clicked)
+{
+    showeffect->NormalNoneDpLinear_mode = 1;
+    showeffect->choice_NormalNoneDpLinearAlgorithm();
 }
 
 void Widget::clear_allButtonClicked()
@@ -1093,6 +1139,7 @@ void Widget::updateFromIntermediate()
 
 	//恢复完美缩放
 	update_Image(ori_scaledDelta);
+    update_Image_1(ori_scaledDelta);
 
 	//重置缩放比例
 	scaledDelta = ori_scaledDelta;
@@ -1348,8 +1395,8 @@ QWidget* Widget::create_GUIbright()
 
 QWidget* Widget::create_GUIgamma()
 {
-    QRegularExpressionValidator* validator = new QRegularExpressionValidator(QRegularExpression("\\d+"), ui->gamma_edit);
-    ui->gamma_edit->setValidator(validator);
+    QRegularExpressionValidator* validator = new QRegularExpressionValidator(QRegularExpression("\\d+"), ui->Gamma_edit);
+    ui->Gamma_edit->setValidator(validator);
 
     return nullptr;
 }
@@ -1511,77 +1558,6 @@ void Widget::update_Image(double f_scaledDelta)
     ui->scrollArea->setVerticalScrollBarPolicy(needScrollbars ? Qt::ScrollBarAlwaysOn : Qt::ScrollBarAlwaysOff);
 }
 
-
-template<typename T, typename Type>
-QBoxLayout* Widget::createDialog_nSlider_GUItemplate(
-	QList<QSlider*>& ls_slider,
-	QList<T> low,
-	QList<T> high,
-	QList<T> step,
-	QList< QString> objectName,
-	QList< QString> lab_name,
-	QList<std::function<void(int)>> slotFunction,
-	bool edit,
-	const QString& filter,
-	const QString& text,
-	Type* t
-){
-	QVBoxLayout* vlayout = new QVBoxLayout;
-	for (int i = 0; i < ls_slider.size(); i++) {
-		ls_slider[i] = new QSlider(Qt::Horizontal);
-		ls_slider[i]->setRange(low[i], high[i]);
-		ls_slider[i]->setSingleStep(step[i]);
-		ls_slider[i]->setObjectName(objectName[i]);
-		ls_slider[i]->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-
-		//传递一个槽函数
-		connect(ls_slider[i], &QSlider::sliderMoved,
-			this, slotFunction[i]);
-
-		QHBoxLayout* hlayout = new QHBoxLayout;
-		hlayout->addWidget(new QLabel(lab_name[i]));
-		hlayout->addWidget(ls_slider[i]);
-
-		vlayout->addLayout(hlayout);
-	}	
-	//----------------------------
-	//具有可输入功能，添加一个输入框
-	if (edit) {
-		vlayout->addSpacing(10);
-		vlayout->addLayout(create_Edit_hLayout(filter, text, t));
-	}
-	return vlayout;
-}
-
-QBoxLayout* Widget::createDialog_nComBox_GUItemplate(
-	QList<QComboBox*>& ls_combox,
-	QList<QStringList> ls_item,
-	QList< QString> objectName,
-	QList< QString> lab_name,
-	QList<std::function<void(int)>> slotFunction)
-{
-	QVBoxLayout* vlayout = new QVBoxLayout;
-	for (int i = 0; i < ls_combox.size(); i++) {
-		ls_combox[i] = new QComboBox;
-		ls_combox[i]->setEditable(false);
-		for (auto& item : ls_item[i]) {
-			ls_combox[i]->addItem(item);
-		}
-		ls_combox[i]->setObjectName(objectName[i]);
-		ls_combox[i]->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-
-		//传递一个槽函数
-		connect(ls_combox[i], &QComboBox::activated,
-			this, slotFunction[i]);
-
-		QHBoxLayout* hlayout = new QHBoxLayout;
-		hlayout->addWidget(new QLabel(lab_name[i]));
-		hlayout->addWidget(ls_combox[i]);
-
-		vlayout->addLayout(hlayout);
-	}
-	return vlayout;
-}
 
 /*
 -----------------------------------------------------------

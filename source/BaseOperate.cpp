@@ -152,35 +152,70 @@ void BaseOperate::drawGrayHist(const QString& title, cv::Mat mt) {
     show_wid->show();
 }
 
-QImage BaseOperate::showGrayHist_AdjArea(const QString &title,int height,int width, cv::Mat mt)
+QImage BaseOperate::showGrayHist_AdjArea(const QString &title,int height,int width)
 {
-    cv::Mat hist;
-    cv::Mat grayMt;
-    cv::cvtColor(get()->res->curr_mt, grayMt, cv::ColorConversionCodes::COLOR_BGR2GRAY);
-    if (mt.empty()) {
-        hist = getHist(grayMt); //其GRAY
-    }
-    else {
-        hist = getHist(mt); //传入的图片
-    }
-
+    //直方图的宽高，由外部传入
     auto histHeight = height;
     auto histWidth = width;
-    //创建直方图
-    cv::Mat histogram(histHeight, histWidth, CV_8UC3, cv::Scalar(255, 255, 255));
+    cv::Mat histogram(histHeight, histWidth, CV_8UC3, cv::Scalar(255, 255, 255)); //白色背景
 
-    auto x_oneWidth = cvRound((double)histWidth / 256);
+    cv::Mat hist1,hist2,hist3;
+    cv::Mat hist;
+    std::vector<cv::Mat> channels;
+    cv::Mat gray;
+    const cv::Mat pp = get()->res->curr_mt;
+    if (pp.channels() == 1 || pp.type() == CV_8UC1){
+        //灰度图
+        gray = pp;
+        hist = getHist(gray);
+        //灰度图只能获取灰度直方图
 
-    //归一化直方图
-    cv::normalize(hist, hist, 0, histHeight, cv::NORM_MINMAX);
-    //[0,255]
-    for (int i = 0; i < 256; i++) {
-        auto x_oneHeight = cvRound(hist.at<float>(i));
-        cv::rectangle(histogram, cv::Point(i * x_oneWidth, histHeight), cv::Point(i * x_oneWidth + x_oneWidth - 1, histHeight - x_oneHeight), cv::Scalar(0, 0, 0));
+        cv::normalize(hist, hist, 0, histHeight, cv::NORM_MINMAX);
+
+        auto x_oneWidth = cvRound((double)histWidth / 256);
+        for (int i = 0; i < 256; i++) {
+            auto x_oneHeight = cvRound(hist.at<float>(i));
+            cv::rectangle(histogram,
+                          cv::Point(i * x_oneWidth, histHeight),
+                          cv::Point(i * x_oneWidth + x_oneWidth - 1, histHeight - x_oneHeight),
+                          cv::Scalar(0,0,0));
+        }
     }
+    else{
+        //彩色图片转换为灰度图
+        cv::split(pp,channels);
+        hist1 = getHist(channels[0]);
+        hist2 = getHist(channels[1]);
+        hist3 = getHist(channels[2]);
+        //分别获取RGB分量的直方图
+
+        cv::normalize(hist1, hist1, 0, histHeight, cv::NORM_MINMAX);
+        cv::normalize(hist2, hist2, 0, histHeight, cv::NORM_MINMAX);
+        cv::normalize(hist3, hist3, 0, histHeight, cv::NORM_MINMAX);
+
+        auto x_oneWidth = cvRound((double)histWidth / 256);
+
+        for (int i = 0; i < 256; i++) {
+            auto x_oneHeight_B = cvRound(hist1.at<float>(i));
+            auto x_oneHeight_G = cvRound(hist2.at<float>(i));
+            auto x_oneHeight_R = cvRound(hist3.at<float>(i));
+            cv::rectangle(histogram,
+                          cv::Point(i * x_oneWidth, histHeight),
+                          cv::Point(i * x_oneWidth + x_oneWidth - 1, histHeight - x_oneHeight_B),
+                          cv::Scalar(255,0,0));
+            cv::rectangle(histogram,
+                          cv::Point(i * x_oneWidth, histHeight),
+                          cv::Point(i * x_oneWidth + x_oneWidth - 1, histHeight - x_oneHeight_G),
+                          cv::Scalar(0,255,0));
+            cv::rectangle(histogram,
+                          cv::Point(i * x_oneWidth, histHeight),
+                          cv::Point(i * x_oneWidth + x_oneWidth - 1, histHeight - x_oneHeight_R),
+                          cv::Scalar(0,0,255));
+        }
+    }
+
     return Mat2QImage(histogram);
 }
-
 
 void BaseOperate::showEqualizedBGRImage()
 {

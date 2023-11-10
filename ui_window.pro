@@ -70,6 +70,16 @@ DEPENDPATH += $$PWD/../../../Tools/openCV/openCV/build/include
 DESTDIR = F:/code/simplePS_work/simpleIPS
 
 DISTFILES += \
+    resource/Images/103.png \
+    resource/Images/104.png \
+    resource/Images/105.png \
+    resource/Images/106.png \
+    resource/Images/107.png \
+    resource/Images/113.png \
+    resource/Images/114.png \
+    resource/Images/115.png \
+    resource/Images/116.png \
+    resource/Images/122.png \
     resource/assert/0.png \
     resource/assert/2.png \
     resource/assert/avg.png \
@@ -123,12 +133,9 @@ DISTFILES += \
     resource/testImages/115.png \
     resource/testImages/116.png \
     resource/testImages/122.png \
-    resource/testImages/批量图片测试 \
-    resource/如何添加一个新功能.md \
-    resource/窗口结构.png
 
 
-
+# vld 配置
 win32:CONFIG(release, debug|release): LIBS += -L$$PWD/'../../../vld/Visual Leak Detector/lib/Win64/' -lvl
 else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/'../../../vld/Visual Leak Detector/lib/Win64/' -lvld
 

@@ -51,16 +51,11 @@ Widget::~Widget()
 {
 	delete img_base;
 	img_base = nullptr;
-	if (op) {
-		delete op;
-		op = nullptr;
-	}
 
-//    auto capture_Widget = CaptureWidget::get();
-//    if (capture_Widget) {
-//        delete capture_Widget;
-//        capture_Widget = nullptr;
-//    }
+    for (auto& x:ls_opts){
+        delete x;
+        x = nullptr;
+    }
 
 	while (!undo_sta.empty()) {
 		undo_sta.pop();
@@ -145,35 +140,23 @@ void Widget::init_Label()
 }
 void Widget::init_specialConnect()
 {
-    //切换不同的具体操作时，参数调整框更改。
-    QHBoxLayout* lay_adj = new QHBoxLayout;
-    lay_adj->addWidget(choice_GUI_create(0)); //默认第一个窗口AvgBlur
-    ui->groupBox_adj->setLayout(lay_adj);
-    ui->groupBox_adj->setTitle(QString("请选择具体操作"));
-    ui->groupBox_adj->setDisabled(true);//睡眠Widget
+    //便于管理
+    ls_opts.push_back(blur = new Blur);
+    ls_opts.push_back(threshold = new Threshold);
+    ls_opts.push_back(morphology = new Morphology);
+    ls_opts.push_back(connected = new Connected);
+    ls_opts.push_back(contours = new Contours);
+    ls_opts.push_back(showeffect = new Showeffect);
+
+    for (int i =0;i<14;i++){
+        choice_GUI_create(i);
+    }
+    ui->adj_stackedWidget->setCurrentWidget(ui->adjPage_first);
     connect(this, &Widget::signal_choiceToolButton, this, [=](const QString& name,int id) {
-        ui->groupBox_adj->setDisabled(false); //激活Widget
         ui->groupBox_adj->setTitle(name);
-        QHBoxLayout* hLayout = qobject_cast<QHBoxLayout*>(ui->groupBox_adj->layout());//QHBoxLayout
-        QLayoutItem* item;
-        while ((item = hLayout->takeAt(0)) != nullptr) {
-            QWidget* wid = item->widget();
-            if (wid) {
-                delete wid;
-                wid = nullptr;
-            }
-        }
-        delete hLayout;
-        hLayout = nullptr;
-
-        //根据id来创建新的GUI
-        QHBoxLayout* lay_adj = new QHBoxLayout;
-        lay_adj->addWidget(choice_GUI_create(id));
-        ui->groupBox_adj->setLayout(lay_adj);
-        ui->groupBox_adj->setVisible(true);
+        clearAllAdjPageWidgetValue(); //清除所有页面的操作
+        ui->adj_stackedWidget->setCurrentIndex(id); //切换当前页面
     });
-
-
 
     //更新图片的时候，图片信息修改
     connect(res, &Res::signal_updateImage, this, [=]() {
@@ -224,7 +207,24 @@ void Widget::resizeEvent(QResizeEvent* ev)
 
 
 void Widget::on_buttonGroup_everyOpeartions_choice(Object* op,QButtonGroup* btn_group,QAbstractButton* btn){
-	op->current_choice = btn_group->id(btn);
+    if (op == blur){
+        blur->current_choice = btn_group->id(btn);
+    }
+    else if (op == threshold){
+        threshold->current_choice = btn_group->id(btn);
+    }
+    else if (op == morphology){
+        morphology->current_choice = btn_group->id(btn);
+    }
+    else if (op == connected){
+        connected->current_choice = btn_group->id(btn);
+    }
+    else if (op == contours){
+        contours->current_choice = btn_group->id(btn);
+    }
+    else if (op == showeffect){
+        showeffect->current_choice = btn_group->id(btn);
+    }
 
 	/*
 	* 当点击具体操作的时候，判断是否处于加工状态：
@@ -320,7 +320,6 @@ void Widget::on_action_draw_triggered()
 
 void Widget::on_colorDialog_triggered(const QColor& color)
 {
-	Contours* contours = dynamic_cast<Contours*>(op);
 	//选择颜色
 	contours->onTriggered_Color_currentTextChanged_contoursColor(color);
 }
@@ -459,18 +458,12 @@ void Widget::on_action_equGray_triggered()
 
 void Widget::on_toolbox_side_currentChanged(int value)
 {
-    //调整栏为只读状态
-    ui->groupBox_adj->setTitle(QString("请选择具体操作"));
-    ui->groupBox_adj->setDisabled(true);
+    ui->adj_stackedWidget->setCurrentWidget(ui->adjPage_first);
 
     preToolBoxIndex = curToolBoxIndex;
     curToolBoxIndex = value;
 
-    if (op) {
-        delete op;
-        op = nullptr;
-    }
-    //	清除之前页面上的选项
+    //	清除之前页面上的按钮点击状态
     auto btns = btngroups[preToolBoxIndex]->buttons();
     btngroups[preToolBoxIndex]->setExclusive(false);
     for (auto& x : btns) {
@@ -628,6 +621,358 @@ void Widget::on_lab_img_ori_customContextMenuRequested(const QPoint &pos)
 {
     Q_UNUSED(pos);
     context_menu__->exec(QCursor::pos());
+}
+
+void Widget::clearAllAdjPageWidgetValue()
+{
+    for (int i=0;i<ui->adj_stackedWidget->count();i++){
+        QWidget* widget = ui->adj_stackedWidget->widget(i);
+        for (auto child : widget->findChildren<QSlider*>()) {
+            child->setValue(0);
+        }
+        for (auto child : widget->findChildren<QComboBox*>()) {
+            child->setCurrentIndex(0);
+        }
+        for (auto child : widget->findChildren<QLineEdit*>()) {
+            child->clear();
+        }
+    }
+}
+
+void Widget::on_AvgBlur_slider1_sliderMoved(int value)
+{
+    if (ui->AvgBlur_slider2->value() == ui->AvgBlur_slider2->minimum() && ui->AvgBlur_slider3->value() == ui->AvgBlur_slider3->minimum()) {
+        blur->anchorX = blur->anchorY = blur->avg_Ksize / 2;
+    }
+    blur->onTriggered_slider1_valueChange_avgBlur(value);
+}
+
+void Widget::on_AvgBlur_slider2_sliderMoved(int value)
+{
+    blur->onTriggered_slider2_valueChange_avgBlur(value);
+}
+
+void Widget::on_AvgBlur_slider3_sliderMoved(int value)
+{
+    blur->onTriggered_slider3_valueChange_avgBlur(value);
+}
+
+void Widget::on_AvgBlur_edit_returnPressed()
+{
+    QList<QString> lStr = ui->AvgBlur_edit->text().split(" ");
+    blur->onReturnPressed_Edit(lStr);
+}
+
+void Widget::on_AvgBlur_btn_clicked(bool clicked)
+{
+    QString str = ui->AvgBlur_edit->text();
+    int pos = 0;
+    auto state = ui->AvgBlur_edit->validator()->validate(str, pos);
+    //必须首先合法
+    if (state == QValidator::Acceptable) {
+        on_AvgBlur_edit_returnPressed();
+    }
+}
+
+void Widget::on_GaussBlur_slider1_sliderMoved(int value)
+{
+    if (value % 2 == 0) {
+        value += 1;
+    }
+    if (ui->GaussBlur_slider2->value() == ui->GaussBlur_slider2->minimum() && ui->GaussBlur_slider3->value() == ui->GaussBlur_slider3->minimum()) {
+        blur->sigmaX = blur->sigmaY = blur->gas_Ksize / 2;
+    }
+    blur->onTriggered_slider1_valueChange_gaussianBlur(value);
+}
+
+void Widget::on_GaussBlur_slider2_sliderMoved(int value)
+{
+    blur->onTriggered_slider2_valueChange_gaussianBlur(value);
+}
+
+void Widget::on_GaussBlur_slider3_sliderMoved(int value)
+{
+    blur->onTriggered_slider3_valueChange_gaussianBlur(value);
+}
+
+void Widget::on_GaussBlur_edit_returnPressed()
+{
+    QList<QString> lStr = ui->GaussBlur_edit->text().split(" ");
+    blur->onReturnPressed_Edit(lStr);
+}
+
+void Widget::on_GaussBlur_btn_clicked(bool clicked)
+{
+    QString str = ui->GaussBlur_edit->text();
+    int pos = 0;
+    auto state = ui->GaussBlur_edit->validator()->validate(str, pos);
+    //必须首先合法
+    if (state == QValidator::Acceptable) {
+        on_GaussBlur_edit_returnPressed();
+    }
+}
+
+void Widget::on_MedianBlur_slider1_sliderMoved(int value)
+{
+    if (value % 2 == 0)
+        value += 1;
+    blur->onTriggered_slider_valueChange_medianBlur(value);
+}
+
+void Widget::on_MedianBlur_edit_returnPressed()
+{
+    QList<QString> lStr = ui->MedianBlur_edit->text().split(" ");
+    blur->onReturnPressed_Edit(lStr);
+}
+
+void Widget::on_MedianBlur_btn_clicked(bool clicked)
+{
+    QString str = ui->MedianBlur_edit->text();
+    int pos = 0;
+    auto state = ui->MedianBlur_edit->validator()->validate(str, pos);
+    //必须首先合法
+    if (state == QValidator::Acceptable) {
+        on_MedianBlur_edit_returnPressed();
+    }
+}
+
+void Widget::on_BiltBlur_slider1_sliderMoved(int value)
+{
+    blur->onTriggered_slider1_valueChange_bilateralBlur(value);
+}
+
+void Widget::on_BiltBlur_slider2_sliderMoved(int value)
+{
+    blur->onTriggered_slider2_valueChange_bilateralBlur(value);
+}
+
+void Widget::on_BiltBlur_slider3_sliderMoved(int value)
+{
+    blur->onTriggered_slider3_valueChange_bilateralBlur(value);
+}
+
+void Widget::on_BiltBlur_edit_returnPressed()
+{
+    QList<QString> lStr = ui->BiltBlur_edit->text().split(" ");
+    blur->onReturnPressed_Edit(lStr);
+}
+
+void Widget::on_BiltBlur_btn_clicked(bool clicked)
+{
+    QString str = ui->BiltBlur_edit->text();
+    int pos = 0;
+    auto state = ui->BiltBlur_edit->validator()->validate(str, pos);
+    //必须首先合法
+    if (state == QValidator::Acceptable) {
+        on_BiltBlur_edit_returnPressed();
+    }
+}
+
+void Widget::on_Threshold_slider1_sliderMoved(int value)
+{
+    qInfo()<<"yes 1" << value;
+    threshold->onTriggered_slider1_valueChanged_thresholdValue(value);
+}
+
+void Widget::on_Threshold_slider2_sliderMoved(int value)
+{
+    qInfo()<<"yes 2" << value;
+    threshold->onTriggered_slider2_valueChanged_maxValue(value);
+}
+
+void Widget::on_Threshold_edit_returnPressed()
+{
+    QList<QString> lStr = ui->Threshold_edit->text().split(" ");
+    threshold->onReturnPressed_Edit(lStr);
+}
+
+void Widget::on_Threshold_btn_clicked(bool clicked)
+{
+    QString str = ui->Threshold_edit->text();
+    int pos = 0;
+    auto state = ui->Threshold_edit->validator()->validate(str, pos);
+    //必须首先合法
+    if (state == QValidator::Acceptable) {
+        on_Threshold_edit_returnPressed();
+    }
+}
+
+void Widget::on_Morphology_slider1_sliderMoved(int value)
+{
+    morphology->onTriggered_slider1_valueChanged_kernel(value);
+}
+
+void Widget::on_Morphology_slider2_sliderMoved(int value)
+{
+    morphology->onTriggered_slider2_valueChanged_anchorX(value);
+}
+
+void Widget::on_Morphology_slider3_sliderMoved(int value)
+{
+    morphology->onTriggered_slider3_valueChanged_anchorY(value);
+}
+
+void Widget::on_Morphology_edit_returnPressed()
+{
+    QList<QString> lStr = ui->Morphology_edit->text().split(" ");
+    morphology->onReturnPressed_Edit(lStr);
+}
+
+void Widget::on_Morphology_btn_clicked(bool clicked)
+{
+    QString str = ui->Morphology_edit->text();
+    int pos = 0;
+    auto state = ui->Morphology_edit->validator()->validate(str, pos);
+    //必须首先合法
+    if (state == QValidator::Acceptable) {
+        on_Morphology_edit_returnPressed();
+    }
+}
+
+void Widget::on_Connected_cbx1_activated(int index)
+{
+    connected->onTriggered_Comb2_currentTextChanged_ccltype(index);
+}
+
+void Widget::on_Connected_cbx2_activated(int index)
+{
+    connected->onTriggered_Comb2_currentTextChanged_ccltype(index);
+}
+
+void Widget::on_Contours_cbx1_activated(int index)
+{
+    contours->onTriggered_Comb1_currentTextChanged_contoursMode(index);
+}
+
+void Widget::on_Contours_cbx2_activated(int index)
+{
+    contours->onTriggered_Comb2_currentTextChanged_contoursMethod(index);
+}
+
+void Widget::on_Contours_cbx3_activated(int index)
+{
+    contours->onTriggered_Comb3_currentTextChanged_contoursThick(index);
+}
+
+void Widget::on_Bright_slider1_sliderMoved(int value)
+{
+    ui->Bright_slider2->setValue(ui->Bright_slider2->minimum());
+    showeffect->onTriggered_slider_valueChange_brighten(value);
+}
+
+void Widget::on_Bright_slider2_sliderMoved(int value)
+{
+    value = -value;
+    ui->Bright_slider1->setValue(ui->Bright_slider1->minimum());
+    showeffect->onTriggered_slider_valueChange_brighten(value);
+}
+
+void Widget::on_Bright_edit_returnPressed()
+{
+    QList<QString> lStr = ui->Bright_edit->text().split(" ");
+    showeffect->onReturnPressed_Edit(lStr);
+}
+
+void Widget::on_gamma_slider1_sliderMoved(int value)
+{
+    //将int映射为double
+    double d_val = value * 1.0 / 10.0;
+    showeffect->onTriggered_slider_valueChange_gamma(d_val);
+}
+
+void Widget::on_gamma_edit_returnPressed()
+{
+    QList<QString> lStr = ui->gamma_edit->text().split(" ");
+    showeffect->onReturnPressed_Edit(lStr);
+}
+
+void Widget::on_Contrast_slider1_sliderMoved(int value)
+{
+    showeffect->onTriggered_slider_valueChange_linearg1(value);
+}
+
+void Widget::on_Contrast_slider2_sliderMoved(int value)
+{
+    showeffect->onTriggered_slider_valueChange_linearg2(value);
+}
+
+void Widget::on_Contrast_edit_returnPressed()
+{
+    QList<QString> lStr = ui->Contrast_edit->text().split(" ");
+    showeffect->onReturnPressed_Edit(lStr);
+}
+
+void Widget::on_Contrast_rbtn1_clicked(bool clicked)
+{
+    showeffect->linear_mode = 0; //灰度图
+}
+
+void Widget::on_Contrast_rbtn2_clicked(bool clicked)
+{
+    showeffect->linear_mode = 1;
+}
+
+void Widget::on_GrayWindow_slider1_sliderMoved(int value)
+{
+    showeffect->onTriggered_slider_valueChange_GaryWindowF1(value);
+}
+
+void Widget::on_GrayWindow_slider2_sliderMoved(int value)
+{
+    showeffect->onTriggered_slider_valueChange_GaryWindowF2(value);
+}
+
+void Widget::on_GrayWindow_edit_returnPressed()
+{
+    QList<QString> lStr = ui->GrayWindow_edit->text().split(" ");
+    showeffect->onReturnPressed_Edit(lStr);
+}
+
+void Widget::on_DpLinear_slider1_sliderMoved(int value)
+{
+    showeffect->onTriggered_slider_valueChange_DynamicA(value);
+}
+
+void Widget::on_DpLinear_slider2_sliderMoved(int value)
+{
+    showeffect->onTriggered_slider_valueChange_DynamicB(value);
+}
+
+void Widget::on_DpLinear_edit_returnPressed()
+{
+    QList<QString> lStr = ui->DpLinear_edit->text().split(" ");
+    showeffect->onReturnPressed_Edit(lStr);
+}
+
+void Widget::on_DpLinear_rbtn1_clicked(bool clicked)
+{
+    showeffect->DpLinear_mode = 0; //灰度图
+}
+
+void Widget::on_DpLinear_rbtn2_clicked(bool clicked)
+{
+    showeffect->DpLinear_mode = 1;
+}
+
+void Widget::on_NdpLinear_slider1_sliderMoved(int value)
+{
+    showeffect->onTriggered_slider_valueChange_NoneDynamicC(value);
+}
+
+void Widget::on_NdpLinear_edit_returnPressed()
+{
+    QList<QString> lStr = ui->NdpLinear_edit->text().split(" ");
+    showeffect->onReturnPressed_Edit(lStr);
+}
+
+void Widget::on_NdpLinear_rbtn1_clicked(bool clicked)
+{
+    showeffect->NoneDpLinear_mode = 0; //灰度图
+}
+
+void Widget::on_NdpLinear_rbtn2_clicked(bool clicked)
+{
+    showeffect->NoneDpLinear_mode = 1;
 }
 
 void Widget::clear_allButtonClicked()
@@ -821,11 +1166,8 @@ void Widget::init_ToolBoxSide()
 	btngroup_blur->setExclusive(true);
 	//连接信号
 	connect(btngroup_blur, &QButtonGroup::buttonClicked, this, [=](QAbstractButton* btn) {
-		//点击按钮创建抽象操作类，运行时动态加载
-		if (!op) {
-			op = new Blur();
-		}
-		on_buttonGroup_everyOpeartions_choice(op, btngroup_blur, btn);
+        //点击按钮创建抽象操作类，运行时动态加载
+        on_buttonGroup_everyOpeartions_choice(blur, btngroup_blur, btn);
 		});
 
     btngroup_blur->addButton(ui->avg_blur_btn,BLUR::Average);
@@ -837,11 +1179,8 @@ void Widget::init_ToolBoxSide()
 	btngroups.push_back(btngroup_threshold = new QButtonGroup(this));
 	btngroup_threshold->setExclusive(true);
 	//连接信号
-	connect(btngroup_threshold, &QButtonGroup::buttonClicked, this, [=](QAbstractButton* btn) {
-		if (!op) {
-			op = new Threshold();
-		}
-		on_buttonGroup_everyOpeartions_choice(op, btngroup_threshold, btn);
+    connect(btngroup_threshold, &QButtonGroup::buttonClicked, this, [=](QAbstractButton* btn) {
+        on_buttonGroup_everyOpeartions_choice(threshold, btngroup_threshold, btn);
 		});
 
     btngroup_threshold->addButton(ui->two_threshold_btn,THRESHOLD::Binary);
@@ -855,11 +1194,8 @@ void Widget::init_ToolBoxSide()
 	btngroups.push_back(btngroup_form = new QButtonGroup(this));
 	btngroup_form->setExclusive(true);
 	//连接信号
-	connect(btngroup_form, &QButtonGroup::buttonClicked, this, [=](QAbstractButton* btn) {
-		if (!op) {
-			op = new Morphology();
-		}
-		on_buttonGroup_everyOpeartions_choice(op, btngroup_form, btn);
+    connect(btngroup_form, &QButtonGroup::buttonClicked, this, [=](QAbstractButton* btn) {
+        on_buttonGroup_everyOpeartions_choice(morphology, btngroup_form, btn);
         });
 
     btngroup_form->addButton(ui->pengzhang_mor_btn,FORM::Erode);
@@ -875,10 +1211,7 @@ void Widget::init_ToolBoxSide()
 	btngroup_connected->setExclusive(true);//互斥
 
 	connect(btngroup_connected, &QButtonGroup::buttonClicked, this, [=](QAbstractButton* btn) {
-		if (!op) {
-			op = new Connected();
-		}
-		on_buttonGroup_everyOpeartions_choice(op, btngroup_connected, btn);
+        on_buttonGroup_everyOpeartions_choice(connected, btngroup_connected, btn);
 		});
 
     btngroup_connected->addButton(ui->one_connected_btn,CONNECTED::CONNECTED_TYPE1);
@@ -888,11 +1221,8 @@ void Widget::init_ToolBoxSide()
 	btngroups.push_back(btngroup_contours = new QButtonGroup(this));
 	btngroup_contours->setExclusive(true);
 
-	connect(btngroup_contours, &QButtonGroup::buttonClicked, this, [=](QAbstractButton* btn) {
-		if (!op) {
-			op = new Contours();
-		}
-		on_buttonGroup_everyOpeartions_choice(op, btngroup_contours, btn);
+    connect(btngroup_contours, &QButtonGroup::buttonClicked, this, [=](QAbstractButton* btn) {
+        on_buttonGroup_everyOpeartions_choice(contours, btngroup_contours, btn);
 		});
 
     btngroup_contours->addButton(ui->draw_contours_btn,CONTOURS::CONTOURS_TYPE1);
@@ -902,10 +1232,7 @@ void Widget::init_ToolBoxSide()
 	btngroup_show->setExclusive(true);
 
 	connect(btngroup_show, &QButtonGroup::buttonClicked, this, [=](QAbstractButton* btn) {
-		if (!op) {
-			op = new Showeffect();
-		}
-		on_buttonGroup_everyOpeartions_choice(op, btngroup_show, btn);
+        on_buttonGroup_everyOpeartions_choice(showeffect, btngroup_show, btn);
 		});
 
     btngroup_show->addButton(ui->bright_effect_btn,SHOW::LIGHT);
@@ -953,508 +1280,110 @@ void Widget::init_CustomStatusBar()
 
 QWidget* Widget::create_GUIAvgBlur()
 {
-	//----------------------------------------------------------
-	Blur* blur = dynamic_cast<Blur*>(op);
-	ls_slider_blur.resize(3);
-	std::function<void(int)> funAvgBlur_slider1 = [=](int value) {
-		if (ls_slider_blur[1]->value() == ls_slider_blur[1]->minimum() && ls_slider_blur[2]->value() == ls_slider_blur[2]->minimum()) {
-			blur->anchorX = blur->anchorY = blur->avg_Ksize / 2;
-		}
-		blur->onTriggered_slider1_valueChange_avgBlur(value);
-	};
+    QRegularExpressionValidator* validator = new QRegularExpressionValidator(QRegularExpression("\\d+\\s\\d+\\s\\d+"), ui->AvgBlur_edit);
+    ui->AvgBlur_edit->setValidator(validator);
 
-	std::function<void(int)> funAvgBlur_slider2 = [=](int value) {
-		blur->onTriggered_slider2_valueChange_avgBlur(value);
-	};
-
-	std::function<void(int)> funAvgBlur_slider3 = [=](int value) {
-		blur->onTriggered_slider3_valueChange_avgBlur(value);
-	};
-
-	auto w = new QWidget;
-	w->setLayout(
-		createDialog_nSlider_GUItemplate<int, Blur*>(
-			ls_slider_blur,
-			QList<int>() << 1 << 1 << 1,
-			QList<int>() << 30 << 30 << 30,
-			QList<int>() << 1 << 1 << 1,
-			QList<QString>() << "Kernel_slider" << "x_slider" << "y_slider",
-			QList<QString>() << "kernel" << "sigmaX" << "sigmaY",
-			QList< std::function<void(int)>>() << funAvgBlur_slider1 << funAvgBlur_slider2 << funAvgBlur_slider3,
-			true, "\\d+\\s\\d+\\s\\d+", "KSize X Y", &blur)
-	);
-	return w;
+    return nullptr;
 }
 
 QWidget* Widget::create_GUIGaussian()
 {
-	Blur* blur = dynamic_cast<Blur*>(op);
-	//----------------------------------------------------------
-	//高斯滤波
-	ls_slider_gaussian.resize(3);
-	std::function<void(int)> funGaussian_slider1 = [=](int value) {
-		if (value % 2 == 0) {
-			value += 1;
-		}
-		if (ls_slider_gaussian[1]->value() == ls_slider_gaussian[1]->minimum() && ls_slider_gaussian[2]->value() == ls_slider_gaussian[2]->minimum()) {
-			blur->sigmaX = blur->sigmaY = blur->gas_Ksize / 2;
-		}
-		blur->onTriggered_slider1_valueChange_gaussianBlur(value);
-	};
+    QRegularExpressionValidator* validator = new QRegularExpressionValidator(QRegularExpression("\\d+\\s\\d+\\s\\d+"), ui->GaussBlur_edit);
+    ui->GaussBlur_edit->setValidator(validator);
 
-	std::function<void(int)> funGaussian_slider2 = [=](int value) {
-		blur->onTriggered_slider2_valueChange_gaussianBlur(value);
-	};
-
-	std::function<void(int)> funGaussian_slider3 = [=](int value) {
-		blur->onTriggered_slider3_valueChange_gaussianBlur(value);
-	};
-
-
-	auto w = new QWidget;
-	w->setLayout(
-		createDialog_nSlider_GUItemplate<int, Blur*>(
-			ls_slider_gaussian,
-			QList<int>() << 1 << 1 << 1,
-			QList<int>() << 41 << 41 << 40,
-			QList<int>() << 1 << 1 << 1,
-			QList<QString>() << "Kernel_slider" << "x_slider" << "y_slider",
-			QList<QString>() << "kernel" << "sigmaX" << "sigmaY",
-			QList< std::function<void(int)>>() << funGaussian_slider1 << funGaussian_slider2 << funGaussian_slider3,
-			true, "\\d+\\s\\d+\\s\\d+", "KSize X Y", &blur)
-	);
-	return w;
+    return nullptr;
 }
 
 QWidget* Widget::create_GUIMedian()
 {
-	Blur* blur = dynamic_cast<Blur*>(op);
-	//----------------------------------------------------------
-	//中值滤波
-	ls_slider_median.resize(1);
-	std::function<void(int)> funMedian = [=](int value) {
-		if (value % 2 == 0)
-			value += 1;
-		blur->onTriggered_slider_valueChange_medianBlur(value); };
+    QRegularExpressionValidator* validator = new QRegularExpressionValidator(QRegularExpression("\\d+"), ui->MedianBlur_edit);
+    ui->MedianBlur_edit->setValidator(validator);
 
-	auto w = new QWidget;
-	w->setLayout(createDialog_nSlider_GUItemplate<int, Blur*>(
-		ls_slider_median,
-		QList<int>() << 1,
-		QList<int>() << MEDIAN_BLUR_MAX,
-		QList<int>() << 2,
-		QList<QString>() << "median_slider",
-		QList<QString>() << "KSize",
-		QList< std::function<void(int)>>() << funMedian,
-		true, "\\d+", "KSize", &blur)
-	);
-	return w;
+    return nullptr;
 }
 
 QWidget* Widget::create_GUIBilateral()
 {
-	Blur* blur = dynamic_cast<Blur*>(op);
-	//----------------------------------------------------------
-	//双边滤波
-	ls_slider_bilateral.resize(3);
-	std::function<void(int)> funBilateral_slider1 = [=](int value) {
-		blur->onTriggered_slider1_valueChange_bilateralBlur(value);
-	};
+    QRegularExpressionValidator* validator = new QRegularExpressionValidator(QRegularExpression("\\d+\\s\\d+\\s\\d+"), ui->BiltBlur_edit);
+    ui->BiltBlur_edit->setValidator(validator);
 
-	std::function<void(int)> funBilateral_slider2 = [=](int value) {
-		blur->onTriggered_slider2_valueChange_bilateralBlur(value);
-	};
-
-	std::function<void(int)> funBilateral_slider3 = [=](int value) {
-		blur->onTriggered_slider3_valueChange_bilateralBlur(value);
-	};
-
-	auto w = new QWidget;
-	w->setLayout(createDialog_nSlider_GUItemplate<int, Blur*>(
-		ls_slider_bilateral,
-		QList<int>() << 1 << 0 << 0,
-		QList<int>() << 50 << 120 << 150,
-		QList<int>() << 1 << 1 << 1,
-		QList<QString>() << "bilateral_slider" << "sigma_Color" << "sigma_Space",
-		QList<QString>() << "ksize" << "sigmaX" << "sigmaY",
-		QList< std::function<void(int)>>() << funBilateral_slider1 << funBilateral_slider2 << funBilateral_slider3,
-		true, "\\d+\\s\\d+\\s\\d+", "bin_d sigmaColor sigmaSpace", &blur)
-	);
-	return w;
+    return nullptr;
 }
 
 QWidget* Widget::create_GUIThreshold()
 {
-	Threshold* threshold = dynamic_cast<Threshold*>(op);
-	//----------------------------------------------------------
-	//阈值化
-	ls_slider_threshold.resize(2);
-	std::function<void(int)> funThreshold_slider1 = [=](int value) {
-		threshold->onTriggered_slider1_valueChanged_thresholdValue(value);
-	};
+    QRegularExpressionValidator* validator = new QRegularExpressionValidator(QRegularExpression("\\d+\\s\\d+"), ui->Threshold_edit);
+    ui->Threshold_edit->setValidator(validator);
 
-	std::function<void(int)> funThreshold_slider2 = [=](int value) {
-		threshold->onTriggered_slider2_valueChanged_maxValue(value);
-	};
-
-	auto w = new QWidget;
-	w->setLayout(createDialog_nSlider_GUItemplate<int, Threshold*>(
-		ls_slider_threshold,
-		QList<int>() << 0 << 0,
-		QList<int>() << 255 << 255,
-		QList<int>() << 1 << 1,
-		QList<QString>() << "threshold_value" << "maxValue",
-		QList<QString>() << "threshold" << "maxval",
-		QList< std::function<void(int)>>() << funThreshold_slider1 << funThreshold_slider2,
-		true, "\\d+\\s\\d+", "threshold_value maxVal", &threshold)
-	);
-	return w;
+    return nullptr;
 }
 
 QWidget* Widget::create_GUIMorphology()
 {
-	Morphology* morphology = dynamic_cast<Morphology*>(op);
-	//----------------------------------------------------------
-	//形态学
-	ls_slider_morphology.resize(3);
-	std::function<void(int)> funMorphology_slider1 = [=](int value) {
-		morphology->onTriggered_slider1_valueChanged_kernel(value);
-	};
+    QRegularExpressionValidator* validator = new QRegularExpressionValidator(QRegularExpression("\\d+\\s\\d+\\s\\d+\\s\\d+"), ui->Morphology_edit);
+    ui->Morphology_edit->setValidator(validator);
 
-	std::function<void(int)> funMorphology_slider2 = [=](int value) {
-		morphology->onTriggered_slider2_valueChanged_anchorX(value);
-	};
-
-	std::function<void(int)> funMorphology_slider3 = [=](int value) {
-		morphology->onTriggered_slider3_valueChanged_anchorY(value);
-	};
-
-	auto w = new QWidget;
-	w->setLayout(createDialog_nSlider_GUItemplate<int, Morphology*>(
-		ls_slider_morphology,
-		QList<int>() << 1 << 1 << 1,
-		QList<int>() << 50 << 20 << 20,
-		QList<int>() << 1 << 1 << 1,
-		QList<QString>() << "Kernal_mor" << "X_mor" << "Y_mor",
-		QList<QString>() << "Kernel" << "anchorX" << "anchorY",
-		QList< std::function<void(int)>>() << funMorphology_slider1 << funMorphology_slider2 << funMorphology_slider3,
-		true, "\\d+\\s\\d+\\s\\d+\\s\\d+", "Kernel X Y iters", &morphology)
-	);
-	return w;
+    return nullptr;
 }
 
 QWidget* Widget::create_GUIConnected()
 {
-	Connected* connected = dynamic_cast<Connected*>(op);
-	//----------------------------------------------------------
-	//连通性
-	ls_combox_connected.resize(2);
-	std::function<void(int)> funConnected_combo1 = [=](int index) {
-		connected->onTriggered_Comb2_currentTextChanged_ccltype(index);
-	};
-
-	std::function<void(int)> funConnected_combo2 = [=](int index) {
-		connected->onTriggered_Comb2_currentTextChanged_ccltype(index);
-	};
-
-	QStringList com1 = { "8" , "4" };
-	QStringList com2 = { "default","CC_WU","CCL_GRANA","CCL_BOLELLI","CCL_SAUF","CCL_BBDT","CCL_SPAGHETTI" };
-
-	auto w = new QWidget;
-	w->setLayout(createDialog_nComBox_GUItemplate(
-		ls_combox_connected,
-		QList<QStringList>() << com1 << com2,
-		QList<QString>() << "connectivity" << "ccltype",
-		QList<QString>() << "邻域" << "联通算法",
-		QList< std::function<void(int)>>() << funConnected_combo1 << funConnected_combo2)
-	);
-	return 	w;
+    return 	nullptr;
 }
 
 QWidget* Widget::create_GUIContours()
 {
-	Contours* contours = dynamic_cast<Contours*>(op);
-	//----------------------------------------------------------
-	//轮廓
-	ls_combox_contours.resize(5);
-	std::function<void(int)> funContours_combo1 = [=](int index) {
-		contours->onTriggered_Comb1_currentTextChanged_contoursMode(index);
-	};
+    //"更换颜色" "绘制图像凸包"
 
-	std::function<void(int)> funContours_combo2 = [=](int index) {
-		contours->onTriggered_Comb2_currentTextChanged_contoursMethod(index);
-	};
-
-	std::function<void(int)> funContours_combo3 = [=](int index) {
-		contours->onTriggered_Comb3_currentTextChanged_contoursThick(index);
-	};
-
-	std::function<void(int)> funContours_combo4 = [=](int index) {
-        Q_UNUSED(index);
-		colorDialog->setMinimumSize(375, 375);
-		colorDialog->setMaximumSize(653, 498);
-		colorDialog->setGeometry(810, 306, 375, 375);
-		colorDialog->show(); //弹出颜色框
-	};
-
-	std::function<void(int)> funContours_combo5 = [=](int index) {
-        Q_UNUSED(index);
-		contours->onClicked_btn_convexHull();
-	};
-
-	QStringList contours_com1 = { "RETR_EXTERNAL", "RETR_LIST","RETR_CCOMP","RETR_TREE" };
-	QStringList contours_com2 = { "CHAIN_APPROX_NONE", "CHAIN_APPROX_SIMPLE","CHAIN_APPROX_TC89_L1","CHAIN_APPROX_TC89_KCOS" };
-	QStringList contours_com3;
-	for (int i = 1; i <= 10; i++) {
-		contours_com3.append(QString("%1").arg(i));
-	}
-	QStringList contours_com4 = { "更换颜色" };
-	QStringList contours_com5 = { "绘制图像凸包" };
-
-	auto w = new QWidget;
-	w->setLayout(createDialog_nComBox_GUItemplate(
-		ls_combox_contours,
-		QList<QStringList>() << contours_com1 << contours_com2 << contours_com3 << contours_com4 << contours_com5,
-		QList<QString>() << "contours_mode" << "contours_method" << "contours_thick" << "coutours_color" << "coutours_FullHex",
-		QList<QString>() << "轮廓检索模式" << "轮廓逼近方法" << "绘制线宽度" << "other" << "other",
-		QList< std::function<void(int)>>() << funContours_combo1 << funContours_combo2 << funContours_combo3 << funContours_combo4 << funContours_combo5)
-	);
-	return w;
+    return nullptr;
 }
 
 QWidget* Widget::create_GUIbright()
 {
-	Showeffect* showeffect = dynamic_cast<Showeffect*>(op);
-	//-----------------------------------------------------
-	//亮度调整
-	ls_slider_light.resize(2);
-	std::function<void(int)> funcLight = [=](int value) {
-		ls_slider_light[1]->setValue(ls_slider_light[1]->minimum());
-		showeffect->onTriggered_slider_valueChange_brighten(value);
-	};
-	std::function<void(int)> funcDark = [=](int value) {
-		value = -value;
-		ls_slider_light[0]->setValue(ls_slider_light[0]->minimum());
-		showeffect->onTriggered_slider_valueChange_brighten(value);
-	};
+    QRegularExpressionValidator* validator = new QRegularExpressionValidator(QRegularExpression("-?\\d+"), ui->Bright_edit);
+    ui->Bright_edit->setValidator(validator);
 
-	auto w = new QWidget;
-	w->setLayout(createDialog_nSlider_GUItemplate<int, Showeffect*>(
-		ls_slider_light,
-		QList<int>() << 1 << 1,
-		QList<int>() << 100 << 100,
-		QList<int>() << 1 << 1,
-		QList<QString>() << "bright_light_value" << "bright_dark_value",
-		QList<QString>() << "亮度增加" << "亮度降低",
-		QList< std::function<void(int)>>() << funcLight << funcDark,
-		true, "-?\\d+", "亮度值(负值表示降低)", &showeffect)
-	);
-	return w;
+    return nullptr;
 }
 
 QWidget* Widget::create_GUIgamma()
 {
-	Showeffect* showeffect = dynamic_cast<Showeffect*>(op);
-	//-----------------------------------------------------
-	//gamma矫正
-	ls_slider_gamma.resize(1);
-	std::function<void(int)> funcGamma = [=](int value) {
-		//将int映射为double
-		double d_val = value * 1.0 / 10.0;
-		showeffect->onTriggered_slider_valueChange_gamma(d_val);
-	};
+    QRegularExpressionValidator* validator = new QRegularExpressionValidator(QRegularExpression("\\d+"), ui->gamma_edit);
+    ui->gamma_edit->setValidator(validator);
 
-	auto w = new QWidget;
-	w->setLayout(createDialog_nSlider_GUItemplate<int, Showeffect*>(
-		ls_slider_gamma,
-		QList<int>() << 1,
-		QList<int>() << 50,
-		QList<int>() << 1,
-		QList<QString>() << "gamma_slider",
-		QList<QString>() << "γ矫正",
-		QList< std::function<void(int)>>() << funcGamma,
-		true,"\\d+","γ值",&showeffect)
-	);
-	return w;
+    return nullptr;
 }
 
 QWidget* Widget::create_GUIContrast()
 {
-	Showeffect* showeffect = dynamic_cast<Showeffect*>(op);
-	ls_slider_linear.resize(2);
-	std::function<void(int)> funcLinearG1 = [=](int value) {
-		//将int映射为double
-		showeffect->onTriggered_slider_valueChange_linearg1(value);
-	};
-	std::function<void(int)> funcLinearG2 = [=](int value) {
-		//将int映射为double
-		showeffect->onTriggered_slider_valueChange_linearg2(value);
-	};
+    QRegularExpressionValidator* validator = new QRegularExpressionValidator(QRegularExpression("\\d+\\s\\d+"), ui->Contrast_edit);
+    ui->Contrast_edit->setValidator(validator);
 
-	auto w = new QWidget;
-	w->setLayout(createDialog_nSlider_GUItemplate<int, Showeffect*>(
-		ls_slider_linear,
-		QList<int>() << 0 << 0,
-		QList<int>() << 255 << 255,
-		QList<int>() << 1 << 1,
-		QList<QString>() << "linearG1_slider" << "linearG2_slider",
-		QList<QString>() << "仿射下限" <<"仿射上限",
-		QList< std::function<void(int)>>() << funcLinearG1 << funcLinearG2,
-		true, "\\d+\\s\\d+","仿射下限 仿射上限",&showeffect)
-	);
-	// 获取QWidget的布局
-	//额外添加控件
-	QVBoxLayout* layout = dynamic_cast<QVBoxLayout*>(w->layout());
-
-	if (layout) {
-		QHBoxLayout* hlayout = new QHBoxLayout;
-		QRadioButton* r_btn1 = new QRadioButton("灰度图");
-		r_btn1->setChecked(true);
-		QRadioButton* r_btn2 = new QRadioButton("彩色图");
-		QButtonGroup* group = new QButtonGroup(this);
-		group->addButton(r_btn1);
-		group->addButton(r_btn2);
-		connect(group, &QButtonGroup::buttonClicked, this, [=](QAbstractButton* btn) {
-			if (btn == r_btn1) {
-				showeffect->linear_mode = 0; //灰度图
-			}
-			else {
-				showeffect->linear_mode = 1;
-			}
-			});
-		hlayout->addWidget(r_btn1,0,Qt::AlignHCenter);
-		hlayout->addWidget(r_btn2,0, Qt::AlignHCenter);
-
-		layout->insertLayout(0, hlayout);
-	}
-
-	return w;
+    return nullptr;
 }
 
 QWidget* Widget::create_GUIGrayWindow()
 {
-	Showeffect* showeffect = dynamic_cast<Showeffect*>(op);
-	ls_slider_grayWindow.resize(2);
-	std::function<void(int)> funcGrayG1 = [=](int value) {
-		//将int映射为double
-		showeffect->onTriggered_slider_valueChange_GaryWindowF1(value);
-	};
-	std::function<void(int)> funcGrayG2 = [=](int value) {
-		//将int映射为double
-		showeffect->onTriggered_slider_valueChange_GaryWindowF2(value);
-	};
+    QRegularExpressionValidator* validator = new QRegularExpressionValidator(QRegularExpression("\\d+\\s\\d+"), ui->GrayWindow_edit);
+    ui->GrayWindow_edit->setValidator(validator);
 
-	auto w = new QWidget;
-	w->setLayout(createDialog_nSlider_GUItemplate<int, Showeffect*>(
-		ls_slider_grayWindow,
-		QList<int>() << 0 << 0,
-		QList<int>() << 255 << 255,
-		QList<int>() << 1 << 1,
-		QList<QString>() << "GreayF1_slider" << "GrayF2_slider",
-		QList<QString>() << "选择下限" << "选择上限",
-		QList< std::function<void(int)>>() << funcGrayG1 << funcGrayG2,
-		true, "\\d+\\s\\d+", "选择下限 选择上限", &showeffect)
-	);
-	return w;
+    return nullptr;
 }
 
 QWidget* Widget::create_GUIDPLinear()
 {
-	Showeffect* showeffect = dynamic_cast<Showeffect*>(op);
-	ls_slider_dpLinear.resize(2);
-	std::function<void(int)> funcdpA = [=](int value) {
-		//将int映射为double
-		showeffect->onTriggered_slider_valueChange_DynamicA(value);
-	};
-	std::function<void(int)> funcdpB = [=](int value) {
-		//将int映射为double
-		showeffect->onTriggered_slider_valueChange_DynamicB(value);
-	};
+    QRegularExpressionValidator* validator = new QRegularExpressionValidator(QRegularExpression("\\d+\\s\\d+"), ui->DpLinear_edit);
+    ui->DpLinear_edit->setValidator(validator);
 
-	auto w = new QWidget;
-	w->setLayout(createDialog_nSlider_GUItemplate<int, Showeffect*>(
-		ls_slider_dpLinear,
-		QList<int>() << 0 << 0,
-		QList<int>() << 255 << 255,
-		QList<int>() << 1 << 1,
-		QList<QString>() << "DPLinearA_slider" << "DPLinearB_slider",
-		QList<QString>() << "区域下限" << "区域上限",
-		QList< std::function<void(int)>>() << funcdpA << funcdpB,
-		true,"\\d+\\s\\d+","区域下限 区域上限",&showeffect)
-	);
-	// 获取QWidget的布局
-	//额外添加控件
-	QVBoxLayout* layout = dynamic_cast<QVBoxLayout*>(w->layout());
-
-	if (layout) {
-		QHBoxLayout* hlayout = new QHBoxLayout;
-		QRadioButton* r_btn1 = new QRadioButton("灰度图");
-		r_btn1->setChecked(true);
-		QRadioButton* r_btn2 = new QRadioButton("彩色图");
-		QButtonGroup* group = new QButtonGroup(this);
-		group->addButton(r_btn1);
-		group->addButton(r_btn2);
-		connect(group, &QButtonGroup::buttonClicked, this, [=](QAbstractButton* btn) {
-			if (btn == r_btn1) {
-				showeffect->DpLinear_mode = 0; //灰度图
-			}
-			else {
-				showeffect->DpLinear_mode = 1;
-			}
-			});
-		hlayout->addWidget(r_btn1, 0, Qt::AlignHCenter);
-		hlayout->addWidget(r_btn2, 0, Qt::AlignHCenter);
-
-		layout->insertLayout(0, hlayout);
-	}
-	return w;
+    return nullptr;
 }
 
 QWidget* Widget::create_GUINoneDpLinear()
 {
-	Showeffect* showeffect = dynamic_cast<Showeffect*>(op);
-	ls_slider_NoneDpLinear.resize(1);
-	std::function<void(int)> funcNoneDpC = [=](int value) {
-		//将int映射为double
-		showeffect->onTriggered_slider_valueChange_NoneDynamicC(value);
-	};
+    QRegularExpressionValidator* validator = new QRegularExpressionValidator(QRegularExpression("\\d+"), ui->NdpLinear_edit);
+    ui->NdpLinear_edit->setValidator(validator);
 
-	auto w = new QWidget;
-	w->setLayout(createDialog_nSlider_GUItemplate<int, Showeffect*>(
-		ls_slider_NoneDpLinear,
-		QList<int>() << 0,
-		QList<int>() << 80,
-		QList<int>() << 1,
-		QList<QString>() << "NoneDpLinearC_slider",
-		QList<QString>() << "增益常数",
-		QList< std::function<void(int)>>() << funcNoneDpC,
-		true, "\\d+", "增益常数",&showeffect)
-	);
-	// 获取QWidget的布局
-	//额外添加控件
-	QVBoxLayout* layout = dynamic_cast<QVBoxLayout*>(w->layout());
-
-	if (layout) {
-		QHBoxLayout* hlayout = new QHBoxLayout;
-		QRadioButton* r_btn1 = new QRadioButton("灰度图");
-		r_btn1->setChecked(true);
-		QRadioButton* r_btn2 = new QRadioButton("彩色图");
-		QButtonGroup* group = new QButtonGroup(this);
-		group->addButton(r_btn1);
-		group->addButton(r_btn2);
-		connect(group, &QButtonGroup::buttonClicked, this, [=](QAbstractButton* btn) {
-			if (btn == r_btn1) {
-				showeffect->NoneDpLinear_mode = 0; //灰度图
-			}
-			else {
-				showeffect->NoneDpLinear_mode = 1;
-			}
-			});
-		hlayout->addWidget(r_btn1, 0, Qt::AlignHCenter);
-		hlayout->addWidget(r_btn2, 0, Qt::AlignHCenter);
-		layout->insertLayout(0, hlayout);
-	}
-	return w;
+    return nullptr;
 }
 
 QWidget* Widget::choice_GUI_create(int id)

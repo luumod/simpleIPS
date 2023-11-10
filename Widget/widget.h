@@ -604,6 +604,81 @@ public slots:
      */
     void on_lab_img_ori_customContextMenuRequested(const QPoint& pos);
 
+    /**
+     * @brief 清除所有调整页面的值至默认状态
+     */
+    void clearAllAdjPageWidgetValue();
+
+    void on_AvgBlur_slider1_sliderMoved(int value);
+    void on_AvgBlur_slider2_sliderMoved(int value);
+    void on_AvgBlur_slider3_sliderMoved(int value);
+    void on_AvgBlur_edit_returnPressed();
+    void on_AvgBlur_btn_clicked(bool clicked);
+
+    void on_GaussBlur_slider1_sliderMoved(int value);
+    void on_GaussBlur_slider2_sliderMoved(int value);
+    void on_GaussBlur_slider3_sliderMoved(int value);
+    void on_GaussBlur_edit_returnPressed();
+    void on_GaussBlur_btn_clicked(bool clicked);
+
+    void on_MedianBlur_slider1_sliderMoved(int value);
+    void on_MedianBlur_edit_returnPressed();
+    void on_MedianBlur_btn_clicked(bool clicked);
+
+    void on_BiltBlur_slider1_sliderMoved(int value);
+    void on_BiltBlur_slider2_sliderMoved(int value);
+    void on_BiltBlur_slider3_sliderMoved(int value);
+    void on_BiltBlur_edit_returnPressed();
+    void on_BiltBlur_btn_clicked(bool clicked);
+
+
+    //阈值化
+    void on_Threshold_slider1_sliderMoved(int value);
+    void on_Threshold_slider2_sliderMoved(int value);
+    void on_Threshold_edit_returnPressed();
+    void on_Threshold_btn_clicked(bool clicked);
+
+    void on_Morphology_slider1_sliderMoved(int value);
+    void on_Morphology_slider2_sliderMoved(int value);
+    void on_Morphology_slider3_sliderMoved(int value);
+    void on_Morphology_edit_returnPressed();
+    void on_Morphology_btn_clicked(bool clicked);
+
+    void on_Connected_cbx1_activated(int index);
+    void on_Connected_cbx2_activated(int index);
+
+    void on_Contours_cbx1_activated(int index);
+    void on_Contours_cbx2_activated(int index);
+    void on_Contours_cbx3_activated(int index);
+
+    void on_Bright_slider1_sliderMoved(int value);
+    void on_Bright_slider2_sliderMoved(int value);
+    void on_Bright_edit_returnPressed();
+
+    void on_gamma_slider1_sliderMoved(int value);
+    void on_gamma_edit_returnPressed();
+
+    void on_Contrast_slider1_sliderMoved(int value);
+    void on_Contrast_slider2_sliderMoved(int value);
+    void on_Contrast_edit_returnPressed();
+    void on_Contrast_rbtn1_clicked(bool clicked);
+    void on_Contrast_rbtn2_clicked(bool clicked);
+
+    void on_GrayWindow_slider1_sliderMoved(int value);
+    void on_GrayWindow_slider2_sliderMoved(int value);
+    void on_GrayWindow_edit_returnPressed();
+
+    void on_DpLinear_slider1_sliderMoved(int value);
+    void on_DpLinear_slider2_sliderMoved(int value);
+    void on_DpLinear_edit_returnPressed();
+    void on_DpLinear_rbtn1_clicked(bool clicked);
+    void on_DpLinear_rbtn2_clicked(bool clicked);
+
+    void on_NdpLinear_slider1_sliderMoved(int value);
+    void on_NdpLinear_edit_returnPressed();
+    void on_NdpLinear_rbtn1_clicked(bool clicked);
+    void on_NdpLinear_rbtn2_clicked(bool clicked);
+
 public:
 
     /**
@@ -854,10 +929,16 @@ public:
     /**
      * @brief 抽象操作的具体操作类
      *
-     * @see blur threshold morphology connected contours showeffect img_base
+     * @see blur threshold morphology connected contours showeffect
      *
      */
-    Object* op = nullptr;
+    Blur* blur = nullptr;
+    Threshold* threshold = nullptr;
+    Morphology* morphology = nullptr;
+    Connected* connected = nullptr;
+    Contours* contours=nullptr;
+    Showeffect* showeffect = nullptr;
+    QList<Object*> ls_opts;
 
     BaseOperate* img_base = nullptr; //图像基础操作
 

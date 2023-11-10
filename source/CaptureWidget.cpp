@@ -10,18 +10,17 @@
 #include <QFileDialog>
 #include <QMessageBox>
 
-
 CaptureWidget* CaptureWidget::capture = nullptr;
 
 CaptureWidget::CaptureWidget(QWidget* parent)
 	:QMainWindow(parent)
 {
 	createAction();
-	createMenuBar();
+    createMenuBar();
 	this->setStyleSheet("border: 2px solid red");
 
 	lab_img = new QLabel(this);
-	this->setCentralWidget(lab_img);
+    this->setCentralWidget(lab_img);
     rubber = new QRubberBand(QRubberBand::Line, lab_img);
     update();
 }

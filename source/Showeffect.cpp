@@ -1,8 +1,24 @@
-﻿#include "opencv_functions/Showeffect.h"
-#include "Widget/widget.h"
-#include "assist/Res.h"
-#include "assist/Mat2QImage.h"
+﻿#include "Include/opencv_functions/Showeffect.h"
+#include "Include/Widget/widget.h"
+#include "Include/assist/Res.h"
+#include "Include/assist/Mat2QImage.h"
 #include <QDebug>
+#include <QMessageBox>
+
+void warning() {
+    // 创建警告对话框
+    QMessageBox warningBox;
+    warningBox.setIcon(QMessageBox::Warning);
+    warningBox.setWindowTitle("警告");
+    warningBox.setText("您正在对灰度图进行操作，因此无法转化为彩色图。");
+
+    // 添加“确定”按钮
+    warningBox.addButton(QMessageBox::Ok);
+
+    // 显示对话框并等待用户响应
+    warningBox.exec();
+
+}
 
 Showeffect::Showeffect()
 	:Object()
@@ -40,9 +56,14 @@ void Showeffect::Bright()
 	//调整亮度
 	for (int i = 0; i < _mt.rows; i++) {
 		for (int j = 0; j < _mt.cols; j++) {
-			for (int z = 0; z < _mt.channels(); z++) {
-				tMt.at<cv::Vec3b>(i, j)[z] = cv::saturate_cast<uchar>(_mt.at<cv::Vec3b>(i, j)[z] + this->bright_value);
-			}
+            if (_mt.channels() == 1){
+                tMt.at<uchar>(i,j) = cv::saturate_cast<uchar>( cv::saturate_cast<float>(_mt.at<uchar>(i, j)) + this->bright_value);
+            }
+            else{
+                for (int z = 0; z < _mt.channels(); z++) {
+                    tMt.at<cv::Vec3b>(i, j)[z] = cv::saturate_cast<uchar>( cv::saturate_cast<float>(_mt.at<cv::Vec3b>(i, j)[z]) + this->bright_value);
+                }
+            }
 		}
 	}
 
@@ -53,23 +74,24 @@ void Showeffect::Gamma()
 {
 	cv::Mat _mt;
     getMat(_mt);
-    cv::Mat tMt = _mt.clone();
+    cv::Mat tMt = cv::Mat::zeros(_mt.size(), _mt.type());
 
-    //彩色图
     for (int i =0;i<_mt.rows;i++){
         for (int j =0;j<_mt.cols;j++){
-            float pix1 = cv::saturate_cast<float>(_mt.at<cv::Vec3b>(i,j)[0]) / 255.0;
-            float pix2 = cv::saturate_cast<float>(_mt.at<cv::Vec3b>(i,j)[1]) / 255.0;
-            float pix3 = cv::saturate_cast<float>(_mt.at<cv::Vec3b>(i,j)[2]) / 255.0;
-            float res1 = gamma_c * pow(pix1,gamma_value) * 255.0;
-            float res2 = gamma_c * pow(pix2,gamma_value) * 255.0;
-            float res3 = gamma_c * pow(pix3,gamma_value) * 255.0;
-            tMt.at<cv::Vec3b>(i,j)[0] = cv::saturate_cast<uchar>(res1);
-            tMt.at<cv::Vec3b>(i,j)[1] = cv::saturate_cast<uchar>(res2);
-            tMt.at<cv::Vec3b>(i,j)[2] = cv::saturate_cast<uchar>(res3);
+            if (_mt.channels() == 1){
+                float pix = cv::saturate_cast<float>(_mt.at<uchar>(i,j)) / 255.0;
+                float res = gamma_c * pow(pix,gamma_value) * 255.0;
+                tMt.at<uchar>(i,j) = cv::saturate_cast<uchar>(res);
+            }
+            else{
+                for (int z = 0; z < _mt.channels(); z++) {
+                    float pix = cv::saturate_cast<float>(_mt.at<cv::Vec3b>(i,j)[z]) / 255.0;
+                    float res = gamma_c * pow(pix,gamma_value) * 255.0;
+                    tMt.at<cv::Vec3b>(i,j)[z] = cv::saturate_cast<uchar>(res);
+                }
+            }
         }
     }
-	//CV_32FC3类型需要进一步转换为CV_8UC3
     Object::update(tMt);
 }
 
@@ -80,13 +102,18 @@ cv::Mat Showeffect::showContrastLinearBroaden(cv::Mat mat)
 
 	cv::Mat _mt;
 	getMat(_mt);
-	if (mat.empty()) {
-		//转换为灰度图
-		cv::cvtColor(_mt, grayMat, cv::COLOR_BGR2GRAY);
-	}
-	else {
-		grayMat = mat;
-	}
+    if (mat.empty()){
+        //直接对灰度图处理
+        if (_mt.channels() == 1){
+            grayMat = _mt.clone();
+        }
+        else{
+            cv::cvtColor(_mt, grayMat, cv::COLOR_BGR2GRAY);
+        }
+    }
+    else{
+        grayMat = mat;
+    }
 
 	double f1, f2;
 	cv::minMaxLoc(grayMat, &f1, &f2);
@@ -124,6 +151,10 @@ void Showeffect::showBGRContrastLinearBroaden()
 	cv::Mat _mt;
 	getMat(_mt);
 	cv::split(_mt, channels);
+    if (channels.size() == 1){
+        warning();
+        return;
+    }
     channels[0] = showContrastLinearBroaden(channels[0]);
     channels[1] = showContrastLinearBroaden(channels[1]);
     channels[2] = showContrastLinearBroaden(channels[2]);
@@ -139,7 +170,12 @@ void Showeffect::showGrayWindow()
 	cv::Mat _mt;
 	getMat(_mt);
 	cv::Mat grayMat;
-	cv::cvtColor(_mt, grayMat, cv::COLOR_BGR2GRAY);
+    if (_mt.channels()!=1){
+        cv::cvtColor(_mt, grayMat, cv::COLOR_BGR2GRAY);
+    }
+    else{
+        grayMat = _mt.clone();
+    }
 
 	double k = 255 / (gray_f2 - gray_f1);
 
@@ -167,13 +203,18 @@ cv::Mat Showeffect::showDynamicLinearAdj(cv::Mat mat)
 
 	cv::Mat _mt;
 	getMat(_mt);
-	if (mat.empty()) {
-		//转换为灰度图
-		cv::cvtColor(_mt, grayMat, cv::COLOR_BGR2GRAY);
-	}
-	else {
-		grayMat = mat;
-	}
+    if (mat.empty()){
+        //直接对灰度图处理
+        if (_mt.channels() == 1){
+            grayMat = _mt.clone();
+        }
+        else{
+            cv::cvtColor(_mt, grayMat, cv::COLOR_BGR2GRAY);
+        }
+    }
+    else{
+        grayMat = mat;
+    }
 
 	double f1, f2;
 	cv::minMaxLoc(grayMat, &f1, &f2);
@@ -206,6 +247,10 @@ void Showeffect::showBGRDynamicLinearAdj()
 	cv::Mat _mt;
 	getMat(_mt);
 	cv::split(_mt, channels);
+    if (channels.size() == 1){
+        warning();
+        return;
+    }
     channels[0] = showDynamicLinearAdj(channels[0]);
     channels[1] = showDynamicLinearAdj(channels[1]);
     channels[2] = showDynamicLinearAdj(channels[2]);
@@ -222,13 +267,18 @@ cv::Mat Showeffect::showNoneDynamicLinearAdj(cv::Mat mat)
 
 	cv::Mat _mt;
 	getMat(_mt);
-	if (mat.empty()) {
-		//转换为灰度图
-		cv::cvtColor(_mt, grayMat, cv::COLOR_BGR2GRAY);
-	}
-	else {
-		grayMat = mat;
-	}
+    if (mat.empty()){
+        //直接对灰度图处理
+        if (_mt.channels() == 1){
+            grayMat = _mt.clone();
+        }
+        else{
+            cv::cvtColor(_mt, grayMat, cv::COLOR_BGR2GRAY);
+        }
+    }
+    else{
+        grayMat = mat;
+    }
 
 	for (int i = 0; i < grayMat.rows; i++) {
 		for (int j = 0; j < grayMat.cols; j++) {
@@ -247,15 +297,18 @@ cv::Mat Showeffect::showNoneDynamicLinearAdj(cv::Mat mat)
 void Showeffect::showBGRNoneDynamicLinearAdj()
 {
 	std::vector<cv::Mat> channels;
-	cv::Mat _mt;
-	getMat(_mt);
+    cv::Mat _mt;
+    getMat(_mt);
 	cv::split(_mt, channels);
+    if (channels.size() == 1){
+        warning();
+        return;
+    }
     channels[0] = showNoneDynamicLinearAdj(channels[0]);
     channels[1] = showNoneDynamicLinearAdj(channels[1]);
     channels[2] = showNoneDynamicLinearAdj(channels[2]);
-	cv::Mat res;
-	cv::merge(channels, res);
-
+    cv::Mat res;
+    cv::merge(channels, res);
 	Object::update(res);//彩色图
 }
 
@@ -275,11 +328,16 @@ cv::Mat Showeffect::showNormalNoneDynamicLinearAdj(cv::Mat mat)
 
     cv::Mat _mt;
     getMat(_mt);
-    if (mat.empty()) {
-        //转换为灰度图
-        cv::cvtColor(_mt, grayMat, cv::COLOR_BGR2GRAY);
+    if (mat.empty()){
+        //直接对灰度图处理
+        if (_mt.channels() == 1){
+            grayMat = _mt.clone();
+        }
+        else{
+            cv::cvtColor(_mt, grayMat, cv::COLOR_BGR2GRAY);
+        }
     }
-    else {
+    else{
         grayMat = mat;
     }
 
@@ -303,6 +361,10 @@ void Showeffect::show_NormalNoneDpLinearAlgorithm()
     cv::Mat _mt;
     getMat(_mt);
     cv::split(_mt, channels);
+    if (channels.size() == 1){
+        warning();
+        return;
+    }
     channels[0]= showNormalNoneDynamicLinearAdj(channels[0]);
     channels[1]= showNormalNoneDynamicLinearAdj(channels[1]);
     channels[2] = showNormalNoneDynamicLinearAdj(channels[2]);
@@ -358,7 +420,7 @@ void Showeffect::onTriggered_slider_valueChange_gamma_C(double gamma_C){
 
 void Showeffect::onTriggered_slider_valueChange_gamma(double gamma_value)
 {
-	this->gamma_value = gamma_value;
+    this->gamma_value = gamma_value;
 	Gamma();
 }
 

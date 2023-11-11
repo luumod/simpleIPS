@@ -1,5 +1,5 @@
-﻿#include "opencv_functions/Morphology.h"
-#include "Widget/widget.h"
+﻿#include "Include/opencv_functions/Morphology.h"
+#include "Include/Widget/widget.h"
 
 Morphology::Morphology() :Object() {}
 

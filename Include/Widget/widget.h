@@ -16,7 +16,7 @@
 #ifndef WIDGET_H_
 #define WIDGET_H_
 #define FUNCTION_
-#include "assist/config.h"
+#include "../assist/config.h"
 #include <QMainWindow>
 #include <iostream>
 #include <opencv2/opencv.hpp>
@@ -368,7 +368,7 @@ public:
      *
      * @see colorDialog
      */
-    void on_colorDialog_triggered(const QColor& color);
+    void on_colorDialog_choice_color(const QColor& color);
 
     //切换图片的格式：LAB  HSV 等格式
     /**
@@ -608,6 +608,7 @@ public slots:
      * @brief 清除所有调整页面的值至默认状态
      */
     void clearAllAdjPageWidgetValue();
+
 
     void on_AvgBlur_slider1_sliderMoved(int value);
     void on_AvgBlur_slider2_sliderMoved(int value);

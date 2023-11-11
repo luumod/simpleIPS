@@ -1,7 +1,7 @@
 ﻿#ifndef RES_H_
 #define RES_H_
 
-#include "Widget/widget.h"
+#include "../Widget/widget.h"
 #include <opencv2/opencv.hpp>
 #include <string>
 #include <QObject>

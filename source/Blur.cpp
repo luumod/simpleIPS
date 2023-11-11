@@ -13,8 +13,8 @@
  * <tr><td>2023-10-15 <td>1.0     <td>wangh     <td>内容
  * </table>
  */
-#include "Widget/widget.h"
-#include "opencv_functions/Blur.h"
+#include "Include/Widget/widget.h"
+#include "Include/opencv_functions/Blur.h"
 #include <QDebug>
 #include <QLabel>
 

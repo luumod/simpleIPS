@@ -8,7 +8,7 @@
 /// 
 
 #include <opencv2/opencv.hpp>
-#include "assist/Enums.h"
+#include "../assist/Enums.h"
 class QImage;
 class Widget;
 

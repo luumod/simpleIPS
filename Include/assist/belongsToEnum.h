@@ -3,7 +3,7 @@
 
 #include <functional>
 #include "Enums.h"
-#include "Widget/widget.h"
+#include "../Widget/widget.h"
 template<typename T>
 inline bool belongsToEnum(int data) {
 	if constexpr (std::is_same_v<T, BLUR>) {

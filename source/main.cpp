@@ -1,4 +1,4 @@
-﻿#include "Widget/widget.h"
+﻿#include "Include/Widget/widget.h"
 #include <QApplication>
 #include <QJsonObject>
 #include <QJsonValue>
@@ -6,8 +6,7 @@
 #include <QFile>
 #include <Windows.h>
 //未安装vld的话可以直接删除
-//#include <vld.h>
-
+#include <vld.h>
 #pragma execution_character_set("utf-8")
 
 class Widget;

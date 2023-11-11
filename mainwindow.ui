@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>959</width>
+    <width>1104</width>
     <height>642</height>
    </rect>
   </property>
@@ -96,7 +96,7 @@
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>301</width>
+                   <width>374</width>
                    <height>237</height>
                   </rect>
                  </property>
@@ -217,7 +217,7 @@
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>301</width>
+                   <width>373</width>
                    <height>237</height>
                   </rect>
                  </property>
@@ -278,7 +278,7 @@
                  <enum>QFrame::Plain</enum>
                 </property>
                 <property name="currentIndex">
-                 <number>13</number>
+                 <number>7</number>
                 </property>
                 <widget class="QWidget" name="adjPage_avgBlur">
                  <layout class="QVBoxLayout" name="verticalLayout_12">
@@ -1269,6 +1269,16 @@
                       </item>
                      </widget>
                     </item>
+                    <item row="3" column="0">
+                     <widget class="QLabel" name="label_37">
+                      <property name="text">
+                       <string>颜色选择</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="3" column="1">
+                     <widget class="ColorDialog" name="colorDialog"/>
+                    </item>
                    </layout>
                   </item>
                   <item>
@@ -1440,7 +1450,10 @@
                        <number>1</number>
                       </property>
                       <property name="maximum">
-                       <number>20</number>
+                       <number>50</number>
+                      </property>
+                      <property name="value">
+                       <number>10</number>
                       </property>
                       <property name="orientation">
                        <enum>Qt::Horizontal</enum>
@@ -1474,7 +1487,10 @@
                        <number>1</number>
                       </property>
                       <property name="maximum">
-                       <number>5</number>
+                       <number>50</number>
+                      </property>
+                      <property name="value">
+                       <number>10</number>
                       </property>
                       <property name="orientation">
                        <enum>Qt::Horizontal</enum>
@@ -2251,7 +2267,7 @@ QLabel {
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>959</width>
+     <width>1104</width>
      <height>22</height>
     </rect>
    </property>
@@ -2395,15 +2411,15 @@ QLabel {
         </size>
        </property>
        <property name="currentIndex">
-        <number>5</number>
+        <number>4</number>
        </property>
        <widget class="QWidget" name="page">
         <property name="geometry">
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>200</width>
-          <height>345</height>
+          <width>98</width>
+          <height>28</height>
          </rect>
         </property>
         <attribute name="label">
@@ -2445,8 +2461,8 @@ QLabel {
                <string>模糊操作：均值滤波</string>
               </property>
               <property name="icon">
-               <iconset>
-                <normaloff>resource/assert/avg.png</normaloff>resource/assert/avg.png</iconset>
+               <iconset resource="icons.qrc">
+                <normaloff>:/resource/assert/avg.png</normaloff>:/resource/assert/avg.png</iconset>
               </property>
               <property name="iconSize">
                <size>
@@ -2515,8 +2531,8 @@ QLabel {
                <string>模糊操作：中值滤波</string>
               </property>
               <property name="icon">
-               <iconset>
-                <normaloff>resource/assert/zhong.png</normaloff>resource/assert/zhong.png</iconset>
+               <iconset resource="icons.qrc">
+                <normaloff>:/resource/assert/zhong.png</normaloff>:/resource/assert/zhong.png</iconset>
               </property>
               <property name="iconSize">
                <size>
@@ -2585,8 +2601,8 @@ QLabel {
                <string>模糊操作：双边滤波</string>
               </property>
               <property name="icon">
-               <iconset>
-                <normaloff>resource/assert/shuangbian.png</normaloff>resource/assert/shuangbian.png</iconset>
+               <iconset resource="icons.qrc">
+                <normaloff>:/resource/assert/shuangbian.png</normaloff>:/resource/assert/shuangbian.png</iconset>
               </property>
               <property name="iconSize">
                <size>
@@ -2655,8 +2671,8 @@ QLabel {
                <string>模糊操作：高斯滤波</string>
               </property>
               <property name="icon">
-               <iconset>
-                <normaloff>resource/assert/gaussian.png</normaloff>resource/assert/gaussian.png</iconset>
+               <iconset resource="icons.qrc">
+                <normaloff>:/resource/assert/gaussian.png</normaloff>:/resource/assert/gaussian.png</iconset>
               </property>
               <property name="iconSize">
                <size>
@@ -2695,8 +2711,8 @@ QLabel {
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>200</width>
-          <height>345</height>
+          <width>98</width>
+          <height>28</height>
          </rect>
         </property>
         <attribute name="label">
@@ -2751,8 +2767,8 @@ QLabel {
                <string>阈值化操作：反二进制为零</string>
               </property>
               <property name="icon">
-               <iconset>
-                <normaloff>resource/assert/f2.png</normaloff>resource/assert/f2.png</iconset>
+               <iconset resource="icons.qrc">
+                <normaloff>:/resource/assert/f2.png</normaloff>:/resource/assert/f2.png</iconset>
               </property>
               <property name="iconSize">
                <size>
@@ -2808,8 +2824,8 @@ QLabel {
                <string>阈值化操作：阈值化为零</string>
               </property>
               <property name="icon">
-               <iconset>
-                <normaloff>resource/assert/0.png</normaloff>resource/assert/0.png</iconset>
+               <iconset resource="icons.qrc">
+                <normaloff>:/resource/assert/0.png</normaloff>:/resource/assert/0.png</iconset>
               </property>
               <property name="iconSize">
                <size>
@@ -2878,8 +2894,8 @@ QLabel {
                <string>阈值化操作：反阈值化为零</string>
               </property>
               <property name="icon">
-               <iconset>
-                <normaloff>resource/assert/f0.png</normaloff>resource/assert/f0.png</iconset>
+               <iconset resource="icons.qrc">
+                <normaloff>:/resource/assert/f0.png</normaloff>:/resource/assert/f0.png</iconset>
               </property>
               <property name="iconSize">
                <size>
@@ -2948,8 +2964,8 @@ QLabel {
                <string>阈值化操作：二进制为零</string>
               </property>
               <property name="icon">
-               <iconset>
-                <normaloff>resource/assert/2.png</normaloff>resource/assert/2.png</iconset>
+               <iconset resource="icons.qrc">
+                <normaloff>:/resource/assert/2.png</normaloff>:/resource/assert/2.png</iconset>
               </property>
               <property name="iconSize">
                <size>
@@ -3040,8 +3056,8 @@ QLabel {
                <string>阈值化操作：截断</string>
               </property>
               <property name="icon">
-               <iconset>
-                <normaloff>resource/assert/jieduan.png</normaloff>resource/assert/jieduan.png</iconset>
+               <iconset resource="icons.qrc">
+                <normaloff>:/resource/assert/jieduan.png</normaloff>:/resource/assert/jieduan.png</iconset>
               </property>
               <property name="iconSize">
                <size>
@@ -3080,8 +3096,8 @@ QLabel {
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>200</width>
-          <height>345</height>
+          <width>98</width>
+          <height>28</height>
          </rect>
         </property>
         <attribute name="label">
@@ -3123,8 +3139,8 @@ QLabel {
                <string>形态学操作：膨胀</string>
               </property>
               <property name="icon">
-               <iconset>
-                <normaloff>resource/assert/pengzhang.png</normaloff>resource/assert/pengzhang.png</iconset>
+               <iconset resource="icons.qrc">
+                <normaloff>:/resource/assert/pengzhang.png</normaloff>:/resource/assert/pengzhang.png</iconset>
               </property>
               <property name="iconSize">
                <size>
@@ -3193,8 +3209,8 @@ QLabel {
                <string>形态学操作：腐蚀</string>
               </property>
               <property name="icon">
-               <iconset>
-                <normaloff>resource/assert/fushi.png</normaloff>resource/assert/fushi.png</iconset>
+               <iconset resource="icons.qrc">
+                <normaloff>:/resource/assert/fushi.png</normaloff>:/resource/assert/fushi.png</iconset>
               </property>
               <property name="iconSize">
                <size>
@@ -3263,8 +3279,8 @@ QLabel {
                <string>形态学操作：开运算</string>
               </property>
               <property name="icon">
-               <iconset>
-                <normaloff>resource/assert/kai.png</normaloff>resource/assert/kai.png</iconset>
+               <iconset resource="icons.qrc">
+                <normaloff>:/resource/assert/kai.png</normaloff>:/resource/assert/kai.png</iconset>
               </property>
               <property name="iconSize">
                <size>
@@ -3333,8 +3349,8 @@ QLabel {
                <string>形态学操作：闭运算</string>
               </property>
               <property name="icon">
-               <iconset>
-                <normaloff>resource/assert/bi.png</normaloff>resource/assert/bi.png</iconset>
+               <iconset resource="icons.qrc">
+                <normaloff>:/resource/assert/bi.png</normaloff>:/resource/assert/bi.png</iconset>
               </property>
               <property name="iconSize">
                <size>
@@ -3403,8 +3419,8 @@ QLabel {
                <string>形态学操作：梯度运算</string>
               </property>
               <property name="icon">
-               <iconset>
-                <normaloff>resource/assert/tidu.png</normaloff>resource/assert/tidu.png</iconset>
+               <iconset resource="icons.qrc">
+                <normaloff>:/resource/assert/tidu.png</normaloff>:/resource/assert/tidu.png</iconset>
               </property>
               <property name="iconSize">
                <size>
@@ -3473,8 +3489,8 @@ QLabel {
                <string>形态学操作：顶帽运算</string>
               </property>
               <property name="icon">
-               <iconset>
-                <normaloff>resource/assert/dingmao.png</normaloff>resource/assert/dingmao.png</iconset>
+               <iconset resource="icons.qrc">
+                <normaloff>:/resource/assert/dingmao.png</normaloff>:/resource/assert/dingmao.png</iconset>
               </property>
               <property name="iconSize">
                <size>
@@ -3543,8 +3559,8 @@ QLabel {
                <string>形态学操作：黑帽运算</string>
               </property>
               <property name="icon">
-               <iconset>
-                <normaloff>resource/assert/heimao.png</normaloff>resource/assert/heimao.png</iconset>
+               <iconset resource="icons.qrc">
+                <normaloff>:/resource/assert/heimao.png</normaloff>:/resource/assert/heimao.png</iconset>
               </property>
               <property name="iconSize">
                <size>
@@ -3583,8 +3599,8 @@ QLabel {
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>200</width>
-          <height>345</height>
+          <width>98</width>
+          <height>28</height>
          </rect>
         </property>
         <attribute name="label">
@@ -3626,8 +3642,8 @@ QLabel {
                <string>连通性分析：简略版</string>
               </property>
               <property name="icon">
-               <iconset>
-                <normaloff>resource/assert/liantongkuai.png</normaloff>resource/assert/liantongkuai.png</iconset>
+               <iconset resource="icons.qrc">
+                <normaloff>:/resource/assert/liantongkuai.png</normaloff>:/resource/assert/liantongkuai.png</iconset>
               </property>
               <property name="iconSize">
                <size>
@@ -3696,8 +3712,8 @@ QLabel {
                <string>连通性分析：详细版</string>
               </property>
               <property name="icon">
-               <iconset>
-                <normaloff>resource/assert/liantongkuais.png</normaloff>resource/assert/liantongkuais.png</iconset>
+               <iconset resource="icons.qrc">
+                <normaloff>:/resource/assert/liantongkuais.png</normaloff>:/resource/assert/liantongkuais.png</iconset>
               </property>
               <property name="iconSize">
                <size>
@@ -3779,8 +3795,8 @@ QLabel {
                <string>轮廓检测操作</string>
               </property>
               <property name="icon">
-               <iconset>
-                <normaloff>resource/assert/lunkuo.png</normaloff>resource/assert/lunkuo.png</iconset>
+               <iconset resource="icons.qrc">
+                <normaloff>:/resource/assert/lunkuo.png</normaloff>:/resource/assert/lunkuo.png</iconset>
               </property>
               <property name="iconSize">
                <size>
@@ -3819,8 +3835,8 @@ QLabel {
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>200</width>
-          <height>345</height>
+          <width>98</width>
+          <height>28</height>
          </rect>
         </property>
         <attribute name="label">
@@ -3862,8 +3878,8 @@ QLabel {
                <string>效果增强：亮度调整</string>
               </property>
               <property name="icon">
-               <iconset>
-                <normaloff>resource/assert/light.png</normaloff>resource/assert/light.png</iconset>
+               <iconset resource="icons.qrc">
+                <normaloff>:/resource/assert/light.png</normaloff>:/resource/assert/light.png</iconset>
               </property>
               <property name="iconSize">
                <size>
@@ -3932,8 +3948,8 @@ QLabel {
                <string>效果增强：gamma矫正</string>
               </property>
               <property name="icon">
-               <iconset>
-                <normaloff>resource/assert/gamma.png</normaloff>resource/assert/gamma.png</iconset>
+               <iconset resource="icons.qrc">
+                <normaloff>:/resource/assert/gamma.png</normaloff>:/resource/assert/gamma.png</iconset>
               </property>
               <property name="iconSize">
                <size>
@@ -4002,8 +4018,8 @@ QLabel {
                <string>效果增强：灰级窗处理</string>
               </property>
               <property name="icon">
-               <iconset>
-                <normaloff>resource/assert/huiji.png</normaloff>resource/assert/huiji.png</iconset>
+               <iconset resource="icons.qrc">
+                <normaloff>:/resource/assert/huiji.png</normaloff>:/resource/assert/huiji.png</iconset>
               </property>
               <property name="iconSize">
                <size>
@@ -4072,8 +4088,8 @@ QLabel {
                <string>效果增强：对比度线性展宽</string>
               </property>
               <property name="icon">
-               <iconset>
-                <normaloff>resource/assert/duibiduzhankuan.png</normaloff>resource/assert/duibiduzhankuan.png</iconset>
+               <iconset resource="icons.qrc">
+                <normaloff>:/resource/assert/duibiduzhankuan.png</normaloff>:/resource/assert/duibiduzhankuan.png</iconset>
               </property>
               <property name="iconSize">
                <size>
@@ -4142,8 +4158,8 @@ QLabel {
                <string>效果增强：非线性动态范围调整</string>
               </property>
               <property name="icon">
-               <iconset>
-                <normaloff>resource/assert/non_linear.png</normaloff>resource/assert/non_linear.png</iconset>
+               <iconset resource="icons.qrc">
+                <normaloff>:/resource/assert/non_linear.png</normaloff>:/resource/assert/non_linear.png</iconset>
               </property>
               <property name="iconSize">
                <size>
@@ -4212,8 +4228,8 @@ QLabel {
                <string>效果增强：线性动态范围调整</string>
               </property>
               <property name="icon">
-               <iconset>
-                <normaloff>resource/assert/linear.png</normaloff>resource/assert/linear.png</iconset>
+               <iconset resource="icons.qrc">
+                <normaloff>:/resource/assert/linear.png</normaloff>:/resource/assert/linear.png</iconset>
               </property>
               <property name="iconSize">
                <size>
@@ -4254,8 +4270,8 @@ QLabel {
   </widget>
   <action name="action_open">
    <property name="icon">
-    <iconset>
-     <normaloff>resource/assert/open.png</normaloff>resource/assert/open.png</iconset>
+    <iconset resource="icons.qrc">
+     <normaloff>:/resource/assert/open.png</normaloff>:/resource/assert/open.png</iconset>
    </property>
    <property name="text">
     <string>打开文件</string>
@@ -4272,8 +4288,8 @@ QLabel {
   </action>
   <action name="action_works">
    <property name="icon">
-    <iconset>
-     <normaloff>resource/assert/open_works.png</normaloff>resource/assert/open_works.png</iconset>
+    <iconset resource="icons.qrc">
+     <normaloff>:/resource/assert/open_works.png</normaloff>:/resource/assert/open_works.png</iconset>
    </property>
    <property name="text">
     <string>打开文件夹/工作区</string>
@@ -4290,8 +4306,8 @@ QLabel {
   </action>
   <action name="action_save">
    <property name="icon">
-    <iconset>
-     <normaloff>resource/assert/save.png</normaloff>resource/assert/save.png</iconset>
+    <iconset resource="icons.qrc">
+     <normaloff>:/resource/assert/save.png</normaloff>:/resource/assert/save.png</iconset>
    </property>
    <property name="text">
     <string>保存图片</string>
@@ -4311,8 +4327,8 @@ QLabel {
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset>
-     <normaloff>resource/assert/exit.png</normaloff>resource/assert/exit.png</iconset>
+    <iconset resource="icons.qrc">
+     <normaloff>:/resource/assert/exit.png</normaloff>:/resource/assert/exit.png</iconset>
    </property>
    <property name="text">
     <string>退出</string>
@@ -4395,8 +4411,8 @@ QLabel {
   </action>
   <action name="action_hist">
    <property name="icon">
-    <iconset>
-     <normaloff>resource/assert/histogram.png</normaloff>resource/assert/histogram.png</iconset>
+    <iconset resource="icons.qrc">
+     <normaloff>:/resource/assert/histogram.png</normaloff>:/resource/assert/histogram.png</iconset>
    </property>
    <property name="text">
     <string>计算灰度直方图</string>
@@ -4429,8 +4445,8 @@ QLabel {
   </action>
   <action name="action_capture">
    <property name="icon">
-    <iconset>
-     <normaloff>resource/assert/capture.png</normaloff>resource/assert/capture.png</iconset>
+    <iconset resource="icons.qrc">
+     <normaloff>:/resource/assert/capture.png</normaloff>:/resource/assert/capture.png</iconset>
    </property>
    <property name="text">
     <string>屏幕截图</string>
@@ -4441,8 +4457,8 @@ QLabel {
   </action>
   <action name="action_help">
    <property name="icon">
-    <iconset>
-     <normaloff>resource/assert/about.png</normaloff>resource/assert/about.png</iconset>
+    <iconset resource="icons.qrc">
+     <normaloff>:/resource/assert/about.png</normaloff>:/resource/assert/about.png</iconset>
    </property>
    <property name="text">
     <string>查看帮助</string>
@@ -4453,8 +4469,8 @@ QLabel {
   </action>
   <action name="action_aboutme">
    <property name="icon">
-    <iconset>
-     <normaloff>resource/assert/aboutme.png</normaloff>resource/assert/aboutme.png</iconset>
+    <iconset resource="icons.qrc">
+     <normaloff>:/resource/assert/aboutme.png</normaloff>:/resource/assert/aboutme.png</iconset>
    </property>
    <property name="text">
     <string>关于作者</string>
@@ -4465,8 +4481,8 @@ QLabel {
   </action>
   <action name="action_restore">
    <property name="icon">
-    <iconset>
-     <normaloff>resource/assert/restore.png</normaloff>resource/assert/restore.png</iconset>
+    <iconset resource="icons.qrc">
+     <normaloff>:/resource/assert/restore.png</normaloff>:/resource/assert/restore.png</iconset>
    </property>
    <property name="text">
     <string>重置图片</string>
@@ -4486,8 +4502,8 @@ QLabel {
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
-     <normaloff>resource/assert/begin.png</normaloff>resource/assert/begin.png</iconset>
+    <iconset resource="icons.qrc">
+     <normaloff>:/resource/assert/begin.png</normaloff>:/resource/assert/begin.png</iconset>
    </property>
    <property name="text">
     <string>混合加工模式</string>
@@ -4504,8 +4520,8 @@ QLabel {
   </action>
   <action name="action_return">
    <property name="icon">
-    <iconset>
-     <normaloff>resource/assert/return.png</normaloff>resource/assert/return.png</iconset>
+    <iconset resource="icons.qrc">
+     <normaloff>:/resource/assert/return.png</normaloff>:/resource/assert/return.png</iconset>
    </property>
    <property name="text">
     <string>撤销</string>
@@ -4525,8 +4541,8 @@ QLabel {
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
-     <normaloff>resource/assert/draw.png</normaloff>resource/assert/draw.png</iconset>
+    <iconset resource="icons.qrc">
+     <normaloff>:/resource/assert/draw.png</normaloff>:/resource/assert/draw.png</iconset>
    </property>
    <property name="text">
     <string>打开绘图板</string>
@@ -4548,8 +4564,8 @@ QLabel {
   </action>
   <action name="action_hide">
    <property name="icon">
-    <iconset>
-     <normaloff>resource/assert/hide.png</normaloff>resource/assert/hide.png</iconset>
+    <iconset resource="icons.qrc">
+     <normaloff>:/resource/assert/hide.png</normaloff>:/resource/assert/hide.png</iconset>
    </property>
    <property name="text">
     <string>隐藏原始图片</string>
@@ -4562,14 +4578,23 @@ QLabel {
   </action>
   <action name="action_disp">
    <property name="icon">
-    <iconset>
-     <normaloff>resource/assert/disp.png</normaloff>resource/assert/disp.png</iconset>
+    <iconset resource="icons.qrc">
+     <normaloff>:/resource/assert/disp.png</normaloff>:/resource/assert/disp.png</iconset>
    </property>
    <property name="text">
     <string>显示原始图片</string>
    </property>
   </action>
  </widget>
- <resources/>
+ <customwidgets>
+  <customwidget>
+   <class>ColorDialog</class>
+   <extends>QToolButton</extends>
+   <header>colordialog.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="icons.qrc"/>
+ </resources>
  <connections/>
 </ui>

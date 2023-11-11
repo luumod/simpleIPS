@@ -1,8 +1,8 @@
-﻿#include "Widget/LookWidget.h"
-#include "Widget/ShowImgWidget.h"
-#include "assist/Common.h"
-#include "Widget/widget.h"
-#include "Widget/ShowImgWidget.h"
+﻿#include "Include/Widget/LookWidget.h"
+#include "Include/Widget/ShowImgWidget.h"
+#include "Include/assist/Common.h"
+#include "Include/Widget/widget.h"
+#include "Include/Widget/ShowImgWidget.h"
 #include <QMouseEvent>
 #include <QHBoxLayout>
 #include <QRubberBand>

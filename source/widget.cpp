@@ -1,6 +1,9 @@
-﻿#include "Widget/widget_include_files.h"
+﻿#include "Include/Widget/widget_include_files.h"
 #include "opencv2/core/utils/logger.hpp"
 #include "ui_mainwindow.h"
+#include "../colorDialog.h"
+#include <QColor>
+
 //单例对象
 Widget* Widget::widget = nullptr;
 
@@ -20,7 +23,7 @@ Widget* Widget::getInstance() {
 Widget::Widget(QWidget* parent)
 	:QMainWindow(parent)
     , ui(new Ui::MainWindow)
-    ,res(new Res("resource/Images/113.png", this))
+    ,res(new Res("../resource/Images/113.png", this))
 {
     ui->setupUi(this);
     init_readJson();		        //读取配置文件
@@ -333,7 +336,7 @@ void Widget::on_action_draw_triggered()
     widget_draw->show();
 }
 
-void Widget::on_colorDialog_triggered(const QColor& color)
+void Widget::on_colorDialog_choice_color(const QColor& color)
 {
 	//选择颜色
 	contours->onTriggered_Color_currentTextChanged_contoursColor(color);
@@ -899,15 +902,14 @@ void Widget::on_Bright_edit_returnPressed()
 
 void Widget::on_Gamma_slider2_sliderMoved(int value)
 {
-    double d_val = value * 1.0 / 10.0;
-    showeffect->onTriggered_slider_valueChange_gamma_C(d_val);
+    double val = value / 10.0;
+    showeffect->onTriggered_slider_valueChange_gamma_C(val);
 }
 
 void Widget::on_Gamma_slider1_sliderMoved(int value)
 {
-    //将int映射为double
-    double d_val = value * 1.0 / 10.0;
-    showeffect->onTriggered_slider_valueChange_gamma(d_val);
+    double val = value / 10.0;
+    showeffect->onTriggered_slider_valueChange_gamma(val);
 }
 
 void Widget::on_Gamma_edit_returnPressed()
@@ -978,11 +980,13 @@ void Widget::on_DpLinear_edit_returnPressed()
 
 void Widget::on_DpLinear_rbtn1_clicked(bool clicked)
 {
+    Q_UNUSED(clicked);
     showeffect->DpLinear_mode = 0; //灰度图
 }
 
 void Widget::on_DpLinear_rbtn2_clicked(bool clicked)
 {
+    Q_UNUSED(clicked);
     showeffect->DpLinear_mode = 1;
 }
 
@@ -999,16 +1003,19 @@ void Widget::on_NdpLinear_edit_returnPressed()
 
 void Widget::on_NdpLinear_rbtn1_clicked(bool clicked)
 {
+    Q_UNUSED(clicked);
     showeffect->NoneDpLinear_mode = 0; //灰度图
 }
 
 void Widget::on_NdpLinear_rbtn2_clicked(bool clicked)
 {
+    Q_UNUSED(clicked);
     showeffect->NoneDpLinear_mode = 1;
 }
 
 void Widget::on_NdpNormal_tbtn1_clicked(bool clicked)
 {
+    Q_UNUSED(clicked);
     //常规非线性变换
     showeffect->NormalNoneDpLinear_mode = 0;
     showeffect->choice_NormalNoneDpLinearAlgorithm();
@@ -1017,6 +1024,7 @@ void Widget::on_NdpNormal_tbtn1_clicked(bool clicked)
 
 void Widget::on_NdpNormal_tbtn2_clicked(bool clicked)
 {
+    Q_UNUSED(clicked);
     showeffect->NormalNoneDpLinear_mode = 1;
     showeffect->choice_NormalNoneDpLinearAlgorithm();
 }
@@ -1153,10 +1161,8 @@ void Widget::updateFromRoot()
 
 void Widget::init_CustomAction()
 {
-	//轮廓操作时 选择颜色 自动更新
-	colorDialog = new QColorDialog(this);
-    connect(colorDialog, &QColorDialog::currentColorChanged,
-            this, [=](const QColor &color){on_colorDialog_triggered(color);});
+    //轮廓操作时 选择颜色 自动更新
+    connect(ui->colorDialog,&ColorDialog::choice_color,this,[=](QColor color){on_colorDialog_choice_color(color);});
 
 	//颜色转换
 	img_base = new BaseOperate();
@@ -1312,7 +1318,7 @@ void Widget::init_CustomStatusBar()
 			statusBar_warn->addPermanentWidget(warningLabel);
 
 			// 如果需要显示一段时间后自动隐藏，您可以使用 QTimer 来实现
-			QTimer::singleShot(5000, [=]() {
+            QTimer::singleShot(5000,this, [=]() {
 				warningLabel->setVisible(false);
 			statusBar_warn->removeWidget(warningLabel);
 			delete warningLabel;

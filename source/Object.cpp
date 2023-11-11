@@ -1,9 +1,9 @@
-﻿#include "opencv_functions/Object.h"
-#include "Widget/widget.h"
-#include "assist/Mat2QImage.h"
-#include "Widget/LookWidget.h"
-#include "assist/Common.h"
-#include "assist/Res.h"
+﻿#include "Include/opencv_functions/Object.h"
+#include "Include/Widget/widget.h"
+#include "Include/assist/Mat2QImage.h"
+#include "Include/Widget/LookWidget.h"
+#include "Include/assist/Common.h"
+#include "Include/assist/Res.h"
 #include <QDebug>
 
 Object::Object()

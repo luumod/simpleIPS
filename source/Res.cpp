@@ -1,5 +1,5 @@
-﻿#include "assist/Res.h"
-#include "assist/Mat2QImage.h"
+﻿#include "Include/assist/Res.h"
+#include "Include/assist/Mat2QImage.h"
 #include <QDebug>
 #include <QFileInfo>
 #include <QFileDialog>

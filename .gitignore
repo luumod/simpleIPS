@@ -7,7 +7,7 @@
 *.lai
 *.so
 *.so.*
-*.dll
+# *.dll
 *.dylib
 
 # Qt-es
@@ -62,3 +62,12 @@ test*
 *.ilk
 *.pdb
 *.user
+
+
+Makefile*
+
+*.Release
+*.Debug
+*.stash
+test/
+*.pdb

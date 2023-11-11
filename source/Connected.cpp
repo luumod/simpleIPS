@@ -1,6 +1,6 @@
-﻿#include "opencv_functions/Connected.h"
-#include "assist/Mat2QImage.h"
-#include "Widget/widget.h"
+﻿#include "Include/opencv_functions/Connected.h"
+#include "Include/assist/Mat2QImage.h"
+#include "Include/Widget/widget.h"
 #include <QString>
 
 Connected::Connected() :Object() {}

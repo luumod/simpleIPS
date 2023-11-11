@@ -1,7 +1,7 @@
-﻿#include "opencv_functions/Contours.h"
-#include "assist/Mat2QImage.h"
-#include "Widget/widget.h"
-#include "assist/Res.h"
+﻿#include "Include/opencv_functions/Contours.h"
+#include "Include/assist/Mat2QImage.h"
+#include "Include/Widget/widget.h"
+#include "Include/assist/Res.h"
 #include <QColor>
 #include <QDebug>
 Contours::Contours() :Object() {}

@@ -1,8 +1,8 @@
-﻿#include "Widget/DrawWidget.h"
-#include "assist/Enums.h"
-#include "other_functions/GraphicsScene.h"
-#include "Widget/widget.h"
-#include "assist/Res.h"
+﻿#include "Include/Widget/DrawWidget.h"
+#include "Include/assist/Enums.h"
+#include "Include/other_functions/GraphicsScene.h"
+#include "Include/Widget/widget.h"
+#include "Include/assist/Res.h"
 #include <QButtonGroup>
 #include <QPushButton>
 #include <QGraphicsView>

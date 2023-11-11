@@ -1,5 +1,5 @@
-﻿#include "opencv_functions/Threshold.h"
-#include "Widget/widget.h"
+﻿#include "Include/opencv_functions/Threshold.h"
+#include "Include/Widget/widget.h"
 
 Threshold::Threshold() :Object() {}
 

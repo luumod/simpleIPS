@@ -1,8 +1,8 @@
-﻿#include "Widget/ShowImgWidget.h"
-#include "assist/QImage2Mat.h"
-#include "Widget/widget.h"
-#include "assist/Res.h"
-#include "Widget/LookWidget.h"
+﻿#include "Include/Widget/ShowImgWidget.h"
+#include "Include/assist/QImage2Mat.h"
+#include "Include/Widget/widget.h"
+#include "Include/assist/Res.h"
+#include "Include/Widget/LookWidget.h"
 #include <QMenu>
 #include <QAction>
 #include <QScrollArea>

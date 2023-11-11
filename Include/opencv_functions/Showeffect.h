@@ -30,7 +30,7 @@ public:
 	//灰级窗处理
 	void showGrayWindow();
 
-	cv::Mat showDynamicLinearAdj(cv::Mat mat = cv::Mat());
+    cv::Mat showDynamicLinearAdj(cv::Mat mat = cv::Mat());
 	void showBGRDynamicLinearAdj();
 	void choice_DpLinearAlgorithm();
 

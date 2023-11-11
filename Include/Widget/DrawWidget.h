@@ -2,7 +2,7 @@
 #define DRAWWIDGET_H_
 
 #include <QMainWindow>
-#include "opencv_functions/Object.h"
+#include "../opencv_functions/Object.h"
 class GraphicsScene;
 class QLabel;
 class QButtonGroup;

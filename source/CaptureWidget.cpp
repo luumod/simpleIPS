@@ -1,6 +1,6 @@
-﻿#include "Widget/CaptureWidget.h"
-#include "Widget/ShowImgWidget.h"
-#include "assist/config.h"
+﻿#include "Include/Widget/CaptureWidget.h"
+#include "Include/Widget/ShowImgWidget.h"
+#include "Include/assist/config.h"
 #include <QApplication>
 #include <QClipboard>
 #include <QMouseEvent>

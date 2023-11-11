@@ -1,8 +1,8 @@
-﻿#include "Widget/widget.h"
-#include "assist/Res.h"
-#include "opencv_functions/BaseOperate.h"
-#include "assist/Mat2QImage.h"
-#include "Widget/ShowImgWidget.h"
+﻿#include "Include/Widget/widget.h"
+#include "Include/assist/Res.h"
+#include "Include/assist/Mat2QImage.h"
+#include "Include/opencv_functions/BaseOperate.h"
+#include "Include/Widget/ShowImgWidget.h"
 #include "ui_mainwindow.h"
 #include <QLabel>
 
@@ -154,6 +154,7 @@ void BaseOperate::drawGrayHist(const QString& title, cv::Mat mt) {
 
 QImage BaseOperate::showGrayHist_AdjArea(const QString &title,int height,int width)
 {
+    Q_UNUSED(title);
     //直方图的宽高，由外部传入
     auto histHeight = height;
     auto histWidth = width;

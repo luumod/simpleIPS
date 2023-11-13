@@ -885,6 +885,7 @@ void Widget::on_Bright_slider1_sliderMoved(int value)
 {
     ui->Bright_slider2->setValue(ui->Bright_slider2->minimum());
     showeffect->onTriggered_slider_valueChange_brighten(value);
+    //AddTask
 }
 
 void Widget::on_Bright_slider2_sliderMoved(int value)

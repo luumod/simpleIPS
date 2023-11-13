@@ -1,7 +1,7 @@
 {
-    "win_location_x": 57,
+    "win_location_x": 287,
     "win_location_y": 29,
-    "win_screen_scale": 1,
+    "win_screen_scale": 1.25,
     "win_theme": "light",
     "win_title": "简易图片处理软件"
 }

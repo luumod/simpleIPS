@@ -1,6 +1,6 @@
 QT       += core gui
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets openglwidgets
 
 CONFIG += c++17
 
@@ -27,6 +27,7 @@ DEPENDPATH += $$PWD/'../../../vld/Visual Leak Detector/include'
 DESTDIR = $$PWD/bin
 LIBS += $$PWD/bin/colordialogplugin.lib
 
+LIBS += -lopengl32 -lglu32
 
 DISTFILES += \
     resource/Images/103.png \
@@ -121,6 +122,10 @@ HEADERS += \
     Include/other_functions/GraphicsScene.h \
     Include/other_functions/deprecated.h \
     Include/other_functions/eventfilterobject.h \
+    Include/video/framefilter.h \
+    Include/video/frameoperator.h \
+    Include/video/videocapwork.h \
+    Include/video/videowidget.h \
     colorDialog.h
 
 SOURCES += \
@@ -140,7 +145,11 @@ SOURCES += \
     source/Threshold.cpp \
     source/WidgetBuilder.cpp \
     source/eventfilterobject.cpp \
+    source/framefilter.cpp \
+    source/frameoperator.cpp \
     source/main.cpp \
+    source/videocapwork.cpp \
+    source/videowidget.cpp \
     source/widget.cpp
 
 RESOURCES += \

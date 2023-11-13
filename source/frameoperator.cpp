@@ -14,18 +14,18 @@ void frameOperator::initMat(const cv::Mat &mat)
     if (mat.empty()){
         return;
     }
-    this->src1 = mat;
-    this->dst = src1.clone(); //dst默认为src
+    this->src = mat;
+    this->dst = src.clone(); //dst默认为src
 }
 
 void frameOperator::blur(int value)
 {
-    cv::blur(src1,dst,cv::Size(value,value));
+    cv::blur(src,dst,cv::Size(value,value));
 }
 
 void frameOperator::bright(int value)
 {
-
+    effect->Bright(src,dst);//获取dst
 }
 
 frameOperator::frameOperator()

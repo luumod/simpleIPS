@@ -61,6 +61,8 @@ class CaptureWidget;
 class QBoxLayout;
 class QSlider;
 class QComboBox;
+class VideoCapWork;
+class QThread;
 #endif
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -150,6 +152,11 @@ public:
      * @return double 返回完美缩放比例，并且赋值为ori_scaledDelta，使得其保留。
      */
     double init_scaledImageOk();
+
+    /**
+     * @brief 初始化视频窗口信息
+     */
+    void init_videoWidget();
 signals:
     /**
      * @brief 当处于 “单图片模式” 的情况下触发此信号
@@ -187,6 +194,12 @@ signals:
      * @param  optName 表示此时某个具体操作的名字
      */
     void signal_choiceToolButton(const QString& optName = "",int id = -1);
+
+
+    /**
+     * @brief 开始线程信号
+     */
+    void intoWorkThread();
 protected:
     /**
      * @brief 窗口移动：移动窗口获取当前左上角坐标，保存在config.json配置文件中，使得下次打开程序位置不变。
@@ -207,6 +220,13 @@ protected:
      * @todo 引入此函数的目的是当 “对比模式” 与 “专注模式” 之间窗口的布局进行切换的时候，尺寸可能会发生变化，因此 “强行” 调用此函数来恢复原始尺寸
      */
     void resizeEvent(QResizeEvent* ev)override;
+
+    /**
+     * @brief 退出时线程结束
+     * @param event
+     */
+    void closeEvent(QCloseEvent *event);
+
 public:
     /**
      * @brief 创建程序中所有的行为
@@ -684,6 +704,11 @@ public slots:
     void on_NdpNormal_tbtn1_clicked(bool clicked);
     void on_NdpNormal_tbtn2_clicked(bool clicked);
 
+    /************************************************/
+
+    void on_video_open_clicked_();
+
+    void on_video_pause_clicked_();
 public:
 
     /**
@@ -966,6 +991,11 @@ public: // GUI部分
     QList<QSlider*> ls_slider_grayWindow;
     QList<QSlider*> ls_slider_dpLinear;
     QList<QSlider*> ls_slider_NoneDpLinear;
+
+
+    /*------------------------视频操作-----------------*/
+    VideoCapWork* work = nullptr;
+    QThread* work_thread = nullptr;
 };
 
 

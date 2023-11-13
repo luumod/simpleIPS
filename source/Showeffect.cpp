@@ -3,6 +3,7 @@
 #include "Include/assist/Res.h"
 #include "Include/assist/Mat2QImage.h"
 #include <QDebug>
+#include <QElapsedTimer>
 #include <QMessageBox>
 
 void warning() {
@@ -47,15 +48,12 @@ void Showeffect::initialize()
 	 NoneDpLinear_mode = 0;  //灰度还是彩色
 }
 
-void Showeffect::Bright()
-{
-	cv::Mat _mt;
-	getMat(_mt);
-	cv::Mat tMt = cv::Mat::zeros(_mt.size(), _mt.type());
 
-	//调整亮度
-	for (int i = 0; i < _mt.rows; i++) {
-		for (int j = 0; j < _mt.cols; j++) {
+void Showeffect::Bright(const cv::Mat &_mt, cv::Mat &tMt)
+{
+    //调整亮度
+    for (int i = 0; i < _mt.rows; i++) {
+        for (int j = 0; j < _mt.cols; j++) {
             if (_mt.channels() == 1){
                 tMt.at<uchar>(i,j) = cv::saturate_cast<uchar>( cv::saturate_cast<float>(_mt.at<uchar>(i, j)) + this->bright_value);
             }
@@ -64,18 +62,12 @@ void Showeffect::Bright()
                     tMt.at<cv::Vec3b>(i, j)[z] = cv::saturate_cast<uchar>( cv::saturate_cast<float>(_mt.at<cv::Vec3b>(i, j)[z]) + this->bright_value);
                 }
             }
-		}
-	}
-
-	Object::update(tMt);
+        }
+    }
 }
 
-void Showeffect::Gamma()
-{
-	cv::Mat _mt;
-    getMat(_mt);
-    cv::Mat tMt = cv::Mat::zeros(_mt.size(), _mt.type());
 
+void Showeffect::Gamma(const cv::Mat& _mt,cv::Mat& tMt){
     for (int i =0;i<_mt.rows;i++){
         for (int j =0;j<_mt.cols;j++){
             if (_mt.channels() == 1){
@@ -92,7 +84,6 @@ void Showeffect::Gamma()
             }
         }
     }
-    Object::update(tMt);
 }
 
 cv::Mat Showeffect::showContrastLinearBroaden(cv::Mat mat)
@@ -409,19 +400,28 @@ void Showeffect::choice_linearAlgorithm()
 
 void Showeffect::onTriggered_slider_valueChange_brighten(int bright_value)
 {
-	this->bright_value = bright_value;
-	Bright();
+    this->bright_value = bright_value;
+
+    cv::Mat src = Object::getMat2(),tMt = src.clone();
+    Bright(src,tMt);
+    Object::update(tMt);
 }
 
 void Showeffect::onTriggered_slider_valueChange_gamma_C(double gamma_C){
     this->gamma_c = gamma_C;
-    Gamma();
+
+    cv::Mat src = Object::getMat2(),tMt = src.clone();
+    Gamma(src,tMt);
+    Object::update(tMt);
 }
 
 void Showeffect::onTriggered_slider_valueChange_gamma(double gamma_value)
 {
     this->gamma_value = gamma_value;
-	Gamma();
+
+    cv::Mat src = Object::getMat2(),tMt = src.clone();
+    Gamma(src,tMt);
+    Object::update(tMt);
 }
 
 void Showeffect::onTriggered_slider_valueChange_linearg1(double g1)
@@ -470,14 +470,25 @@ void Showeffect::onTriggered_slider_valueChange_NoneDynamicC(double value)
 void Showeffect::onReturnPressed_Bright_Edit(QList<QString> strs)
 {
 	int val = strs[0].toInt();
-	this->bright_value = val;
-	Bright();
+    this->bright_value = val;
+
+    cv::Mat src = Object::getMat2(),tMt = src.clone();
+    Bright(src,tMt);
+    Object::update(tMt);
 }
 
 void Showeffect::onReturnPressed_Gamma_Edit(QList<QString> strs)
 {
 	this->gamma_value = strs[0].toInt();
-	Gamma();
+
+    /*三部曲：
+     * 1. 获取
+     * 2. 操作
+     * 3. 显示
+    */
+    cv::Mat src = Object::getMat2(),tMt = src.clone();
+    Gamma(src,tMt);
+    Object::update(tMt);
 }
 
 void Showeffect::onReturnPressed_Linear_Edit(QList<QString> strs)

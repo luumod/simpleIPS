@@ -71,3 +71,5 @@ Makefile*
 *.stash
 test/
 *.pdb
+videos/
+videos

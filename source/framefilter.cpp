@@ -21,6 +21,9 @@ cv::Mat frameFilter::filter(const cv::Mat &mat)
         case Type::Blur:
             optor->blur(x.params[0]);
             break;
+        case Type::Bright:
+            optor->bright(x.params[0]);
+            break;
         default:
             break;
         }

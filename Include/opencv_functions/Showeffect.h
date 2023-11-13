@@ -19,8 +19,8 @@ public:
 protected:
 	void initialize()override;
 public:
-	void Bright();
-	void Gamma();
+    void Bright(const cv::Mat& _mt,cv::Mat& tMt);
+    void Gamma(const cv::Mat& _mt,cv::Mat& tMt);
 
 	//对比度线性展宽
 	cv::Mat showContrastLinearBroaden(cv::Mat mat = cv::Mat());

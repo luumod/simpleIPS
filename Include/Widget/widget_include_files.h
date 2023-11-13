@@ -12,6 +12,10 @@
 #include "../opencv_functions/BaseOperate.h"
 #include "../opencv_functions/Showeffect.h"
 #include "../other_functions/eventfilterobject.h"
+
+#include "../video/framefilter.h"
+#include "../video/frameoperator.h"
+#include "../video/videocapwork.h"
 #include "ShowImgWidget.h"
 #include "CaptureWidget.h"
 #include "WidgetBuilder.h"
@@ -26,14 +30,17 @@
 #include <opencv2/core/utils/logger.hpp>
 #include <QToolButton>
 #include <QButtonGroup>
+#include <QElapsedTimer>
 #include <QToolBox>
 #include <QAction>
 #include <QMenuBar>
 #include <QMenu>
+
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QScreen>
 #include <QApplication>
+#include <QThread>
 #include <QProgressBar>
 #include <QSlider>
 #include <QGroupBox>

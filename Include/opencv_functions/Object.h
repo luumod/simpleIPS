@@ -21,6 +21,7 @@ protected:
 	static Widget* get();
 	static void update(const cv::Mat& tMt);
 	static void getMat(cv::Mat& res_mt);
+    static cv::Mat getMat2();
 public:
 	int current_choice = 0;
 };

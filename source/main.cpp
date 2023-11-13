@@ -2,6 +2,7 @@
 #include <QApplication>
 #include <QJsonObject>
 #include <QJsonValue>
+#include <QThread>
 #include <QJsonDocument>
 #include <QFile>
 #include <Windows.h>
@@ -45,5 +46,7 @@ int main(int argc,char* argv[])
         }
         delete w;
     });
+
+    qInfo()<<"Ui线程：" <<QThread::currentThreadId();
     return a.exec();
 }

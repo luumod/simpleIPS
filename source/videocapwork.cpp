@@ -9,7 +9,13 @@ static int i =1;
 VideoCapWork* VideoCapWork::videoCapWork = nullptr;
 VideoCapWork::VideoCapWork()
 {
-    videoCap.open("videos/3.mp4");
+}
+
+void VideoCapWork::openVideo(const std::string& name){
+    if (videoCap.isOpened()){
+        videoCap.release();
+    }
+    videoCap.open(name);
     // 检查视频是否成功打开
     if (!videoCap.isOpened()) {
         std::cerr << "Error: Unable to open the video file." << std::endl;
@@ -19,7 +25,6 @@ VideoCapWork::VideoCapWork()
     fps_count = videoCap.get(cv::CAP_PROP_FRAME_COUNT );
     width = videoCap.get(cv::CAP_PROP_FRAME_WIDTH);
     height = videoCap.get(cv::CAP_PROP_FRAME_HEIGHT);
-    qInfo()<<"width: "<<width << "height: "<<height;
 }
 
 VideoCapWork *VideoCapWork::getInstance()
@@ -32,7 +37,9 @@ VideoCapWork *VideoCapWork::getInstance()
 
 VideoCapWork::~VideoCapWork()
 {
-    videoCap.release();
+    if (videoCap.isOpened()){
+        videoCap.release();
+    }
 }
 
 bool VideoCapWork::startExportVideo(const std::string& fileName)
@@ -59,26 +66,32 @@ bool VideoCapWork::stopExportVideo()
 void VideoCapWork::captureVideoFrame()
 {
     cv::Mat frame;
+    qInfo()<<"读取线程：" <<QThread::currentThreadId();
 
     while (true) {//读取每一帧
-
         mutex.lock();
 
         if (isStop){
+            mutex.unlock();
+            qInfo()<<"关闭视频";
             break;
         }
 
         if (pauseVideo){ //手动阻塞线程
             mutex.unlock();
             cv::waitKey(50);
+            qInfo()<<"暂停视频";
             continue;
+        }
+
+        if (!videoCap.isOpened()){
+            mutex.unlock();
+            break;
         }
 
         if (!videoCap.read(frame) || frame.empty()){
             mutex.unlock();
-            cv::waitKey(50);
-            //播放完成
-            QMessageBox::information(nullptr, "播放完成", "视频播放已经完成！");
+            qInfo()<<"视频播放完成";
             break;
         }
         //原始图片
@@ -87,7 +100,6 @@ void VideoCapWork::captureVideoFrame()
         //进行操作
         cv::Mat dstFrame = frameFilter::getInstance()->filter(frame); //dst
 
-        qInfo()<<"还在工作" << i++;
         //目标操作图片
         emit havingVideoFrameDst(dstFrame);
 

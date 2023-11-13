@@ -46,5 +46,9 @@
         <file>resource/assert/suiji.png</file>
         <file>resource/assert/tidu.png</file>
         <file>resource/assert/zhong.png</file>
+        <file>resource/assert/kaishi.png</file>
+        <file>resource/assert/zanting.png</file>
+        <file>resource/assert/xiangqian.png</file>
+        <file>resource/assert/xianghou.png</file>
     </qresource>
 </RCC>

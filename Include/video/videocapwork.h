@@ -19,6 +19,8 @@ private:
 public:
     bool startExportVideo(const std::string& fileName);
     bool stopExportVideo();
+
+    void openVideo(const std::string& name);
 public slots:
     void captureVideoFrame();
 signals:

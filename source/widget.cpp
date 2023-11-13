@@ -34,6 +34,8 @@ Widget::Widget(QWidget* parent)
     init_CustomStatusBar();		    //创建状态栏
     init_Label();			        //预处理图片显示
     init_specialConnect();          //处理特殊的信号与槽的链接
+    //视频处理
+    init_videoWidget();
 
     //暂时禁用图片显示与隐藏按钮
     ui->action_hide->setDisabled(true);
@@ -72,6 +74,15 @@ Widget::~Widget()
 
     delete ui;
     ui=nullptr;
+
+    //视频相关销毁
+    delete VideoCapWork::getInstance();
+    delete frameFilter::getInstance();
+    delete frameOperator::getInstance();
+
+    work_thread->quit();
+    work_thread->wait();
+
 }
 
 void Widget::init_readJson()
@@ -155,7 +166,7 @@ void Widget::init_Label()
 void Widget::init_specialConnect()
 {
     //便于管理
-    ls_opts.push_back(blur = new Blur);
+    //ls_opts.push_back(blur = new Blur);
     ls_opts.push_back(threshold = new Threshold);
     ls_opts.push_back(morphology = new Morphology);
     ls_opts.push_back(connected = new Connected);
@@ -219,6 +230,10 @@ void Widget::resizeEvent(QResizeEvent* ev)
     Q_UNUSED(ev);
     scaledDelta = ori_scaledDelta = init_scaledImageOk();
     update_Image_1(scaledDelta);
+}
+
+void Widget::closeEvent(QCloseEvent *event){
+    work->isStop = true;
 }
 
 
@@ -1030,6 +1045,21 @@ void Widget::on_NdpNormal_tbtn2_clicked(bool clicked)
     showeffect->choice_NormalNoneDpLinearAlgorithm();
 }
 
+void Widget::on_video_open_clicked_()
+{
+    QString name = QFileDialog::getOpenFileName(nullptr,"打开视频文件","../videos/","MP4 Files (*.mp4);; AVI Files (*.avi)");
+    if (name.isNull()){
+        return;
+    }
+    work->openVideo(name.toStdString());
+    emit intoWorkThread(); //发送信号，进入线程
+}
+
+void Widget::on_video_pause_clicked_()
+{
+    work->pauseVideo = !work->pauseVideo;
+}
+
 void Widget::clear_allButtonClicked()
 {
     for (auto& btnGps : btngroups) {
@@ -1580,5 +1610,25 @@ double Widget::init_scaledImageOk() {
 
 	update_Image(t_scaledDelta);
 
-	return t_scaledDelta;
+    return t_scaledDelta;
+}
+
+void Widget::init_videoWidget()
+{
+    work = VideoCapWork::getInstance();
+    work_thread = new QThread(this);
+    work->moveToThread(work_thread);
+    work_thread->setStackSize(1024*1024*512);
+    work_thread->start();
+
+    //要开始多线程，必须要使得 线程内的对象 作为槽函数的对象
+    connect(ui->video_open,&QPushButton::clicked,this,&Widget::on_video_open_clicked_);
+    connect(this,&Widget::intoWorkThread,work,&VideoCapWork::captureVideoFrame); //进入线程
+    connect(work,&VideoCapWork::havingVideoFrame,ui->gl_wid1,&VideoWidget::getMat); //原始帧
+    connect(work,&VideoCapWork::havingVideoFrameDst,ui->gl_wid2,&VideoWidget::getMat); //处理帧
+
+    connect(work_thread,&QThread::finished,this,[=](){qInfo()<<"finished";});
+
+    //视频暂停
+    connect(ui->video_play,&QToolButton::clicked,this,&Widget::on_video_pause_clicked_);
 }

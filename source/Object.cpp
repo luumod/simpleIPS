@@ -40,6 +40,17 @@ void Object::getMat(cv::Mat& res_mt)
 		res_mt = get()->res->flash_mt;
 	}
 	else {
-		res_mt = get()->res->inter_mt;
-	}
+        res_mt = get()->res->inter_mt;
+    }
+}
+
+cv::Mat Object::getMat2()
+{
+    if (get()->mode) {
+        return get()->res->flash_mt;
+    }
+    else {
+        return get()->res->inter_mt;
+    }
+    return cv::Mat();
 }

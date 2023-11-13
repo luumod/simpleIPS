@@ -6,15 +6,17 @@
 #include <QMutex>
 #include <opencv2/opencv.hpp>
 
+enum Type{ Blur,Bright};
+
+struct Task{
+    Type opt;//当前操作类型
+    std::vector<int> params;
+};
+
 class frameFilter
 {
 
 public:
-    enum Type{ Blur };
-    struct Task{
-        Type opt;//当前操作类型
-        std::vector<int> params;
-    };
     static frameFilter* filt;
     static frameFilter* getInstance();
     cv::Mat filter(const cv::Mat& mat);

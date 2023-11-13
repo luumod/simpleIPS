@@ -68,6 +68,8 @@ Makefile*
 
 *.Release
 *.Debug
+Release
+release
 *.stash
 test/
 *.pdb

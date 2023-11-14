@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>945</width>
-    <height>636</height>
+    <width>1141</width>
+    <height>805</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -21,8 +21,8 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>0</width>
-    <height>0</height>
+    <width>1141</width>
+    <height>805</height>
    </size>
   </property>
   <property name="maximumSize">
@@ -70,15 +70,15 @@
            </size>
           </property>
           <property name="currentIndex">
-           <number>1</number>
+           <number>5</number>
           </property>
           <widget class="QWidget" name="page">
            <property name="geometry">
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>156</width>
-             <height>200</height>
+             <width>192</width>
+             <height>220</height>
             </rect>
            </property>
            <attribute name="label">
@@ -354,8 +354,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>200</width>
-             <height>316</height>
+             <width>242</width>
+             <height>315</height>
             </rect>
            </property>
            <attribute name="label">
@@ -707,8 +707,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>133</width>
-             <height>351</height>
+             <width>137</width>
+             <height>371</height>
             </rect>
            </property>
            <attribute name="label">
@@ -1131,8 +1131,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>104</width>
-             <height>168</height>
+             <width>129</width>
+             <height>181</height>
             </rect>
            </property>
            <attribute name="label">
@@ -1262,8 +1262,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>100</width>
-             <height>30</height>
+             <width>98</width>
+             <height>28</height>
             </rect>
            </property>
            <attribute name="label">
@@ -1354,8 +1354,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>100</width>
-             <height>30</height>
+             <width>200</width>
+             <height>428</height>
             </rect>
            </property>
            <attribute name="label">
@@ -1839,8 +1839,8 @@
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>319</width>
-                     <height>235</height>
+                     <width>411</width>
+                     <height>315</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -1969,8 +1969,8 @@
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>319</width>
-                     <height>235</height>
+                     <width>410</width>
+                     <height>315</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -3022,14 +3022,11 @@
                        </widget>
                       </item>
                       <item row="3" column="0">
-                       <widget class="QLabel" name="label_37">
+                       <widget class="QLabel" name="Contours_lab4">
                         <property name="text">
                          <string>颜色选择</string>
                         </property>
                        </widget>
-                      </item>
-                      <item row="3" column="1">
-                       <widget class="ColorDialog" name="colorDialog"/>
                       </item>
                      </layout>
                     </item>
@@ -4011,251 +4008,363 @@ QLabel {
        <attribute name="title">
         <string>Tab 2</string>
        </attribute>
-       <layout class="QHBoxLayout" name="horizontalLayout_21">
+       <layout class="QHBoxLayout" name="horizontalLayout_21" stretch="6,1">
+        <property name="spacing">
+         <number>0</number>
+        </property>
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
         <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_16" stretch="5,1">
+         <layout class="QVBoxLayout" name="verticalLayout_26" stretch="5,3">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <property name="leftMargin">
+           <number>10</number>
+          </property>
           <item>
-           <layout class="QVBoxLayout" name="verticalLayout_26" stretch="5,1">
+           <layout class="QHBoxLayout" name="horizontalLayout_17" stretch="5,1,5">
             <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_17" stretch="5,1,5">
-              <item>
-               <widget class="VideoWidget" name="gl_wid1"/>
-              </item>
-              <item>
-               <widget class="QToolButton" name="toolButton">
-                <property name="text">
-                 <string>...</string>
-                </property>
-                <property name="arrowType">
-                 <enum>Qt::RightArrow</enum>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="VideoWidget" name="gl_wid2"/>
-              </item>
-             </layout>
+             <widget class="VideoWidget" name="gl_wid1"/>
             </item>
             <item>
-             <widget class="QWidget" name="widget_10" native="true">
-              <layout class="QVBoxLayout" name="verticalLayout_28">
-               <item>
-                <layout class="QFormLayout" name="formLayout_16">
-                 <property name="labelAlignment">
-                  <set>Qt::AlignCenter</set>
-                 </property>
-                 <property name="leftMargin">
-                  <number>3</number>
-                 </property>
-                 <property name="topMargin">
-                  <number>2</number>
-                 </property>
-                 <property name="rightMargin">
-                  <number>2</number>
-                 </property>
-                 <property name="bottomMargin">
-                  <number>3</number>
-                 </property>
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="label_39">
-                   <property name="text">
-                    <string>播放进度：</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="1">
-                  <widget class="QSlider" name="horizontalSlider_2">
-                   <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </item>
-               <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_22" stretch="0,0,0,0,0">
-                 <item>
-                  <spacer name="horizontalSpacer_2">
-                   <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>30</width>
-                     <height>20</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                 <item>
-                  <widget class="QToolButton" name="video_head">
-                   <property name="text">
-                    <string/>
-                   </property>
-                   <property name="icon">
-                    <iconset resource="icons.qrc">
-                     <normaloff>:/resource/assert/xiangqian.png</normaloff>:/resource/assert/xiangqian.png</iconset>
-                   </property>
-                   <property name="iconSize">
-                    <size>
-                     <width>40</width>
-                     <height>40</height>
-                    </size>
-                   </property>
-                   <property name="autoRaise">
-                    <bool>true</bool>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QToolButton" name="video_play">
-                   <property name="text">
-                    <string/>
-                   </property>
-                   <property name="icon">
-                    <iconset resource="icons.qrc">
-                     <normaloff>:/resource/assert/kaishi.png</normaloff>:/resource/assert/kaishi.png</iconset>
-                   </property>
-                   <property name="iconSize">
-                    <size>
-                     <width>40</width>
-                     <height>40</height>
-                    </size>
-                   </property>
-                   <property name="autoRaise">
-                    <bool>true</bool>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QToolButton" name="video_tail">
-                   <property name="text">
-                    <string/>
-                   </property>
-                   <property name="icon">
-                    <iconset resource="icons.qrc">
-                     <normaloff>:/resource/assert/xianghou.png</normaloff>:/resource/assert/xianghou.png</iconset>
-                   </property>
-                   <property name="iconSize">
-                    <size>
-                     <width>40</width>
-                     <height>40</height>
-                    </size>
-                   </property>
-                   <property name="autoRaise">
-                    <bool>true</bool>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <spacer name="horizontalSpacer_3">
-                   <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>40</width>
-                     <height>20</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                </layout>
-               </item>
-               <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_24">
-                 <item>
-                  <spacer name="horizontalSpacer_4">
-                   <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>40</width>
-                     <height>20</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                 <item>
-                  <widget class="QPushButton" name="video_open">
-                   <property name="text">
-                    <string>打开视频</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QPushButton" name="video_cut">
-                   <property name="text">
-                    <string>切换视频</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QPushButton" name="video_saveMat">
-                   <property name="text">
-                    <string>保存当前帧</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <spacer name="horizontalSpacer_5">
-                   <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>40</width>
-                     <height>20</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                </layout>
-               </item>
-              </layout>
+             <widget class="QToolButton" name="toolButton">
+              <property name="text">
+               <string>...</string>
+              </property>
+              <property name="arrowType">
+               <enum>Qt::RightArrow</enum>
+              </property>
              </widget>
+            </item>
+            <item>
+             <widget class="VideoWidget" name="gl_wid2"/>
             </item>
            </layout>
           </item>
           <item>
-           <widget class="QTabWidget" name="tabWidget_2">
-            <widget class="QWidget" name="tab_8">
-             <attribute name="title">
-              <string>Tab 1</string>
-             </attribute>
-             <layout class="QVBoxLayout" name="verticalLayout_27">
-              <item>
-               <widget class="QGroupBox" name="groupBox">
-                <property name="title">
-                 <string>GroupBox</string>
-                </property>
+           <widget class="QWidget" name="widget_10" native="true">
+            <layout class="QVBoxLayout" name="verticalLayout_28" stretch="1,1,10">
+             <property name="spacing">
+              <number>0</number>
+             </property>
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
+             <item>
+              <layout class="QFormLayout" name="formLayout_16">
+               <property name="labelAlignment">
+                <set>Qt::AlignCenter</set>
+               </property>
+               <property name="leftMargin">
+                <number>3</number>
+               </property>
+               <property name="topMargin">
+                <number>2</number>
+               </property>
+               <property name="rightMargin">
+                <number>2</number>
+               </property>
+               <property name="bottomMargin">
+                <number>3</number>
+               </property>
+               <item row="0" column="0">
+                <widget class="QLabel" name="label_39">
+                 <property name="text">
+                  <string>播放进度：</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="0" column="1">
+                <widget class="QSlider" name="horizontalSlider_2">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_22" stretch="0,0,0,0,0">
+               <item>
+                <spacer name="horizontalSpacer_2">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>30</width>
+                   <height>15</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item>
+                <widget class="QToolButton" name="video_head">
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="icons.qrc">
+                   <normaloff>:/resource/assert/xiangqian.png</normaloff>:/resource/assert/xiangqian.png</iconset>
+                 </property>
+                 <property name="iconSize">
+                  <size>
+                   <width>32</width>
+                   <height>32</height>
+                  </size>
+                 </property>
+                 <property name="autoRaise">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QToolButton" name="video_play">
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="icons.qrc">
+                   <normaloff>:/resource/assert/kaishi.png</normaloff>:/resource/assert/kaishi.png</iconset>
+                 </property>
+                 <property name="iconSize">
+                  <size>
+                   <width>32</width>
+                   <height>32</height>
+                  </size>
+                 </property>
+                 <property name="autoRaise">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QToolButton" name="video_tail">
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="icon">
+                  <iconset resource="icons.qrc">
+                   <normaloff>:/resource/assert/xianghou.png</normaloff>:/resource/assert/xianghou.png</iconset>
+                 </property>
+                 <property name="iconSize">
+                  <size>
+                   <width>32</width>
+                   <height>32</height>
+                  </size>
+                 </property>
+                 <property name="autoRaise">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="horizontalSpacer_3">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>15</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <widget class="QTabWidget" name="tabWidget_2">
+               <property name="currentIndex">
+                <number>0</number>
+               </property>
+               <widget class="QWidget" name="tab_8">
+                <attribute name="title">
+                 <string>Tab 1</string>
+                </attribute>
+                <layout class="QHBoxLayout" name="horizontalLayout_16" stretch="1,1,1">
+                 <item>
+                  <widget class="QGroupBox" name="groupBox_3">
+                   <property name="title">
+                    <string>亮度调整</string>
+                   </property>
+                   <layout class="QVBoxLayout" name="verticalLayout_27">
+                    <item>
+                     <layout class="QFormLayout" name="formLayout_17">
+                      <property name="horizontalSpacing">
+                       <number>15</number>
+                      </property>
+                      <property name="verticalSpacing">
+                       <number>5</number>
+                      </property>
+                      <property name="leftMargin">
+                       <number>5</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>5</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>5</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>5</number>
+                      </property>
+                      <item row="0" column="0">
+                       <widget class="QLabel" name="label_37">
+                        <property name="text">
+                         <string>亮度提高</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="1" column="0">
+                       <widget class="QLabel" name="label_41">
+                        <property name="text">
+                         <string>亮度降低</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="0" column="1">
+                       <widget class="QSlider" name="video_bright_slider1">
+                        <property name="orientation">
+                         <enum>Qt::Horizontal</enum>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="1" column="1">
+                       <widget class="QSlider" name="video_bright_slider2">
+                        <property name="orientation">
+                         <enum>Qt::Horizontal</enum>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="2" column="0">
+                       <widget class="QLabel" name="label_42">
+                        <property name="text">
+                         <string>自定义</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="2" column="1">
+                       <widget class="QLineEdit" name="video_bright_edit">
+                        <property name="placeholderText">
+                         <string>请输入亮度值</string>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </item>
+                   </layout>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QGroupBox" name="groupBox_2">
+                   <property name="title">
+                    <string>GroupBox</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QGroupBox" name="groupBox">
+                   <property name="title">
+                    <string>GroupBox</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
                </widget>
-              </item>
-              <item>
-               <widget class="QGroupBox" name="groupBox_2">
-                <property name="title">
-                 <string>GroupBox</string>
-                </property>
+               <widget class="QWidget" name="tab_9">
+                <attribute name="title">
+                 <string>Tab 2</string>
+                </attribute>
                </widget>
-              </item>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="groupBox_4">
+          <property name="title">
+           <string>GroupBox</string>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_29">
+           <item>
+            <widget class="QPushButton" name="video_open">
+             <property name="text">
+              <string>打开/切换视频</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="video_saveMat">
+             <property name="text">
+              <string>保存当前帧</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="Line" name="line">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QGroupBox" name="groupBox_5">
+             <property name="title">
+              <string>保存视频</string>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_30">
               <item>
-               <widget class="QGroupBox" name="groupBox_3">
-                <property name="title">
-                 <string>GroupBox</string>
+               <widget class="QPushButton" name="video_save_btn1">
+                <property name="text">
+                 <string>开始</string>
+                </property>
+                <property name="checkable">
+                 <bool>false</bool>
                 </property>
                </widget>
               </item>
              </layout>
             </widget>
-            <widget class="QWidget" name="tab_9">
-             <attribute name="title">
-              <string>Tab 2</string>
-             </attribute>
-            </widget>
-           </widget>
-          </item>
-         </layout>
+           </item>
+           <item>
+            <spacer name="verticalSpacer_17">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>20</width>
+               <height>40</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </widget>
         </item>
        </layout>
       </widget>
@@ -4268,8 +4377,8 @@ QLabel {
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>945</width>
-     <height>22</height>
+     <width>1141</width>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_file">
@@ -4702,14 +4811,9 @@ QLabel {
  </widget>
  <customwidgets>
   <customwidget>
-   <class>ColorDialog</class>
-   <extends>QToolButton</extends>
-   <header>colordialog.h</header>
-  </customwidget>
-  <customwidget>
    <class>VideoWidget</class>
    <extends>QOpenGLWidget</extends>
-   <header location="global">videowidget.h</header>
+   <header location="global">Include/video/videowidget.h</header>
   </customwidget>
  </customwidgets>
  <resources>

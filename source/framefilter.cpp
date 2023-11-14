@@ -15,7 +15,6 @@ cv::Mat frameFilter::filter(const cv::Mat &mat)
     auto optor = frameOperator::getInstance();
     optor->initMat(mat);
 
-    //mutex.lock();
     for (auto& x:tasks){
         switch (x.opt) {
         case Type::Blur:
@@ -28,7 +27,6 @@ cv::Mat frameFilter::filter(const cv::Mat &mat)
             break;
         }
     }
-    //mutex.unlock();
 
     return optor->dst;
 }

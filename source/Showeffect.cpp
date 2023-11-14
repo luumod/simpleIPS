@@ -49,42 +49,45 @@ void Showeffect::initialize()
 }
 
 
-void Showeffect::Bright(const cv::Mat &_mt, cv::Mat &tMt)
-{
-    //调整亮度
-    for (int i = 0; i < _mt.rows; i++) {
-        for (int j = 0; j < _mt.cols; j++) {
-            if (_mt.channels() == 1){
-                tMt.at<uchar>(i,j) = cv::saturate_cast<uchar>( cv::saturate_cast<float>(_mt.at<uchar>(i, j)) + this->bright_value);
-            }
-            else{
-                for (int z = 0; z < _mt.channels(); z++) {
-                    tMt.at<cv::Vec3b>(i, j)[z] = cv::saturate_cast<uchar>( cv::saturate_cast<float>(_mt.at<cv::Vec3b>(i, j)[z]) + this->bright_value);
-                }
-            }
-        }
-    }
+void Showeffect::Bright(const cv::Mat &_mt, cv::Mat &tMt,int value) {
+     // 调整亮度
+     for (int i = 0; i < _mt.rows; i++) {
+         for (int j = 0; j < _mt.cols; j++) {
+             if (_mt.channels() == 1) {
+                 // 单通道图像
+                 tMt.at<uchar>(i, j) = cv::saturate_cast<uchar>(_mt.at<uchar>(i, j) + value);
+             } else {
+                 // 多通道图像
+                 for (int z = 0; z < _mt.channels(); z++) {
+                     tMt.at<cv::Vec3b>(i, j)[z] = cv::saturate_cast<uchar>(_mt.at<cv::Vec3b>(i, j)[z] + value);
+                 }
+             }
+         }
+     }
 }
 
 
-void Showeffect::Gamma(const cv::Mat& _mt,cv::Mat& tMt){
-    for (int i =0;i<_mt.rows;i++){
-        for (int j =0;j<_mt.cols;j++){
-            if (_mt.channels() == 1){
-                float pix = cv::saturate_cast<float>(_mt.at<uchar>(i,j)) / 255.0;
-                float res = gamma_c * pow(pix,gamma_value) * 255.0;
-                tMt.at<uchar>(i,j) = cv::saturate_cast<uchar>(res);
-            }
-            else{
-                for (int z = 0; z < _mt.channels(); z++) {
-                    float pix = cv::saturate_cast<float>(_mt.at<cv::Vec3b>(i,j)[z]) / 255.0;
-                    float res = gamma_c * pow(pix,gamma_value) * 255.0;
-                    tMt.at<cv::Vec3b>(i,j)[z] = cv::saturate_cast<uchar>(res);
-                }
-            }
-        }
-    }
+
+void Showeffect::Gamma(const cv::Mat& _mt, cv::Mat& tMt) {
+     for (int i = 0; i < _mt.rows; i++) {
+         for (int j = 0; j < _mt.cols; j++) {
+             if (_mt.channels() == 1) {
+                 // 单通道图像
+                 float pix = static_cast<float>(_mt.at<uchar>(i, j)) / 255.0;
+                 float res = gamma_c * std::pow(pix, gamma_value) * 255.0;
+                 tMt.at<uchar>(i, j) = cv::saturate_cast<uchar>(res);
+             } else {
+                 // 多通道图像
+                 for (int z = 0; z < _mt.channels(); z++) {
+                     float pix = static_cast<float>(_mt.at<cv::Vec3b>(i, j)[z]) / 255.0;
+                     float res = gamma_c * std::pow(pix, gamma_value) * 255.0;
+                     tMt.at<cv::Vec3b>(i, j)[z] = cv::saturate_cast<uchar>(res);
+                 }
+             }
+         }
+     }
 }
+
 
 cv::Mat Showeffect::showContrastLinearBroaden(cv::Mat mat)
 {
@@ -403,7 +406,7 @@ void Showeffect::onTriggered_slider_valueChange_brighten(int bright_value)
     this->bright_value = bright_value;
 
     cv::Mat src = Object::getMat2(),tMt = src.clone();
-    Bright(src,tMt);
+    Bright(src,tMt,bright_value);
     Object::update(tMt);
 }
 
@@ -473,7 +476,7 @@ void Showeffect::onReturnPressed_Bright_Edit(QList<QString> strs)
     this->bright_value = val;
 
     cv::Mat src = Object::getMat2(),tMt = src.clone();
-    Bright(src,tMt);
+    Bright(src,tMt,bright_value);
     Object::update(tMt);
 }
 

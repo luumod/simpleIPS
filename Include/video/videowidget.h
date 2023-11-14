@@ -14,8 +14,13 @@ class VideoWidget : public QOpenGLWidget
 public:
     VideoWidget(QWidget* parent = nullptr);
     ~VideoWidget();
+
+    void imageClear();
+    void initParams(int width,int height);
+
 public slots:
     void getMat(const cv::Mat& mat);
+    void updateRefresh();
 protected:
     void paintEvent(QPaintEvent *e)override;
     void initializeGL()override;

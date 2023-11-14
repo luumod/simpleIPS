@@ -1,7 +1,6 @@
 ﻿#include "Include/Widget/widget_include_files.h"
 #include "opencv2/core/utils/logger.hpp"
 #include "ui_mainwindow.h"
-#include "../colorDialog.h"
 #include <QColor>
 
 //单例对象
@@ -163,10 +162,11 @@ void Widget::init_Label()
     timer_grayUpdate->start();
 
 }
+
 void Widget::init_specialConnect()
 {
     //便于管理
-    //ls_opts.push_back(blur = new Blur);
+    ls_opts.push_back(blur = new Blur);
     ls_opts.push_back(threshold = new Threshold);
     ls_opts.push_back(morphology = new Morphology);
     ls_opts.push_back(connected = new Connected);
@@ -230,9 +230,19 @@ void Widget::resizeEvent(QResizeEvent* ev)
     Q_UNUSED(ev);
     scaledDelta = ori_scaledDelta = init_scaledImageOk();
     update_Image_1(scaledDelta);
+
+    work = VideoCapWork::getInstance();
+    if (work->videoCap.isOpened()){
+        work->isCut = true;
+        ui->gl_wid1->imageClear();
+        ui->gl_wid2->imageClear();
+        QThread::msleep(100); //等待子线程
+        work->isCut = false;
+    }
 }
 
 void Widget::closeEvent(QCloseEvent *event){
+    //关闭视频
     work->isStop = true;
 }
 
@@ -1045,19 +1055,100 @@ void Widget::on_NdpNormal_tbtn2_clicked(bool clicked)
     showeffect->choice_NormalNoneDpLinearAlgorithm();
 }
 
-void Widget::on_video_open_clicked_()
+void Widget::on_video_open_clicked()
+{   
+    work->isCut = true;
+    ui->video_play->setIcon(QIcon(":/resource/assert/kaishi.png"));
+    //切换视频
+    QString name = QFileDialog::getOpenFileName(nullptr,"切换视频文件","../videos/","MP4 Files (*.mp4);; AVI Files (*.avi)");
+    if (name.isNull()){
+        work->isCut = false;
+        ui->video_play->setIcon(QIcon(":/resource/assert/zanting.png"));
+        return;
+    }
+    if (!work->cutVideo(name.toStdString())){
+        work->isCut = false;
+        return; //视频打开失败
+    }
+    //ok
+
+    //封装成函数
+    ui->video_save_btn1->setDisabled(false);
+    ui->video_saveMat->setDisabled(false);
+
+    //清除原始图片
+    ui->gl_wid1->imageClear();
+    ui->gl_wid2->imageClear();
+
+    work->isCut = false;
+    ui->video_play->setIcon(QIcon(":/resource/assert/zanting.png"));
+    emit intoWorkThread();
+}
+
+void Widget::on_video_play_clicked()
 {
-    QString name = QFileDialog::getOpenFileName(nullptr,"打开视频文件","../videos/","MP4 Files (*.mp4);; AVI Files (*.avi)");
+    if (!work->videoCap.isOpened()){
+        //没有视频，打开视频
+        on_video_open_clicked();
+        return;
+    }
+    if (work->isPause){
+        work->isPause = false;
+        ui->video_play->setIcon(QIcon(":/resource/assert/zanting.png"));
+    }
+    else{
+        work->isPause = true;
+        ui->video_play->setIcon(QIcon(":/resource/assert/kaishi.png"));
+    }
+}
+
+void Widget::on_video_bright_slider1_sliderMoved(int value)
+{
+    auto filter = frameFilter::getInstance();
+    filter->clearTask();
+    filter->addTask(Task{Type::Bright,{value}});
+    if (sender() == ui->video_bright_slider1){
+        ui->video_bright_slider2->setValue(ui->video_bright_slider2->minimum());
+    }
+}
+
+void Widget::on_video_bright_slider2_sliderMoved(int value)
+{
+    value = -value;
+    on_video_bright_slider1_sliderMoved(value);
+    ui->video_bright_slider1->setValue(ui->video_bright_slider1->minimum());
+}
+
+void Widget::on_video_bright_edit_returnPressed()
+{
+    int value = ui->video_bright_edit->text().toInt(); //0-> fails
+    on_video_bright_slider1_sliderMoved(value);
+    if (sender() == ui->video_bright_edit){
+        ui->video_bright_slider1->setValue(ui->video_bright_slider1->minimum());
+        ui->video_bright_slider2->setValue(ui->video_bright_slider2->minimum());
+    }
+}
+
+void Widget::on_video_save_btn1_clicked()
+{
+    if (work->isWriter){
+        //点击保存
+        work->stopExportVideo();
+        ui->video_save_btn1->setText("开始");
+        return;
+    }
+    //从当前位置保存视频
+    work->isPause = true;
+    ui->video_play->setIcon(QIcon(":/resource/assert/kaishi.png"));
+    QString name = QFileDialog::getSaveFileName(nullptr,"保存视频","../videos/saves/","MP4 Files (*.mp4)");
     if (name.isNull()){
         return;
     }
-    work->openVideo(name.toStdString());
-    emit intoWorkThread(); //发送信号，进入线程
-}
+    work->isPause = false;
+    ui->video_play->setIcon(QIcon(":/resource/assert/zanting.png"));
 
-void Widget::on_video_pause_clicked_()
-{
-    work->pauseVideo = !work->pauseVideo;
+    work->startExportVideo(name.toStdString());
+    ui->video_save_btn1->setText("停止");
 }
 
 void Widget::clear_allButtonClicked()
@@ -1193,7 +1284,19 @@ void Widget::updateFromRoot()
 void Widget::init_CustomAction()
 {
     //轮廓操作时 选择颜色 自动更新
-    connect(ui->colorDialog,&ColorDialog::choice_color,this,[=](QColor color){on_colorDialog_choice_color(color);});
+    auto colorBtn = new QToolButton;
+    colorBtn->setIcon(QIcon(":/resource/assert/colors.png"));
+    colorBtn->setIconSize(QSize(48,48));
+    ui->formLayout_8->insertRow(3,ui->Contours_lab4,colorBtn);
+    connect(colorBtn, &QToolButton::clicked, this, [=]() {
+        QColorDialog colorDialog(this);
+
+        QColor selectedColor = colorDialog.getColor();
+
+        if (selectedColor.isValid()) {
+            on_colorDialog_choice_color(selectedColor);
+        }
+    });
 
 	//颜色转换
 	img_base = new BaseOperate();
@@ -1622,13 +1725,14 @@ void Widget::init_videoWidget()
     work_thread->start();
 
     //要开始多线程，必须要使得 线程内的对象 作为槽函数的对象
-    connect(ui->video_open,&QPushButton::clicked,this,&Widget::on_video_open_clicked_);
     connect(this,&Widget::intoWorkThread,work,&VideoCapWork::captureVideoFrame); //进入线程
+    connect(work,&VideoCapWork::cutRefresh,ui->gl_wid1,&VideoWidget::updateRefresh);
+    connect(work,&VideoCapWork::cutRefresh,ui->gl_wid2,&VideoWidget::updateRefresh);
     connect(work,&VideoCapWork::havingVideoFrame,ui->gl_wid1,&VideoWidget::getMat); //原始帧
     connect(work,&VideoCapWork::havingVideoFrameDst,ui->gl_wid2,&VideoWidget::getMat); //处理帧
 
-    connect(work_thread,&QThread::finished,this,[=](){qInfo()<<"finished";});
 
-    //视频暂停
-    connect(ui->video_play,&QToolButton::clicked,this,&Widget::on_video_pause_clicked_);
+    //某些按钮在视频打开前无法按下
+    ui->video_save_btn1->setDisabled(true);
+    ui->video_saveMat->setDisabled(true);
 }

@@ -125,8 +125,7 @@ HEADERS += \
     Include/video/framefilter.h \
     Include/video/frameoperator.h \
     Include/video/videocapwork.h \
-    Include/video/videowidget.h \
-    colorDialog.h
+    Include/video/videowidget.h
 
 SOURCES += \
     source/BaseOperate.cpp \

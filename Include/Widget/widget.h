@@ -706,9 +706,17 @@ public slots:
 
     /************************************************/
 
-    void on_video_open_clicked_();
+    void on_video_open_clicked();
 
-    void on_video_pause_clicked_();
+    void on_video_play_clicked();
+
+    void on_video_bright_slider1_sliderMoved(int value);
+
+    void on_video_bright_slider2_sliderMoved(int value);
+
+    void on_video_bright_edit_returnPressed();
+
+    void on_video_save_btn1_clicked();
 public:
 
     /**

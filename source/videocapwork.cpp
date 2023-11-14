@@ -1,5 +1,7 @@
 ﻿#include "Include/video/videocapwork.h"
 #include "Include/video/framefilter.h"
+#include "Include/Widget/widget.h"
+#include "ui_mainwindow.h"
 #include <QThread>
 #include <QDebug>
 #include <iostream>
@@ -11,20 +13,26 @@ VideoCapWork::VideoCapWork()
 {
 }
 
-void VideoCapWork::openVideo(const std::string& name){
+bool VideoCapWork::openVideo(const std::string& name){
     if (videoCap.isOpened()){
         videoCap.release();
     }
     videoCap.open(name);
     // 检查视频是否成功打开
     if (!videoCap.isOpened()) {
-        std::cerr << "Error: Unable to open the video file." << std::endl;
-        exit(0);
+        return false;
     }
     fps = videoCap.get(cv::CAP_PROP_FPS);
     fps_count = videoCap.get(cv::CAP_PROP_FRAME_COUNT );
     width = videoCap.get(cv::CAP_PROP_FRAME_WIDTH);
     height = videoCap.get(cv::CAP_PROP_FRAME_HEIGHT);
+    return true;
+}
+
+bool VideoCapWork::cutVideo(const std::string& name)
+{
+    //切换视频
+    return openVideo(name);
 }
 
 VideoCapWork *VideoCapWork::getInstance()
@@ -66,21 +74,25 @@ bool VideoCapWork::stopExportVideo()
 void VideoCapWork::captureVideoFrame()
 {
     cv::Mat frame;
-    qInfo()<<"读取线程：" <<QThread::currentThreadId();
+    //qInfo()<<"读取线程：" <<QThread::currentThreadId();
 
     while (true) {//读取每一帧
         mutex.lock();
-
-        if (isStop){
+        if (isStop){ //关闭视频
             mutex.unlock();
-            qInfo()<<"关闭视频";
             break;
         }
 
-        if (pauseVideo){ //手动阻塞线程
+        if (isCut){  //切换视频
             mutex.unlock();
             cv::waitKey(50);
-            qInfo()<<"暂停视频";
+            cutChangeFinished = true;
+            continue;
+        }
+
+        if (isPause){ //手动阻塞线程
+            mutex.unlock();
+            cv::waitKey(50);
             continue;
         }
 
@@ -91,9 +103,15 @@ void VideoCapWork::captureVideoFrame()
 
         if (!videoCap.read(frame) || frame.empty()){
             mutex.unlock();
-            qInfo()<<"视频播放完成";
             break;
         }
+
+        if (cutChangeFinished){ //视频选择完成
+            needRefresh = true;
+            cutChangeFinished = false;
+            emit cutRefresh(); //发送需要刷新的信号
+        }
+
         //原始图片
         emit havingVideoFrame(frame);
 

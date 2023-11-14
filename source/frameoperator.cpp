@@ -1,4 +1,5 @@
 ﻿#include "Include/video/frameoperator.h"
+#include "Include/Widget/widget.h"
 
 frameOperator* frameOperator::opera = nullptr;
 frameOperator *frameOperator::getInstance()
@@ -25,10 +26,11 @@ void frameOperator::blur(int value)
 
 void frameOperator::bright(int value)
 {
-    effect->Bright(src,dst);//获取dst
+    effect->Bright(src,dst,value);//获取dst
 }
 
 frameOperator::frameOperator()
+    :effect(Widget::getInstance()->showeffect)
 {
 
 }

@@ -75,3 +75,6 @@ test/
 *.pdb
 videos/
 videos
+*.mp4
+*.avi
+*.obj

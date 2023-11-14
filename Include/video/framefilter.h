@@ -6,7 +6,7 @@
 #include <QMutex>
 #include <opencv2/opencv.hpp>
 
-enum Type{ Blur,Bright};
+enum class Type{ Blur,Bright};
 
 struct Task{
     Type opt;//当前操作类型

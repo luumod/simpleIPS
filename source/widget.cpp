@@ -369,7 +369,18 @@ void Widget::on_colorDialog_choice_color(const QColor& color)
 
 void Widget::on_action_cvtColor_group_triggered(QAction* action)
 {
-	img_base->cvtColor(action);
+    if (action == ui->action_hsv) {
+	    img_base->cvtColor(action,1);
+    }
+    else if (action == ui->action_hls) {
+        img_base->cvtColor(action, 2);
+    }
+    else if (action == ui->action_lab) {
+        img_base->cvtColor(action, 3);
+    }
+    else if (action == ui->action_rgb) {
+        img_base->cvtColor(action, 4);
+    }
 }
 
 void Widget::on_action_rotate_group_triggered(QAction* action)

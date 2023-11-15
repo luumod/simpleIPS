@@ -18,7 +18,6 @@
 #include "../video/videocapwork.h"
 #include "ShowImgWidget.h"
 #include "CaptureWidget.h"
-#include "WidgetBuilder.h"
 
 #include "LookWidget.h"
 #include "DrawWidget.h"

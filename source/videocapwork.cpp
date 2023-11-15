@@ -1,7 +1,6 @@
 ﻿#include "Include/video/videocapwork.h"
 #include "Include/video/framefilter.h"
 #include "Include/Widget/widget.h"
-#include "ui_mainwindow.h"
 #include <QThread>
 #include <QDebug>
 #include <iostream>

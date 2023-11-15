@@ -45,7 +45,7 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="widget_central">
        <attribute name="title">
@@ -77,8 +77,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>192</width>
-             <height>220</height>
+             <width>156</width>
+             <height>200</height>
             </rect>
            </property>
            <attribute name="label">
@@ -354,8 +354,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>242</width>
-             <height>315</height>
+             <width>197</width>
+             <height>288</height>
             </rect>
            </property>
            <attribute name="label">
@@ -707,8 +707,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>137</width>
-             <height>371</height>
+             <width>133</width>
+             <height>351</height>
             </rect>
            </property>
            <attribute name="label">
@@ -1131,8 +1131,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>129</width>
-             <height>181</height>
+             <width>104</width>
+             <height>168</height>
             </rect>
            </property>
            <attribute name="label">
@@ -1355,7 +1355,7 @@
              <x>0</x>
              <y>0</y>
              <width>200</width>
-             <height>428</height>
+             <height>485</height>
             </rect>
            </property>
            <attribute name="label">
@@ -1839,8 +1839,8 @@
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>411</width>
-                     <height>315</height>
+                     <width>417</width>
+                     <height>400</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -1969,8 +1969,8 @@
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>410</width>
-                     <height>315</height>
+                     <width>417</width>
+                     <height>400</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -4378,7 +4378,7 @@ QLabel {
      <x>0</x>
      <y>0</y>
      <width>1141</width>
-     <height>24</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_file">

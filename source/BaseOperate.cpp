@@ -3,7 +3,6 @@
 #include "Include/assist/Mat2QImage.h"
 #include "Include/opencv_functions/BaseOperate.h"
 #include "Include/Widget/ShowImgWidget.h"
-#include "ui_mainwindow.h"
 #include <QLabel>
 
 BaseOperate::BaseOperate()
@@ -26,22 +25,22 @@ void BaseOperate::initialize()
 {
 }
 
-void BaseOperate::cvtColor(QAction* action) {
+void BaseOperate::cvtColor(QAction* action, int num) {
 
 	cv::Mat _mt;
 	//每次都对原始根图片进行操作，然后获取一份副本，因为重复的cvtColor操作会导致图片重叠转换！！！
 	_mt = get()->res->root_mt; 
     cv::Mat ori_mt_res;
-    if (action == get()->ui->action_hsv) {
+    if (num == 1) {
 		cv::cvtColor(_mt, ori_mt_res, cv::COLOR_BGR2HSV);
 	}
-    else if (action == get()->ui->action_hls) {
+    else if (num == 2) {
 		cv::cvtColor(_mt, ori_mt_res, cv::COLOR_BGR2HLS);
 	}
-    else if (action == get()->ui->action_lab) {
+    else if (num == 3 ) {
 		cv::cvtColor(_mt, ori_mt_res, cv::COLOR_BGR2Lab);
 	}
-    else if (action == get()->ui->action_rgb) {
+    else if (num == 4) {
 		cv::cvtColor(_mt, ori_mt_res, cv::COLOR_BGR2RGB);
 	}
 	else {

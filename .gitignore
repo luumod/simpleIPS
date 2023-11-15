@@ -78,3 +78,6 @@ videos
 *.mp4
 *.avi
 *.obj
+*.vs
+out
+test

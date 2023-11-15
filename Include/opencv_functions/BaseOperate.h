@@ -21,7 +21,7 @@ protected:
 	void initialize()override;
 	
 public slots:
-	void cvtColor(QAction* action);
+	void cvtColor(QAction* action,int num);
 	//旋转
 	void onTriggered_picture_rotate90();
 	void onTriggered_picture_rotate180();
